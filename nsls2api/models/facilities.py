@@ -1,9 +1,8 @@
-from datetime import datetime
+import datetime
 from typing import Optional
 
 import beanie
 import pydantic
-
 
 class Facility(beanie.Document):
     name: str
