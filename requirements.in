@@ -1,5 +1,6 @@
-pydantic
-httpx
 beanie
+fastapi
+httpx
+pydantic
 rich
 textual
