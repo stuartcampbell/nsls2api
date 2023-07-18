@@ -1,5 +1,5 @@
-from nsls2api.models.facilities import Facility
 from nsls2api.models.cycles import Cycle
+from nsls2api.models.facilities import Facility
 
 
 async def facilities_count() -> int:
@@ -20,5 +20,5 @@ async def facility_cycles(facility: str):
     :param facility: The facility name (str).
     :return: A list of cycles for the facility (list[Cycle]).
     """
-    cycles = await Cycle.find(Cycle.facility == facility)
+    cycles = Cycle.find(Cycle.facility == facility)
     return cycles

@@ -4,6 +4,7 @@ from typing import Optional
 import beanie
 import pydantic
 
+
 class Facility(beanie.Document):
     name: str
     facility_id: str

@@ -8,6 +8,6 @@ def view(beamline: str):
     print(f"Viewing Beamline : {beamline}")
 
 
-@app.command()
-def list():
+@app.command("list")
+def list_beamlines():
     print(f"Listing beamlines...")

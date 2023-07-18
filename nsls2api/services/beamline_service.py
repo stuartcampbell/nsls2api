@@ -4,10 +4,21 @@ from nsls2api.models.beamlines import Beamline
 
 
 async def beamline_count() -> int:
+    """
+    Returns the number of beamlines in the database.
+
+    :return: An integer representing the number of beamlines in the database.
+    """
     return await Beamline.count()
 
 
 async def beamline_by_name(name: str) -> Optional[Beamline]:
+    """
+    Find and return a beamline by its name.
+
+    :param name: The name of the beamline to search for.
+    :return: The found beamline, if any. Otherwise, returns None.
+    """
     # TODO: check that the input name looks sensible
     # TODO: make this case insensitive
     beamline = await Beamline.find_one(Beamline.name == name)

@@ -5,9 +5,9 @@ It is just here for now to test some functionality before I add the API and use 
 import asyncio
 
 from nsls2api.infrastructure import mongodb_setup
-from nsls2api.services import proposal_service
 from nsls2api.services import beamline_service
 from nsls2api.services import facility_service
+from nsls2api.services import proposal_service
 
 
 def print_header():
@@ -32,7 +32,7 @@ async def summary():
     print()
 
 
-def search_for_beamline():
+async def search_for_beamline():
     pass
 
 
@@ -44,6 +44,7 @@ async def search_for_proposal():
         print(proposal)
     else:
         print(f"No proposal with ID {proposal_id} found.")
+
 
 async def main():
     print_header()

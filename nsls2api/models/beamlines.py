@@ -19,6 +19,7 @@ class EndStation(pydantic.BaseModel):
 
 
 class Beamline(beanie.Document):
+    id: str
     name: str
     long_name: str
     alternative_name: Optional[str]
