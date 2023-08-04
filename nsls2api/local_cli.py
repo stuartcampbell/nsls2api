@@ -46,6 +46,13 @@ async def search_for_proposal():
         print(f"No proposal with ID {proposal_id} found.")
 
 
+async def recently_updated_proposals():
+    proposals = await proposal_service.recently_updated()
+    for n, p in enumerate(proposals, start=1):
+        print(f'{n}. {p.proposal_id} ({p.last_updated.date().isoformat()}): {p.title}')
+    print()
+
+
 async def main():
     print_header()
     await mongodb_setup.init_connection('nsls2core-test')
@@ -56,6 +63,7 @@ async def main():
         print("[s] Show summary statistics")
         print("[b] Search for a beamline")
         print("[p] Search for a proposal")
+        print("[m] Most recently updated proposals")
         print("[x] Exit program")
         resp = input("Enter the character for your command: ").strip().lower()
         print('-' * 40)
@@ -67,6 +75,8 @@ async def main():
                 await search_for_beamline()
             case 'p':
                 await search_for_proposal()
+            case 'm':
+                await recently_updated_proposals()
             case 'x':
                 break
             case _:
