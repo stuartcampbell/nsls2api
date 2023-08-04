@@ -1,7 +1,9 @@
 beanie
 fastapi
 httpx
+jinja2
 pydantic
 rich
 textual
 typer
+uvicorn
