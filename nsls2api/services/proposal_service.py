@@ -1,7 +1,12 @@
 from typing import Optional
 
 # from models.proposals import Proposal
-from nsls2api.models.proposals import Proposal
+from nsls2api.models.proposals import Proposal, User
+
+
+async def exists(proposal_id: str) -> bool:
+    proposal = await Proposal.find_one(Proposal.proposal_id == proposal_id)
+    return False if proposal is None else True
 
 
 async def proposal_count() -> int:
@@ -37,11 +42,31 @@ async def proposal_by_id(proposal_id: str) -> Optional[Proposal]:
     proposal: Proposal = await Proposal.find_one(Proposal.proposal_id == proposal_id)
     return proposal
 
-# async def users_from_proposal(proposal_id: str) -> Optional[Proposal]:
-#
-#     proposal = await proposal_by_id(proposal_id)
-#     if proposal is None:
-#         raise Exception(f"No proposal with ID {proposal_id} found.")
-#
-#     user_list = await Proposal.find_one(Proposal.proposal_id == proposal_id).project()
-#     return user_list
+
+async def users_from_proposal(proposal_id: str) -> Optional[list[User]]:
+    proposal = await proposal_by_id(proposal_id)
+    return proposal.users
+
+
+async def usernames_from_proposal(proposal_id: str) -> Optional[list[str]]:
+    proposal = await proposal_by_id(proposal_id)
+
+    if proposal is None:
+        raise Exception(f'Proposal {proposal_id} not found')
+
+    usernames = [
+        u.username
+        for u in proposal.users if u.username is not None
+    ]
+    return usernames
+
+async def proposal_pi(proposal_id: str) -> Optional[list[User]]:
+    proposal = await proposal_by_id(proposal_id)
+
+    pi = [
+        u for u in proposal.users if u.is_pi
+    ]
+
+    # TODO: Check for multiple of no PIs
+
+    return pi

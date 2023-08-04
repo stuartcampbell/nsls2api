@@ -1,8 +1,8 @@
 import fastapi
 
-from api.models.recent_proposal_model import RecentProposalsModel, RecentProposal
 from api.models.proposal_model import UsernamesModel
-from models.proposals import Proposal
+from api.models.recent_proposal_model import RecentProposalsModel, RecentProposal
+from models.proposals import Proposal, User
 from services import proposal_service
 
 router = fastapi.APIRouter()
@@ -30,15 +30,32 @@ async def details(proposal_id: str):
     return proposal
 
 
+@router.get('/proposal/{proposal_id}/users', response_model=list[User])
+async def users(proposal_id: str):
+    users = await proposal_service.users_from_proposal(proposal_id)
+    return users
+
+
+@router.get('/proposal/{proposal_id}/pi', response_model=list[User])
+async def users(proposal_id: str):
+    principle_invesigator = await proposal_service.proposal_pi(proposal_id)
+
+    if len(principle_invesigator) == 0:
+        return fastapi.responses.JSONResponse({'error': f'PI not found for proposal {proposal_id}'}, status_code=404)
+    elif len(principle_invesigator) > 1:
+        return fastapi.responses.JSONResponse({'error': f'Proposal {proposal_id} contains more than one PI'},
+                                              status_code=422)
+
+    return principle_invesigator
+
+
 @router.get('/proposal/{proposal_id}/usernames', response_model=UsernamesModel)
 async def usernames(proposal_id: str):
-    proposal = await proposal_service.proposal_by_id(proposal_id)
-    if proposal is None:
+    # Check to see if proposal exists
+    if not await proposal_service.exists(proposal_id):
         return fastapi.responses.JSONResponse({'error': f'Proposal {proposal_id} not found'}, status_code=404)
 
-    usernames = [
-        u.username
-        for u in proposal.users if u.username is not None
-    ]
-    model = UsernamesModel(usernames=usernames)
+    proposal_usernames = await proposal_service.usernames_from_proposal(proposal_id)
+    model = UsernamesModel(usernames=proposal_usernames)
+
     return model
