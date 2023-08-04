@@ -38,7 +38,7 @@ async def users(proposal_id: str):
 
 @router.get('/proposal/{proposal_id}/pi', response_model=list[User])
 async def users(proposal_id: str):
-    principle_invesigator = await proposal_service.proposal_pi(proposal_id)
+    principle_invesigator = await proposal_service.pi_from_proposal(proposal_id)
 
     if len(principle_invesigator) == 0:
         return fastapi.responses.JSONResponse({'error': f'PI not found for proposal {proposal_id}'}, status_code=404)

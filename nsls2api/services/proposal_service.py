@@ -60,7 +60,8 @@ async def usernames_from_proposal(proposal_id: str) -> Optional[list[str]]:
     ]
     return usernames
 
-async def proposal_pi(proposal_id: str) -> Optional[list[User]]:
+
+async def pi_from_proposal(proposal_id: str) -> Optional[list[User]]:
     proposal = await proposal_by_id(proposal_id)
 
     pi = [
