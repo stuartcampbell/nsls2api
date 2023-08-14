@@ -36,3 +36,4 @@ class Proposal(beanie.Document):
     class Settings:
         name = 'proposals'
         indexes = []
+

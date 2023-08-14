@@ -1,5 +1,7 @@
 from typing import Optional
 
+from beanie.operators import In
+
 # from models.proposals import Proposal
 from nsls2api.models.proposals import Proposal, User
 
@@ -13,7 +15,7 @@ async def proposal_count() -> int:
     return await Proposal.count()
 
 
-async def recently_updated(count=5):
+async def recently_updated(count=5, beamline=None):
     """
     Function to fetch recently updated proposals.
 
@@ -22,8 +24,16 @@ async def recently_updated(count=5):
 
     :return: List of recently updated proposals.
     :rtype: list[Proposal]
+
+    Args:
+        beamline: Optional beamline to restrict list of proposals to
     """
-    updated = await Proposal.find_all().sort(-Proposal.last_updated).limit(count).to_list()
+    if beamline:
+        print(f"Searching for proposals within {beamline}...")
+        query = In(Proposal.instruments, [beamline])
+        updated = await Proposal.find_many(query).sort(-Proposal.last_updated).limit(count).to_list()
+    else:
+        updated = await Proposal.find_all().sort(-Proposal.last_updated).limit(count).to_list()
     return updated
 
 
