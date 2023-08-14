@@ -11,7 +11,7 @@ api = fastapi.FastAPI()
 
 def main():
     configure_routing()
-    uvicorn.run(api)
+    uvicorn.run(api, port=8080)
 
 
 def configure_routing():
