@@ -12,19 +12,47 @@ anyio==3.7.1
     #   starlette
 beanie==1.21.0
     # via -r requirements.in
+blinker==1.6.2
+    # via flask
+brotli==1.0.9
+    # via geventhttpclient
 certifi==2023.7.22
     # via
+    #   geventhttpclient
     #   httpcore
     #   httpx
+    #   requests
+charset-normalizer==3.2.0
+    # via requests
 click==8.1.6
     # via
     #   beanie
+    #   flask
     #   typer
     #   uvicorn
-dnspython==2.4.1
+configargparse==1.7
+    # via locust
+dnspython==2.4.2
     # via pymongo
-fastapi==0.100.1
+fastapi==0.101.1
     # via -r requirements.in
+flask==2.3.2
+    # via
+    #   flask-basicauth
+    #   flask-cors
+    #   locust
+flask-basicauth==0.2.0
+    # via locust
+flask-cors==4.0.0
+    # via locust
+gevent==23.7.0
+    # via
+    #   geventhttpclient
+    #   locust
+geventhttpclient==2.0.9
+    # via locust
+greenlet==2.0.2
+    # via gevent
 h11==0.14.0
     # via
     #   httpcore
@@ -37,27 +65,40 @@ idna==3.4
     # via
     #   anyio
     #   httpx
+    #   requests
 importlib-metadata==6.8.0
     # via textual
+itsdangerous==2.1.2
+    # via flask
 jinja2==3.1.2
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   flask
 lazy-model==0.1.0b0
     # via beanie
 linkify-it-py==2.0.2
     # via markdown-it-py
+locust==2.16.1
+    # via -r requirements.in
 markdown-it-py[linkify,plugins]==3.0.0
     # via
     #   mdit-py-plugins
     #   rich
     #   textual
 markupsafe==2.1.3
-    # via jinja2
+    # via
+    #   jinja2
+    #   werkzeug
 mdit-py-plugins==0.4.0
     # via markdown-it-py
 mdurl==0.1.2
     # via markdown-it-py
 motor==3.2.0
     # via beanie
+msgpack==1.0.5
+    # via locust
+psutil==5.9.5
+    # via locust
 pydantic==2.1.1
     # via
     #   -r requirements.in
@@ -66,14 +107,22 @@ pydantic==2.1.1
     #   lazy-model
 pydantic-core==2.4.0
     # via pydantic
-pygments==2.15.1
+pygments==2.16.1
     # via rich
 pymongo==4.4.1
     # via motor
+pyzmq==25.1.1
+    # via locust
+requests==2.31.0
+    # via locust
 rich==13.5.2
     # via
     #   -r requirements.in
     #   textual
+roundrobin==0.0.4
+    # via locust
+six==1.16.0
+    # via geventhttpclient
 sniffio==1.3.0
     # via
     #   anyio
@@ -91,13 +140,27 @@ typing-extensions==4.7.1
     # via
     #   beanie
     #   fastapi
+    #   locust
     #   pydantic
     #   pydantic-core
     #   textual
     #   typer
 uc-micro-py==1.0.2
     # via linkify-it-py
+urllib3==2.0.4
+    # via requests
 uvicorn==0.23.2
     # via -r requirements.in
+werkzeug==2.3.7
+    # via
+    #   flask
+    #   locust
 zipp==3.16.2
     # via importlib-metadata
+zope-event==5.0
+    # via gevent
+zope-interface==6.0
+    # via gevent
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools

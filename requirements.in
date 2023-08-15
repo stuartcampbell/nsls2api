@@ -2,6 +2,7 @@ beanie
 fastapi
 httpx
 jinja2
+locust
 pydantic
 rich
 textual
