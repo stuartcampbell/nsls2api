@@ -31,7 +31,7 @@ async def recently_updated(count=5, beamline: str | None=None):
     if beamline:
         # Ensure we match the case in the database for the beamline name
         beamline = beamline.upper()
-        print(f"Searching for proposals within {beamline}...")
+        # print(f"Searching for proposals within {beamline}...")
         query = In(Proposal.instruments, [beamline])
         updated = await Proposal.find_many(query).sort(-Proposal.last_updated).limit(count).to_list()
     else:
