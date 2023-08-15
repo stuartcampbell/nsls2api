@@ -15,7 +15,7 @@ async def proposal_count() -> int:
     return await Proposal.count()
 
 
-async def recently_updated(count=5, beamline=None):
+async def recently_updated(count=5, beamline: str | None=None):
     """
     Function to fetch recently updated proposals.
 
@@ -29,6 +29,8 @@ async def recently_updated(count=5, beamline=None):
         beamline: Optional beamline to restrict list of proposals to
     """
     if beamline:
+        # Ensure we match the case in the database for the beamline name
+        beamline = beamline.upper()
         print(f"Searching for proposals within {beamline}...")
         query = In(Proposal.instruments, [beamline])
         updated = await Proposal.find_many(query).sort(-Proposal.last_updated).limit(count).to_list()
