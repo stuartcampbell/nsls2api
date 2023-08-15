@@ -3,6 +3,7 @@ from typing import Optional
 
 import beanie
 import pydantic
+import pymongo
 
 
 class SafetyForm(pydantic.BaseModel):
@@ -35,5 +36,21 @@ class Proposal(beanie.Document):
 
     class Settings:
         name = 'proposals'
-        indexes = []
+        indexes = [
+            pymongo.IndexModel(keys=[("proposal_id", pymongo.DESCENDING)], name="proposal_id_descend"),
+            pymongo.IndexModel(keys=[("last_updated", pymongo.DESCENDING)], name="last_updated_descend"),
+            pymongo.IndexModel(keys=[("users.username", pymongo.ASCENDING)], name="users_username_ascend"),
+            pymongo.IndexModel(keys=[("users.email", pymongo.ASCENDING)], name="users_email_ascend"),
+            pymongo.IndexModel(keys=[("users.bnl_id", pymongo.ASCENDING)], name="users_bnl_id_ascend"),
+            pymongo.IndexModel(keys=[("users.last_name", pymongo.ASCENDING)], name="users_last_name_ascend"),
+            pymongo.IndexModel(keys=[("safs.saf_id", pymongo.DESCENDING)], name="safs_saf_id_descend"),
+        ]
 
+
+class UsernamesOnly(pydantic.BaseModel):
+    username: str
+
+    class Settings:
+        projection = {
+            "username": "$username",
+        }
