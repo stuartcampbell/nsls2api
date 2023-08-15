@@ -20,7 +20,6 @@ async def beamline_by_name(name: str) -> Optional[Beamline]:
     :return: The found beamline, if any. Otherwise, returns None.
     """
     # TODO: check that the input name looks sensible
-    # TODO: make this case insensitive
-    beamline = await Beamline.find_one(Beamline.name == name)
+    beamline = await Beamline.find_one(Beamline.name == name.upper())
     return beamline
 
