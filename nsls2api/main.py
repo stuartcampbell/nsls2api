@@ -2,7 +2,8 @@ import fastapi
 import uvicorn
 from starlette.staticfiles import StaticFiles
 
-from api import proposal_api, stats_api, facility_api, beamline_api
+from api import proposal_api, stats_api, facility_api
+from nsls2api.api.v1 import beamline_api
 from views import home
 from infrastructure import mongodb_setup
 
@@ -18,7 +19,7 @@ def configure_routing():
     api.include_router(proposal_api.router)
     api.include_router(stats_api.router)
     api.include_router(facility_api.router)
-    api.include_router(beamline_api.router)
+    api.include_router(beamline_api.router, prefix="/v1")
 
     # Also include our webpages
     api.include_router(home.router)
