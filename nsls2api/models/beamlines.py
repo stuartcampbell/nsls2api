@@ -3,6 +3,18 @@ from typing import Optional
 
 import beanie
 import pydantic
+from pydantic import Field
+
+
+class Detector(pydantic.BaseModel):
+    name: str
+
+
+class BeamlineService(pydantic.BaseModel):
+    name: str
+    host: Optional[str]
+    port: Optional[int]
+    uri: Optional[str]
 
 
 class ServiceAccounts(pydantic.BaseModel):
@@ -19,9 +31,8 @@ class EndStation(pydantic.BaseModel):
 
 
 class Beamline(beanie.Document):
-    id: str
     name: str
-    long_name: str
+    long_name: Optional[str]
     alternative_name: Optional[str]
     port: str
     network_locations: Optional[list[str]]
@@ -32,9 +43,20 @@ class Beamline(beanie.Document):
     endstations: Optional[list[EndStation]]
     data_admins: Optional[list[str]]
     github_org: Optional[str]
+    ups_id: Optional[str]
+    services: Optional[list[BeamlineService]]
     created_on: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.now)
     last_updated: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.now)
 
     class Settings:
         name = 'beamlines'
         indexes = []
+
+
+class ServicesOnly(pydantic.BaseModel):
+    services: list[BeamlineService]
+
+    class Settings:
+        projection = {
+            "services": "$services",
+        }
