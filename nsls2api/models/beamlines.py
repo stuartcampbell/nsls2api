@@ -24,6 +24,11 @@ class ServiceAccounts(pydantic.BaseModel):
     epics_services: Optional[str]
     operator: Optional[str]
 
+    class Settings:
+        projection = {
+            "service_accounts": "$service_accounts",
+        }
+
 
 class EndStation(pydantic.BaseModel):
     name: str

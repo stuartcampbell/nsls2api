@@ -24,3 +24,10 @@ async def get_beamline_services(name: str):
     # service_list = BeamlineServicesModel(count=2, services=beamline_services)
 
     return beamline_services
+
+
+@router.get('/beamline/{name}/accounts/workflow')
+async def get_beamline_workflow_username(name: str):
+    workflow_user = await beamline_service.workflow_username(name)
+    if workflow_user is None:
+        raise HTTPException(status_code=404, detail=f'No workflow user has been defined for the {name} beamline')
