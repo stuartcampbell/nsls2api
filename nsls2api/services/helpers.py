@@ -1,7 +1,7 @@
 import httpx
 from httpx import Response, Timeout
 
-from models.validation_error import ValidationError
+from nsls2api.models.validation_error import ValidationError
 
 
 async def _call_async_webservice(url: str):
@@ -11,4 +11,3 @@ async def _call_async_webservice(url: str):
             raise ValidationError(resp.text, status_code=resp.status_code)
     results = resp.json()
     return results
-
