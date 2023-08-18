@@ -1,8 +1,10 @@
+aiofiles
 beanie
 fastapi
 httpx
 jinja2
 locust
+n2snusertools
 pydantic
 rich
 textual
