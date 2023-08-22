@@ -1,6 +1,17 @@
 from typing import Optional
 
-from nsls2api.models.beamlines import Beamline, BeamlineService, ServicesOnly, ServiceAccounts
+from nsls2api.models.beamlines import (
+    Beamline,
+    BeamlineService,
+    ServicesOnly,
+    ServiceAccounts,
+    ServiceAccountsView,
+    WorkflowServiceAccountView,
+    IOCServiceAccountView,
+    EpicsServicesServiceAccountView,
+    BlueskyServiceAccountView,
+    OperatorServiceAccountView,
+)
 
 
 async def beamline_count() -> int:
@@ -24,31 +35,50 @@ async def beamline_by_name(name: str) -> Optional[Beamline]:
     return beamline
 
 
-async def all_services(name: str) -> Optional[list[BeamlineService]]:
-    services = await Beamline.find_one(Beamline.name == name.upper()).project(ServicesOnly)
-    return services
+async def all_services(name: str) -> Optional[ServicesOnly]:
+    beamline_services = await Beamline.find_one(Beamline.name == name.upper()).project(
+        ServicesOnly
+    )
+    return beamline_services.services
+
+
+async def beamline_service_accounts(name: str) -> Optional[ServiceAccounts]:
+    service_accounts = await Beamline.find_one(Beamline.name == name.upper()).project(
+        ServiceAccountsView
+    )
+    return service_accounts
 
 
 async def workflow_username(name: str) -> str:
-    service_accounts: ServiceAccounts = await Beamline.find_one(Beamline.name == name.upper()).project(ServiceAccounts)
-    return service_accounts.workflow
+    workflow_account = await Beamline.find_one(Beamline.name == name.upper()).project(
+        WorkflowServiceAccountView
+    )
+    return workflow_account.username
 
 
 async def ioc_username(name: str) -> str:
-    service_accounts: ServiceAccounts = await Beamline.find_one(Beamline.name == name.upper()).project(ServiceAccounts)
-    return service_accounts.ioc
+    ioc_account = await Beamline.find_one(Beamline.name == name.upper()).project(
+        IOCServiceAccountView
+    )
+    return ioc_account.username
 
 
 async def bluesky_username(name: str) -> str:
-    service_accounts: ServiceAccounts = await Beamline.find_one(Beamline.name == name.upper()).project(ServiceAccounts)
-    return service_accounts.bluesky
+    bluesky_account = await Beamline.find_one(Beamline.name == name.upper()).project(
+        BlueskyServiceAccountView
+    )
+    return bluesky_account.username
 
 
 async def operator_username(name: str) -> str:
-    service_accounts: ServiceAccounts = await Beamline.find_one(Beamline.name == name.upper()).project(ServiceAccounts)
-    return service_accounts.operator
+    operator_account = await Beamline.find_one(Beamline.name == name.upper()).project(
+        OperatorServiceAccountView
+    )
+    return operator_account.username
 
 
 async def epics_services_username(name: str) -> str:
-    service_accounts: ServiceAccounts = await Beamline.find_one(Beamline.name == name.upper()).project(ServiceAccounts)
-    return service_accounts.epics_services
+    epics_services_account = await Beamline.find_one(
+        Beamline.name == name.upper()
+    ).project(EpicsServicesServiceAccountView)
+    return epics_services_account.username

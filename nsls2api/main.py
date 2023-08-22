@@ -2,13 +2,14 @@ import fastapi
 import uvicorn
 from starlette.staticfiles import StaticFiles
 
-from api import proposal_api, stats_api, facility_api
-from nsls2api.api.v1 import beamline_api
+from api import facility_api
+from nsls2api.api.v1 import stats_api as stats_api_v1
+from nsls2api.api.v1 import beamline_api as beamline_api_v1
+from nsls2api.api.v1 import proposal_api as proposal_api_v1
 from views import home
 from infrastructure import mongodb_setup
 
 api = fastapi.FastAPI()
-
 
 def main():
     configure_routing()
@@ -16,10 +17,10 @@ def main():
 
 
 def configure_routing():
-    api.include_router(proposal_api.router)
-    api.include_router(stats_api.router)
+    api.include_router(proposal_api_v1.router, prefix="/v1")
+    api.include_router(stats_api_v1.router, prefix="/v1")
+    api.include_router(beamline_api_v1.router, prefix="/v1")
     api.include_router(facility_api.router)
-    api.include_router(beamline_api.router, prefix="/v1")
 
     # Also include our webpages
     api.include_router(home.router)
@@ -28,7 +29,7 @@ def configure_routing():
 
 @api.on_event('startup')
 async def configure_db():
-    await mongodb_setup.init_connection('nsls2core-test')
+    await mongodb_setup.init_connection('localhost', 27017, 'nsls2core-test')
 
 
 if __name__ == '__main__':

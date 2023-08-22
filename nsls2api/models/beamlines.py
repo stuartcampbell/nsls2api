@@ -17,6 +17,15 @@ class BeamlineService(pydantic.BaseModel):
     uri: Optional[str]
 
 
+class ServicesOnly(pydantic.BaseModel):
+    services: list[BeamlineService]
+
+    class Settings:
+        projection = {
+            "services": "$services",
+        }
+
+
 class ServiceAccounts(pydantic.BaseModel):
     ioc: Optional[str]
     workflow: Optional[str]
@@ -24,10 +33,44 @@ class ServiceAccounts(pydantic.BaseModel):
     epics_services: Optional[str]
     operator: Optional[str]
 
+
+class ServiceAccountsView(pydantic.BaseModel):
+    service_accounts: Optional[ServiceAccounts]
+
+
+class WorkflowServiceAccountView(pydantic.BaseModel):
+    username: str
+
     class Settings:
-        projection = {
-            "service_accounts": "$service_accounts",
-        }
+        projection = {"username": "$service_accounts.workflow"}
+
+
+class IOCServiceAccountView(pydantic.BaseModel):
+    username: str
+
+    class Settings:
+        projection = {"username": "$service_accounts.ioc"}
+
+
+class BlueskyServiceAccountView(pydantic.BaseModel):
+    username: str
+
+    class Settings:
+        projection = {"username": "$service_accounts.bluesky"}
+
+
+class OperatorServiceAccountView(pydantic.BaseModel):
+    username: str
+
+    class Settings:
+        projection = {"username": "$service_accounts.operator"}
+
+
+class EpicsServicesServiceAccountView(pydantic.BaseModel):
+    username: str
+
+    class Settings:
+        projection = {"username": "$service_accounts.epics_services"}
 
 
 class EndStation(pydantic.BaseModel):
@@ -50,18 +93,13 @@ class Beamline(beanie.Document):
     github_org: Optional[str]
     ups_id: Optional[str]
     services: Optional[list[BeamlineService]]
-    created_on: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.now)
-    last_updated: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.now)
+    created_on: datetime.datetime = pydantic.Field(
+        default_factory=datetime.datetime.now
+    )
+    last_updated: datetime.datetime = pydantic.Field(
+        default_factory=datetime.datetime.now
+    )
 
     class Settings:
-        name = 'beamlines'
+        name = "beamlines"
         indexes = []
-
-
-class ServicesOnly(pydantic.BaseModel):
-    services: list[BeamlineService]
-
-    class Settings:
-        projection = {
-            "services": "$services",
-        }
