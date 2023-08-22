@@ -40,7 +40,7 @@ dnspython==2.4.2
     # via pymongo
 fastapi==0.101.1
     # via -r requirements.in
-flask==2.3.2
+flask==2.3.3
     # via
     #   flask-basicauth
     #   flask-cors
