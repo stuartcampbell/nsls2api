@@ -32,6 +32,10 @@ class ServiceAccounts(pydantic.BaseModel):
     bluesky: Optional[str]
     epics_services: Optional[str]
     operator: Optional[str]
+    lsdc: Optional[str] = None
+
+    class Settings:
+        keep_nulls = False
 
 
 class ServiceAccountsView(pydantic.BaseModel):
