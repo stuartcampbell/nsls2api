@@ -68,7 +68,7 @@ async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
     return proposal
 
 
-async def users_from_proposal(proposal_id: int) -> Optional[list[User]]:
+async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
     proposal = await proposal_by_id(proposal_id)
     return proposal.users
 
@@ -98,6 +98,28 @@ async def commissioning_proposals(beamline: str | None = None):
         Proposal.find_many(Proposal.pass_type_id == "300005", projection_model=ProposalIdView)
     )
 
+    *args = Proposal.pass_type_id == "300005",
+
     commissioning_proposal_list = [p.proposal_id for p in await proposals.to_list() if p.proposal_id is not None]
+
+    if beamline:
+        # Ensure we match the case in the database for the beamline name
+        beamline = beamline.upper()
+        # print(f"Searching for proposals within {beamline}...")
+        query = In(Proposal.instruments, [beamline])
+        updated = (
+            await Proposal.find_many(query)
+            .sort(-Proposal.last_updated)
+            .limit(count)
+            .to_list()
+        )
+    else:
+        updated = (
+            await Proposal.find_many()
+            .sort(-Proposal.last_updated)
+            .limit(count)
+            .to_list()
+        )
+
 
     return commissioning_proposal_list

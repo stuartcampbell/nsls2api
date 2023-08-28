@@ -56,7 +56,7 @@ async def get_proposal(proposal_id: int):
 
 @router.get("/proposal/{proposal_id}/users", response_model=list[User])
 async def get_proposals_users(proposal_id: int):
-    users = await proposal_service.users_from_proposal(proposal_id)
+    users = await proposal_service.fetch_users_on_proposal(proposal_id)
     return users
 
 
