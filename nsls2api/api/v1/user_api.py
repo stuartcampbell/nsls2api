@@ -10,7 +10,7 @@ router = fastapi.APIRouter()
 
 @router.get("/person/username/{username}", response_model=Person)
 async def get_person_from_username(username: str):
-    bnl_person = await bnlpeople_service.fetch_person_by_username(username)
+    bnl_person = await bnlpeople_service.get_person_by_username(username)
     print(bnl_person)
     if len(bnl_person) == 1:
         person = Person(
