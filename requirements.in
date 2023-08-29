@@ -1,6 +1,7 @@
 aiofiles
 beanie
 fastapi
+gunicorn
 httpx
 jinja2
 locust
