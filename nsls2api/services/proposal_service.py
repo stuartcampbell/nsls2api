@@ -61,7 +61,9 @@ async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
         return None
 
     # proposal_id = proposal_id.strip()
-    proposal: Proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
+    proposal: Proposal = await Proposal.find_one(
+        Proposal.proposal_id == str(proposal_id)
+    )
 
     print(proposal)
 
@@ -88,27 +90,35 @@ async def pi_from_proposal(proposal_id: int) -> Optional[list[User]]:
 
     pi = [u for u in proposal.users if u.is_pi]
 
-    # TODO: Check for multiple or no PIs
+    if len(pi) == 0:
+        raise Exception(f"Proposal {proposal_id} does not contain any PIs.")
+    elif len(pi) > 1:
+        raise Exception(f"Proposal {proposal_id} contains {len(pi)} different PIs.")
+    else:
+        return pi
 
-    return pi
 
-
+# TODO: There seems to be a data integrity issue that not all commissioning proposals have a beamline listed.
 async def commissioning_proposals(beamline: str | None = None):
-
     if beamline:
         # Ensure we match the case in the database for the beamline name
         beamline = beamline.upper()
 
-        proposals = (
-            Proposal.find(Proposal.pass_type_id == "300005", projection_model=ProposalIdView)
+        query = In(Proposal.instruments, [beamline])
+        proposals = Proposal.find(In(Proposal.instruments, [beamline])).find(
+            Proposal.pass_type_id == "300005"
         )
+
+        for proposal in await proposals.to_list():
+            print(proposal)
 
     else:
-        query = In(Proposal.instruments, [beamline])
-        proposals = (
-            Proposal.find(Proposal.pass_type_id == "300005").find(query, projection_model=ProposalIdView)
+        proposals = Proposal.find(
+            Proposal.pass_type_id == "300005", projection_model=ProposalIdView
         )
 
-    commissioning_proposal_list = [p.proposal_id for p in await proposals.to_list() if p.proposal_id is not None]
+    commissioning_proposal_list = [
+        p.proposal_id for p in await proposals.to_list() if p.proposal_id is not None
+    ]
 
     return commissioning_proposal_list
