@@ -8,6 +8,7 @@ from nsls2api.api.models.recent_proposal_model import (
 from fastapi import Depends
 from nsls2api.models.proposals import Proposal, User
 from nsls2api.services import proposal_service
+from nsls2api.services import beamline_service
 
 from nsls2api.api.models.proposal_model import CommissioningProposalsModel
 
@@ -79,6 +80,7 @@ async def get_proposal_principle_invesigator(proposal_id: int):
 
 @router.get("/proposal/{proposal_id}/usernames", response_model=UsernamesModel)
 async def get_proposal_usernames(proposal_id: int):
+
     # Check to see if proposal exists
     if not await proposal_service.exists(proposal_id):
         return fastapi.responses.JSONResponse(
@@ -93,5 +95,6 @@ async def get_proposal_usernames(proposal_id: int):
 
 @router.get("/proposal/{proposal_id}/directories")
 async def get_proposal_directories(proposal_id: int):
+    directories = await proposal_service.directories(proposal_id)
+    return directories
 
-    pass

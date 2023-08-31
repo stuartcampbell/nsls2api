@@ -4,6 +4,7 @@ from beanie.operators import In
 
 # from models.proposals import Proposal
 from nsls2api.models.proposals import Proposal, User, ProposalIdView
+from nsls2api.services import beamline_service
 
 
 async def exists(proposal_id: int) -> bool:
@@ -26,7 +27,7 @@ async def recently_updated(count=5, beamline: str | None = None):
     :rtype: list[Proposal]
 
     Args:
-        beamline: Optional beamline to restrict list of proposals to
+        beamline: Optional beamline to restrict list of proposals for.
     """
     if beamline:
         # Ensure we match the case in the database for the beamline name
@@ -64,8 +65,6 @@ async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
     proposal: Proposal = await Proposal.find_one(
         Proposal.proposal_id == str(proposal_id)
     )
-
-    print(proposal)
 
     return proposal
 
@@ -108,10 +107,6 @@ async def commissioning_proposals(beamline: str | None = None):
         proposals = Proposal.find(In(Proposal.instruments, [beamline])).find(
             Proposal.pass_type_id == "300005"
         )
-
-        for proposal in await proposals.to_list():
-            print(proposal)
-
     else:
         proposals = Proposal.find(
             Proposal.pass_type_id == "300005", projection_model=ProposalIdView
@@ -122,3 +117,63 @@ async def commissioning_proposals(beamline: str | None = None):
     ]
 
     return commissioning_proposal_list
+
+
+async def cycle_valid(proposal: Proposal):
+    # If we don't have any cycles listed and this is not a commissioning
+    # proposal then the cycle information is invalid
+    return not (
+        (len(proposal.cycles) == 0)
+        and (
+            proposal.pass_type_id != 300005
+            or proposal.type == "Beamline Commissioning (beamline staff only)"
+        )
+    )
+
+
+async def is_commissioning(proposal: Proposal):
+    proposal = await proposal_by_id(proposal_id)
+    return (
+        proposal.pass_type_id == "300005"
+        or proposal.type == "Beamline Commissioning (beamline staff only)"
+    )
+
+
+# Return the directories and permissions that should be present for a given proposal
+async def directories(proposal_id: int):
+    proposal = await proposal_by_id(proposal_id)
+
+    # if any of the following are null or zero length, then we don't have
+    # enough information to create any directories
+    insufficient_information = False
+    error_msg = []
+
+    if proposal.data_session is None:
+        insufficient_information = True
+        error_msg.append(
+            f"Proposal {str(proposal.proposal_id)} does not contain a data_session."
+        )
+
+    if not await cycle_valid(proposal):
+        insufficient_information = True
+        error_msg.append(
+            f"Proposal {str(proposal.proposal_id)} does not contain any cycle information."
+        )
+
+    if len(proposal.instruments) == 0:
+        insufficient_information = True
+        error_msg.append(
+            f"Proposal {str(proposal.proposal_id)} does not contain any beamlines."
+        )
+
+    directory_list = []
+
+    for beamline in proposal.instruments:
+        data_root = await beamline_service.data_root_directory(beamline)
+        print(f"Data Root ({beamline}) = {data_root}")
+
+        if is_commissioning(proposal):
+            cycles = ['commissioning']
+
+
+    return directory_list
