@@ -11,6 +11,7 @@ from nsls2api.models.beamlines import (
     EpicsServicesServiceAccountView,
     BlueskyServiceAccountView,
     OperatorServiceAccountView,
+    DataRootDirectoryView,
 )
 
 
@@ -82,3 +83,13 @@ async def epics_services_username(name: str) -> str:
         Beamline.name == name.upper()
     ).project(EpicsServicesServiceAccountView)
     return epics_services_account.username
+
+
+async def data_root_directory(name: str) -> str:
+    default_root = "/nsls2/data"
+
+    data_root_prefix = await Beamline.find_one(Beamline.name == name.upper()).project(
+        DataRootDirectoryView
+    )
+
+    return data_root_prefix
