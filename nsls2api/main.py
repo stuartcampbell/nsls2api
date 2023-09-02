@@ -7,7 +7,7 @@ from nsls2api.api.v1 import facility_api as facility_api_v1
 from nsls2api.api.v1 import beamline_api as beamline_api_v1
 from nsls2api.api.v1 import proposal_api as proposal_api_v1
 from nsls2api.api.v1 import user_api as user_api_v1
-from views import home
+from nsls2api.views import home
 from infrastructure import mongodb_setup
 
 api = fastapi.FastAPI()
