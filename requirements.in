@@ -6,6 +6,7 @@ httpx
 jinja2
 locust
 n2snusertools
+passlib
 pydantic
 rich
 textual
