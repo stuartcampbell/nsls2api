@@ -1,7 +1,23 @@
 {% extends "shared/_layout.html" %}
 
-{% block content%}
+{% block content %}
 
+    <h2>Diagnostic Information for {{ username }}.</h2>
+
+    <table>
+        <tr>
+            <th>name:</th>
+            <th>{{ person.firstname }} {{ person.lastname }}</th>
+        </tr>
+        <tr>
+            <th>email:</th>
+            <th>{{ person.email }}</th>
+        </tr>
+        <tr>
+            <th>BNL (Life/Guest) ID:</th>
+            <th>{{ person.bnl_id }}</th>
+        </tr>
+    </table>
 
 
 {% endblock %}
