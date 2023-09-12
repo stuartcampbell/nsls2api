@@ -13,9 +13,10 @@ from infrastructure import mongodb_setup
 
 api = fastapi.FastAPI()
 
+
 def main():
     configure_routing()
-    uvicorn.run(api, port=8080)
+    uvicorn.run(api, port=8081)
 
 
 def configure_routing():
@@ -28,19 +29,18 @@ def configure_routing():
     # Add this for backwards compatibility (for now)
     api.include_router(proposal_api_v1.router, include_in_schema=False)
 
-
     # Also include our webpages
     api.include_router(home.router)
     api.include_router(diagnostics.router)
-    api.mount('/static', StaticFiles(directory='static'), name='static')
+    api.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-@api.on_event('startup')
+@api.on_event("startup")
 async def configure_db():
-    await mongodb_setup.init_connection('localhost', 27017, 'nsls2core-test')
+    await mongodb_setup.init_connection("localhost", 27017, "nsls2core-test")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
 else:
     configure_routing()
