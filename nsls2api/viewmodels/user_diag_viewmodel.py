@@ -8,9 +8,14 @@ from nsls2api.viewmodels.shared.viewmodelbase import ViewModelBase
 
 
 class UserDiagnosticsViewModel(ViewModelBase):
-    def __int__(self, request: Request):
+    def __int__(self, username: str, request: Request):
         super().__init__(request)
+
+        self.username = username
         self.person: Optional[Person] = None
 
         async def load(self):
             self.person = await person_service.diagnostic_details_by_username(self.username)
+
+            if not self.person:
+                return
