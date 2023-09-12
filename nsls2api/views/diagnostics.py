@@ -13,4 +13,7 @@ async def diag_username(username: str, request: Request):
     vm = UserDiagnosticsViewModel(username, request)
     await vm.load()
 
-    return templates.TemplateResponse('diagnostics.html', vm.to_dict())
+    print(vm.to_dict())
+
+    return templates.TemplateResponse('diagnostics/diagnostics.html', vm.to_dict())
+
