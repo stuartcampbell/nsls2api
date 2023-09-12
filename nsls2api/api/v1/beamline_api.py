@@ -1,6 +1,10 @@
 import fastapi
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
+from fastapi.security.api_key import APIKey
+from nsls2api.infrastructure.security import get_api_key
+
+from nsls2api.infrastructure.security import get_api_key
 from nsls2api.models.beamlines import Beamline, BeamlineService
 from nsls2api.services import beamline_service
 
@@ -22,7 +26,7 @@ async def get_beamline_services(name: str):
     return beamline_services
 
 @router.get('/beamline/{name}/accounts')
-async def get_beamline_accounts(name: str):
+async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_api_key)):
     service_accounts = await beamline_service.beamline_service_accounts(name)
     if service_accounts is None:
         raise HTTPException(status_code=404, detail=f"Beamline named {name} could not be found")
