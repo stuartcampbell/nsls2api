@@ -12,3 +12,4 @@ rich
 textual
 typer
 uvicorn
+Werkzeug

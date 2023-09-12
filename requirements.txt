@@ -178,6 +178,7 @@ wcwidth==0.2.6
     # via prettytable
 werkzeug==2.3.7
     # via
+    #   -r requirements.in
     #   flask
     #   locust
 zipp==3.16.2
