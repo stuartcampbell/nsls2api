@@ -126,12 +126,17 @@ pydantic==2.3.0
     #   beanie
     #   fastapi
     #   lazy-model
+    #   pydantic-settings
 pydantic-core==2.6.3
     # via pydantic
+pydantic-settings==2.0.3
+    # via -r requirements.in
 pygments==2.16.1
     # via rich
 pymongo==4.5.0
     # via motor
+python-dotenv==1.0.0
+    # via pydantic-settings
 pyyaml==6.0.1
     # via n2snusertools
 pyzmq==25.1.1

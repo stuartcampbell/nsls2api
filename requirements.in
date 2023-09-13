@@ -8,6 +8,7 @@ locust
 n2snusertools
 passlib
 pydantic
+pydantic-settings
 rich
 textual
 typer
