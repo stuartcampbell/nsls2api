@@ -6,16 +6,24 @@
 
     <table>
         <tr>
-            <th>name:</th>
+            <th>Name:</th>
             <th>{{ person.firstname }} {{ person.lastname }}</th>
         </tr>
+                <tr>
+            <th>Institution:</th>
+            <th>{{ person.institution }}</th>
+        </tr>
         <tr>
-            <th>email:</th>
+            <th>E-mail:</th>
             <th>{{ person.email }}</th>
         </tr>
         <tr>
             <th>BNL (Life/Guest) ID:</th>
             <th>{{ person.bnl_id }}</th>
+        </tr>
+            <tr>
+            <th>Account Locked:</th>
+            <th>{{ person.account_locked }}</th>
         </tr>
     </table>
 
