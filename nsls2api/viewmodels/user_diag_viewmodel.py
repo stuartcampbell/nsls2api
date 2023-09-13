@@ -13,9 +13,11 @@ class UserDiagnosticsViewModel(ViewModelBase):
 
         self.username = username
         self.person: Optional[Person] = None
+        self.diagnostic_message: Optional[str] = None
 
     async def load(self):
-        self.person = await person_service.diagnostic_details_by_username(self.username)
-
-        if not self.person:
-            return
+        try:
+            self.person = await person_service.diagnostic_details_by_username(self.username)
+        except LookupError as error:
+            self.error = f"{error}"
+            # self.error = f"No user with a username of {self.username} could be found."
