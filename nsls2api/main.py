@@ -1,5 +1,8 @@
+from typing import Annotated
+
 import fastapi
 import uvicorn
+from fastapi import Depends
 from starlette.staticfiles import StaticFiles
 
 from nsls2api.api.v1 import stats_api as stats_api_v1
@@ -10,6 +13,7 @@ from nsls2api.api.v1 import user_api as user_api_v1
 from nsls2api.views import home
 from nsls2api.views import diagnostics
 from infrastructure import mongodb_setup
+from nsls2api.infrastructure import config
 
 api = fastapi.FastAPI()
 
@@ -18,6 +22,8 @@ def main():
     configure_routing()
     uvicorn.run(api, port=8081)
 
+    settings = config.get_settings()
+    print(settings)
 
 def configure_routing():
     api.include_router(proposal_api_v1.router, prefix="/v1")
@@ -34,6 +40,12 @@ def configure_routing():
     api.include_router(diagnostics.router)
     api.mount("/static", StaticFiles(directory="static"), name="static")
 
+
+@api.get("/info", include_in_schema=False)
+async def info(settings: Annotated[config.Settings, Depends(config.get_settings)]):
+    return {
+        "active_directory_server": settings.active_directory_server,
+    }
 
 @api.on_event("startup")
 async def configure_db():

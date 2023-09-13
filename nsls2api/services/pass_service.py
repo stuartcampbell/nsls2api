@@ -3,11 +3,13 @@ from typing import Optional
 import httpx
 from httpx import Response
 
-from ..infrastructure import settings
+from nsls2api.infrastructure import config
 from .helpers import _call_async_webservice
 
-api_key: settings.PASS_API_KEY
-base_url = settings.PASS_API_URL
+settings = config.get_settings()
+
+api_key = settings.pass_api_key
+base_url = settings.pass_api_url
 
 async def get_proposal(proposal_id: int):
     url = f'{base_url}/Proposal/GetProposal/{api_key}/NSLS-II/{proposal_id}'
