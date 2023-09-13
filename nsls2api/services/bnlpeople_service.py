@@ -1,6 +1,10 @@
+from typing import Optional
+
 from .helpers import _call_async_webservice
+from ..api.models.person_model import BNLPerson
 
 base_url = 'https://api.bnl.gov/BNLPeople'
+
 
 
 async def get_all_people():
@@ -9,15 +13,19 @@ async def get_all_people():
     return people
 
 
-async def get_person_by_username(username: str):
+async def get_person_by_username(username: str) -> Optional[BNLPerson]:
     url = f'{base_url}/api/BNLPeople?accountName={username}'
     person = await _call_async_webservice(url)
-    return person
+    if len(person) == 0 or len(person) > 1:
+        raise LookupError(f"BNL People could not find a person with a username of {username}")
+    return BNLPerson(**person[0])
 
 
 async def get_person_by_id(lifenumber: str):
     url = f'{base_url}/api/BNLPeople?employeeNumber={lifenumber}'
     person = await _call_async_webservice(url)
+    if len(person) == 0 or len(person) > 1:
+        raise LookupError(f"BNL People could not find a person with an employee/life number of {lifenumber}")
     return person
 
 
