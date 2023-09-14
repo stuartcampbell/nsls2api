@@ -3,7 +3,6 @@ from typing import Optional
 
 import beanie
 import pydantic
-from pydantic import Field
 
 
 class Detector(pydantic.BaseModel):
