@@ -1,9 +1,7 @@
 import fastapi
 
-from nsls2api.services import bnlpeople_service
 from nsls2api.api.models.person_model import Person
-
-from fastapi import HTTPException
+from nsls2api.services import bnlpeople_service
 
 router = fastapi.APIRouter()
 
