@@ -1,7 +1,6 @@
 import beanie
 import motor.motor_asyncio
 from rich.pretty import pprint
-from fastapi import Depends
 
 from nsls2api import models
 
