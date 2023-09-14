@@ -177,6 +177,8 @@ uc-micro-py==1.0.2
     # via linkify-it-py
 urllib3==2.0.4
     # via requests
+uuid==1.30
+    # via -r requirements.in
 uvicorn==0.23.2
     # via -r requirements.in
 wcwidth==0.2.6

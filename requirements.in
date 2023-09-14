@@ -12,5 +12,6 @@ pydantic-settings
 rich
 textual
 typer
+uuid
 uvicorn
 Werkzeug
