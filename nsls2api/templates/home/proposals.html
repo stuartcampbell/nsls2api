@@ -1,0 +1,8 @@
+{% extends "shared/_layout.html" %}
+{% block content %}
+
+    <i class="fa-solid fa-user"></i>
+
+    {{ render_partial('shared/partials/proposal_details.html', proposal=proposal) }}
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{#<div class="search-result-count">{{ len(0) }} results</div>#}
+
+<div class="container">
+    {% for p in proposals %}
+        <div class="row search-result-row">
+            <div class="col-md-2"></div>
+            <div class="proposals search-result col-md-3">
+                {{ p.proposal_id }}
+            </div>
+            <div class="proposals search-result col-md-6">
+                {{ p.title }}
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    {% endfor %}
+</div>

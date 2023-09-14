@@ -1,0 +1,13 @@
+<div>
+    hello
+    <h1>Details for Proposal ID: {{ proposal.proposal_id }}</h1>
+    <p>{{ proposal.title }}</p>
+
+
+    <h2>Users:</h2>
+
+    {% for u in proposal.users %}
+        <ul> {{ render_partial('shared/partials/person_simple.html', person=u) }}</ul>
+    {% endfor %}
+
+</div>
