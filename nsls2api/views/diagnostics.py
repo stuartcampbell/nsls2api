@@ -1,9 +1,11 @@
 import fastapi
 from fastapi import HTTPException
+from fastapi import status
 from starlette.requests import Request
 from starlette.templating import Jinja2Templates
 
-from nsls2api.viewmodels.user_diag_viewmodel import UserDiagnosticsViewModel
+from nsls2api.viewmodels.diagnostics.proposal_viewmodel import ProposalDiagnosticsViewModel
+from nsls2api.viewmodels.diagnostics.user_viewmodel import UserDiagnosticsViewModel
 
 templates = Jinja2Templates("templates")
 router = fastapi.APIRouter()
@@ -16,8 +18,22 @@ async def diag_username(username: str, request: Request):
 
     # if there was a problem in getting the information for a user then the error will not be None.
     if vm.error:
-        raise HTTPException(status_code=404, detail=vm.error)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=vm.error)
 
     print(vm.to_dict())
 
-    return templates.TemplateResponse("diagnostics/diagnostics.html", vm.to_dict())
+    return templates.TemplateResponse("diagnostics/user_diagnostics.html", vm.to_dict())
+
+
+@router.get("/diagnostics/proposal/{proposal_id}", include_in_schema=False)
+async def diag_proposal(proposal_id: int, request: Request):
+    vm = ProposalDiagnosticsViewModel(proposal_id, request)
+    await vm.load()
+
+    # if there was a problem in getting the information for a user then the error will not be None.
+    if vm.error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=vm.error)
+
+    print(vm.to_dict())
+
+    return templates.TemplateResponse("diagnostics/proposal_diagnostics.html", vm.to_dict())
