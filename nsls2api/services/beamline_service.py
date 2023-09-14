@@ -2,7 +2,6 @@ from typing import Optional
 
 from nsls2api.models.beamlines import (
     Beamline,
-    BeamlineService,
     ServicesOnly,
     ServiceAccounts,
     ServiceAccountsView,
