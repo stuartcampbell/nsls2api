@@ -4,6 +4,7 @@ fastapi
 gunicorn
 httpx
 jinja2
+jinja-partials
 locust
 n2snusertools
 passlib
