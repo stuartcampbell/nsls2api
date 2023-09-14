@@ -6,7 +6,6 @@ from ..api.models.person_model import BNLPerson
 base_url = 'https://api.bnl.gov/BNLPeople'
 
 
-
 async def get_all_people():
     url = f'{base_url}/api/BNLPeople'
     people = await _call_async_webservice(url)
