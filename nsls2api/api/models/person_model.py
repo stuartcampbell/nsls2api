@@ -67,6 +67,7 @@ class Person(pydantic.BaseModel):
     institution: str
     account_locked: bool
 
+
 class PersonSummary(pydantic.BaseModel):
     firstname: str
     lastname: str
