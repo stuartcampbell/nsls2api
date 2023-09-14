@@ -7,6 +7,7 @@ import facility
 import proposal
 
 app = typer.Typer()
+app.add_typer(admin.app, name="admin", help="Do powerful admin level magic")
 app.add_typer(api.app, name="api", help="Make NSLS-II API request")
 app.add_typer(auth.app, name="auth", help="Stuff about security and fun")
 app.add_typer(beamline.app, name="beamline", help="Stuff about Beamlines")
