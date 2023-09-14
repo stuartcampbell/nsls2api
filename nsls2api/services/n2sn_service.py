@@ -1,7 +1,6 @@
 from typing import Optional
 
 from N2SNUserTools.ldap import ADObjects
-from fastapi import Depends
 
 from nsls2api.api.models.person_model import (
     ActiveDirectoryUser,
@@ -9,13 +8,16 @@ from nsls2api.api.models.person_model import (
 )
 from ..infrastructure.config import get_settings
 
+settings = get_settings()
 
-async def get_groups_by_username(username: str, settings=Depends(get_settings)) -> Optional[ActiveDirectoryUserGroups]:
+
+async def get_groups_by_username(username: str) -> Optional[ActiveDirectoryUserGroups]:
     """
     :param username: The username for which you want to retrieve the groups.
     :param settings: Optional dependency on the application settings.
     :return: An instance of ActiveDirectoryUserGroups that contains information about the groups the user belongs to. Returns None if the user is not found or if there are multiple users with the same username.
     """
+
     with ADObjects(
             settings.active_directory_server,
             user_search=settings.n2sn_user_search,
@@ -29,7 +31,8 @@ async def get_groups_by_username(username: str, settings=Depends(get_settings)) 
     return ActiveDirectoryUserGroups(**user_details[0])
 
 
-async def get_user_by_username(username: str, settings=Depends(get_settings)) -> Optional[ActiveDirectoryUser]:
+async def get_user_by_username(username: str) -> Optional[
+    ActiveDirectoryUser]:
     """
     Get a user by their username.
 
@@ -37,6 +40,10 @@ async def get_user_by_username(username: str, settings=Depends(get_settings)) ->
     :param settings: Dependency of the application settings.
     :return: An instance of ActiveDirectoryUser if the user is found, else None.
     """
+
+    print(f"type = {type(settings)}")
+    print(settings.pass_api_key)
+
     with ADObjects(
             settings.active_directory_server,
             user_search=settings.n2sn_user_search,
@@ -50,7 +57,7 @@ async def get_user_by_username(username: str, settings=Depends(get_settings)) ->
     return ActiveDirectoryUser(**user_details[0])
 
 
-async def get_user_by_id(bnl_id: str, settings=Depends(get_settings)) -> ActiveDirectoryUser:
+async def get_user_by_id(bnl_id: str) -> ActiveDirectoryUser:
     """
     :param bnl_id: The BNL ID of the user to retrieve
     :param settings: The settings object to use for connecting to the AD server (default: Depends(get_settings))
@@ -68,7 +75,7 @@ async def get_user_by_id(bnl_id: str, settings=Depends(get_settings)) -> ActiveD
     return ActiveDirectoryUser(**user_details[0])
 
 
-async def get_users_in_group(group: str, settings=Depends(get_settings)):
+async def get_users_in_group(group: str):
     """
     :param group: The name of the group that you want to retrieve the users from.
     :param settings: The settings used to connect to the Active Directory server. Defaults to the settings defined in the `get_settings` method.
