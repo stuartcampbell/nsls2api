@@ -7,4 +7,5 @@ all_models = [
     beamlines.Beamline,
     proposals.Proposal,
     apikeys.ApiKey
+
 ]
