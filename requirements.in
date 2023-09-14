@@ -3,6 +3,7 @@ beanie
 fastapi
 gunicorn
 httpx
+httpx-socks[asyncio]
 jinja2
 jinja-partials
 locust

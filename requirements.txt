@@ -13,6 +13,8 @@ anyio==3.7.1
     #   fastapi
     #   httpcore
     #   starlette
+async-timeout==4.0.3
+    # via httpx-socks
 beanie==1.22.5
     # via -r requirements.in
 blinker==1.6.2
@@ -67,8 +69,14 @@ h11==0.14.0
     #   httpcore
     #   uvicorn
 httpcore==0.18.0
-    # via httpx
+    # via
+    #   httpx
+    #   httpx-socks
 httpx==0.25.0
+    # via
+    #   -r requirements.in
+    #   httpx-socks
+httpx-socks[asyncio]==0.7.8
     # via -r requirements.in
 idna==3.4
     # via
@@ -140,6 +148,8 @@ pymongo==4.5.0
     # via motor
 python-dotenv==1.0.0
     # via pydantic-settings
+python-socks==2.4.2
+    # via httpx-socks
 pyyaml==6.0.1
     # via n2snusertools
 pyzmq==25.1.1
