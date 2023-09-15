@@ -14,12 +14,13 @@ class SearchViewModel(ViewModelBase):
         # print(f"search_text={self.search_text}")
         print(f"query_params:{request.query_params}")
 
-        self.search_text = request.query_params["search_text"]
+        try:
+            self.search_text = request.query_params["search_text"]
+        except KeyError as error:
+            self.search_text = ""
 
         self.proposals: list[Proposal] = []
-
-        # TODO: Remove
-        print(self.to_dict())
+        self.request = request
 
     async def load(self):
         print(f"Searching for {self.search_text}")
