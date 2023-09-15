@@ -1,6 +1,6 @@
 from typing import Optional
 
-from beanie.operators import In
+from beanie.operators import In, Text
 
 # from models.proposals import Proposal
 from nsls2api.models.proposals import Proposal, User, ProposalIdView
@@ -20,6 +20,7 @@ async def recently_updated(count=5, beamline: str | None = None):
     """
     Function to fetch recently updated proposals.
 
+    :param beamline:
     :param count: Specifies the number of recently updated proposals to fetch. Defaults to 5.
     :type count: int
 
@@ -61,10 +62,12 @@ async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
     if not proposal_id:
         return None
 
-    # proposal_id = proposal_id.strip()
     proposal: Proposal = await Proposal.find_one(
         Proposal.proposal_id == str(proposal_id)
     )
+
+    if proposal is None:
+        raise LookupError(f"Could not find a proposal with an ID of {proposal_id}")
 
     return proposal
 
@@ -74,7 +77,7 @@ async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
     return proposal.users
 
 
-async def usernames_from_proposal(proposal_id: int) -> Optional[list[str]]:
+async def fetch_usernames_from_proposal(proposal_id: int) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
 
     if proposal is None:
@@ -123,20 +126,29 @@ async def cycle_valid(proposal: Proposal):
     # If we don't have any cycles listed and this is not a commissioning
     # proposal then the cycle information is invalid
     return not (
-        (len(proposal.cycles) == 0)
-        and (
-            proposal.pass_type_id != 300005
-            or proposal.type == "Beamline Commissioning (beamline staff only)"
-        )
+            (len(proposal.cycles) == 0)
+            and (
+                    proposal.pass_type_id != 300005
+                    or proposal.type == "Beamline Commissioning (beamline staff only)"
+            )
     )
 
 
 async def is_commissioning(proposal: Proposal):
-    proposal = await proposal_by_id(proposal_id)
     return (
-        proposal.pass_type_id == "300005"
-        or proposal.type == "Beamline Commissioning (beamline staff only)"
+            proposal.pass_type_id == "300005"
+            or proposal.type == "Beamline Commissioning (beamline staff only)"
     )
+
+
+async def search_proposals(search_text: str) -> list[Proposal]:
+    results: list[Proposal] = []
+
+    query = Text(search=search_text, case_sensitive=False)
+    found_proposals = await Proposal.find(query).sort(
+            [('score', {'$meta': 'textScore'})]).to_list()
+
+    return found_proposals
 
 
 # Return the directories and permissions that should be present for a given proposal
@@ -174,6 +186,5 @@ async def directories(proposal_id: int):
 
         if is_commissioning(proposal):
             cycles = ['commissioning']
-
 
     return directory_list
