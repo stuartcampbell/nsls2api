@@ -148,6 +148,8 @@ pymongo==4.5.0
     # via motor
 python-dotenv==1.0.0
     # via pydantic-settings
+python-multipart==0.0.6
+    # via -r requirements.in
 python-socks==2.4.2
     # via httpx-socks
 pyyaml==6.0.1

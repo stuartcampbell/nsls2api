@@ -11,6 +11,7 @@ n2snusertools
 passlib
 pydantic
 pydantic-settings
+python-multipart
 rich
 textual
 typer
