@@ -14,11 +14,19 @@
                hx-push-url="true">
     </div>
 
+    <br>
+
     <div class="proposals search-results" id="search-results">
 
-        {% if search_text %}
-            {{ render_partial('shared/partials/proposals_search_results.html', proposals=proposals) }}
-        {% endif %}
+        <table>
+        <tr>
+            <th>Proposal ID</th>
+            <th>Title</th>
+        </tr>
+            {% if search_text %}
+                {{ render_partial('shared/partials/proposals_search_results.html', proposals=proposals) }}
+            {% endif %}
+        </table>
 
     </div>
 
