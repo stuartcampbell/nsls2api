@@ -25,7 +25,7 @@ async def search_proposals(request: Request):
 
     print(f"Searching for {vm.search_text}")
     if vm.is_htmx_request:
-        return templates.TemplateResponse('shared/partials/search_results.html', vm.to_dict())
+        return templates.TemplateResponse('shared/partials/proposals_search_results.html', vm.to_dict())
 
     return templates.TemplateResponse('home/proposals_search.html', vm.to_dict())
 
