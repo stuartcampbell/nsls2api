@@ -1,6 +1,6 @@
 from typing import Optional
 
-from beanie.operators import In, Text
+from beanie.operators import In, Text, RegEx
 
 # from models.proposals import Proposal
 from nsls2api.models.proposals import Proposal, User, ProposalIdView
@@ -145,8 +145,13 @@ async def search_proposals(search_text: str) -> list[Proposal]:
     results: list[Proposal] = []
 
     query = Text(search=search_text, case_sensitive=False)
+    # query = RegEx(pattern=f"/{search_text}$/")
+
     found_proposals = await Proposal.find(query).sort(
             [('score', {'$meta': 'textScore'})]).to_list()
+
+    # Now do a special search just for the proposal id
+    found_proposals += await Proposal.find(RegEx(Proposal.proposal_id, pattern=f"/{search_text}$/")).to_list()
 
     return found_proposals
 
