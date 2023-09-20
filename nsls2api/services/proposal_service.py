@@ -145,13 +145,13 @@ async def search_proposals(search_text: str) -> list[Proposal]:
     results: list[Proposal] = []
 
     query = Text(search=search_text, case_sensitive=False)
-    # query = RegEx(pattern=f"/{search_text}$/")
 
+    # Not sure we need to sort here - but hey why not!
     found_proposals = await Proposal.find(query).sort(
-            [('score', {'$meta': 'textScore'})]).to_list()
+        [('score', {'$meta': 'textScore'})]).to_list()
 
     # Now do a special search just for the proposal id
-    found_proposals += await Proposal.find(RegEx(Proposal.proposal_id, pattern=f"/{search_text}$/")).to_list()
+    found_proposals += await Proposal.find(RegEx(Proposal.proposal_id, pattern=f"{search_text}")).to_list()
 
     return found_proposals
 
