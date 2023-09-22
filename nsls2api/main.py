@@ -40,6 +40,7 @@ def configure_routing():
     api.include_router(home.router)
     api.include_router(diagnostics.router)
     api.mount("/static", StaticFiles(directory="static"), name="static")
+    api.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
 
 
 @api.get("/info", include_in_schema=False)
