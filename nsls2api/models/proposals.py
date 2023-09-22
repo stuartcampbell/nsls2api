@@ -64,9 +64,17 @@ class Proposal(beanie.Document):
             pymongo.IndexModel(
                 keys=[("safs.saf_id", pymongo.DESCENDING)], name="safs_saf_id_descend"
             ),
-            pymongo.IndexModel(keys=[("proposal_id", pymongo.TEXT), ("title", pymongo.TEXT)], name="proposals_text"
-
-                               ),
+            pymongo.IndexModel(
+                keys=[
+                    ("proposal_id", pymongo.TEXT),
+                    ("data_session", pymongo.TEXT),
+                    ("safs.saf_id", pymongo.TEXT),
+                    ("instruments", pymongo.TEXT),
+                    ("cycles", pymongo.TEXT),
+                    ("title", pymongo.TEXT),
+                ],
+                name="proposals_full_text",
+            ),
         ]
 
 
