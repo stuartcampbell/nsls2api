@@ -52,13 +52,15 @@ async def proposals(request: Request):
 def favicon():
     return fastapi.responses.RedirectResponse(url="/static/images/favicon.ico")
 
-@router.get("/favicon-16x16.ico", include_in_schema=False)
-def favicon16():
-    return fastapi.responses.RedirectResponse(url="/static/images/favicon-16x16.ico")
 
-@router.get("/favicon-32x32.ico", include_in_schema=False)
+@router.get("/favicon-16x16.png", include_in_schema=False)
+def favicon16():
+    return fastapi.responses.RedirectResponse(url="/static/images/favicon-16x16.png")
+
+
+@router.get("/favicon-32x32.png", include_in_schema=False)
 def favicon32():
-    return fastapi.responses.RedirectResponse(url="/static/images/favicon-32x32.ico")
+    return fastapi.responses.RedirectResponse(url="/static/images/favicon-32x32.png")
 
 
 @router.get("/site.webmanifest", include_in_schema=False)

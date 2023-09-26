@@ -13,6 +13,10 @@ anyio==3.7.1
     #   fastapi
     #   httpcore
     #   starlette
+argon2-cffi==23.1.0
+    # via -r requirements.in
+argon2-cffi-bindings==21.2.0
+    # via argon2-cffi
 async-timeout==4.0.3
     # via httpx-socks
 beanie==1.22.5
@@ -27,6 +31,8 @@ certifi==2023.7.22
     #   httpcore
     #   httpx
     #   requests
+cffi==1.15.1
+    # via argon2-cffi-bindings
 charset-normalizer==3.2.0
     # via requests
 click==8.1.7
@@ -131,6 +137,8 @@ psutil==5.9.5
     # via locust
 pyasn1==0.5.0
     # via ldap3
+pycparser==2.21
+    # via cffi
 pydantic==2.3.0
     # via
     #   -r requirements.in
