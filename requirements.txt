@@ -19,7 +19,7 @@ argon2-cffi-bindings==21.2.0
     # via argon2-cffi
 async-timeout==4.0.3
     # via httpx-socks
-beanie==1.22.5
+beanie==1.22.6
     # via -r requirements.in
 blinker==1.6.2
     # via flask
@@ -123,7 +123,7 @@ mdurl==0.1.2
     # via markdown-it-py
 motor==3.3.1
     # via beanie
-msgpack==1.0.5
+msgpack==1.0.6
     # via locust
 n2snusertools==0.3.7
     # via -r requirements.in
@@ -139,14 +139,14 @@ pyasn1==0.5.0
     # via ldap3
 pycparser==2.21
     # via cffi
-pydantic==2.3.0
+pydantic==2.4.1
     # via
     #   -r requirements.in
     #   beanie
     #   fastapi
     #   lazy-model
     #   pydantic-settings
-pydantic-core==2.6.3
+pydantic-core==2.10.1
     # via pydantic
 pydantic-settings==2.0.3
     # via -r requirements.in
@@ -158,7 +158,7 @@ python-dotenv==1.0.0
     # via pydantic-settings
 python-multipart==0.0.6
     # via -r requirements.in
-python-socks==2.4.2
+python-socks==2.4.3
     # via httpx-socks
 pyyaml==6.0.1
     # via n2snusertools
@@ -166,7 +166,7 @@ pyzmq==25.1.1
     # via locust
 requests==2.31.0
     # via locust
-rich==13.5.2
+rich==13.5.3
     # via
     #   -r requirements.in
     #   textual
@@ -181,13 +181,19 @@ sniffio==1.3.0
     #   httpx
 starlette==0.27.0
     # via fastapi
-textual==0.36.0
+textual==0.38.1
     # via -r requirements.in
 toml==0.10.2
     # via beanie
+tree-sitter==0.20.2
+    # via
+    #   textual
+    #   tree-sitter-languages
+tree-sitter-languages==1.7.0
+    # via textual
 typer==0.9.0
     # via -r requirements.in
-typing-extensions==4.7.1
+typing-extensions==4.8.0
     # via
     #   fastapi
     #   locust
@@ -197,7 +203,7 @@ typing-extensions==4.7.1
     #   typer
 uc-micro-py==1.0.2
     # via linkify-it-py
-urllib3==2.0.4
+urllib3==2.0.5
     # via requests
 uuid==1.30
     # via -r requirements.in
@@ -210,7 +216,7 @@ werkzeug==2.3.7
     #   -r requirements.in
     #   flask
     #   locust
-zipp==3.16.2
+zipp==3.17.0
     # via importlib-metadata
 zope-event==5.0
     # via gevent
