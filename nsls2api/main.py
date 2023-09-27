@@ -6,6 +6,7 @@ from fastapi import Depends
 from starlette.staticfiles import StaticFiles
 
 from infrastructure import mongodb_setup
+from nsls2api.api.v1 import admin_api as admin_api_v1
 from nsls2api.api.v1 import beamline_api as beamline_api_v1
 from nsls2api.api.v1 import facility_api as facility_api_v1
 from nsls2api.api.v1 import proposal_api as proposal_api_v1
@@ -27,11 +28,12 @@ def main():
 
 
 def configure_routing():
-    api.include_router(proposal_api_v1.router, prefix="/v1")
+    api.include_router(proposal_api_v1.router, prefix="/v1", tags=['proposal'])
     api.include_router(stats_api_v1.router, prefix="/v1")
-    api.include_router(beamline_api_v1.router, prefix="/v1")
-    api.include_router(facility_api_v1.router, prefix="/v1")
-    api.include_router(user_api_v1.router, prefix="/v1")
+    api.include_router(beamline_api_v1.router, prefix="/v1", tags=['beamline'])
+    api.include_router(facility_api_v1.router, prefix="/v1", tags=['facility'])
+    api.include_router(user_api_v1.router, prefix="/v1", tags=['user'])
+    api.include_router(admin_api_v1.router, prefix="/v1", tags=['admin'])
 
     # Add this for backwards compatibility (for now)
     api.include_router(proposal_api_v1.router, include_in_schema=False)
