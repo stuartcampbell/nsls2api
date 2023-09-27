@@ -1,5 +1,6 @@
 import typer
 
+import admin
 import api
 import auth
 import beamline
@@ -13,6 +14,7 @@ app.add_typer(auth.app, name="auth", help="Stuff about security and fun")
 app.add_typer(beamline.app, name="beamline", help="Stuff about Beamlines")
 app.add_typer(facility.app, name="facility", help="Stuff about Facilities")
 app.add_typer(proposal.app, name="proposal", help="Stuff about Proposals")
+
 
 if __name__ == "__main__":
     app()
