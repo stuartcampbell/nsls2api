@@ -72,7 +72,6 @@ async def generate_api_key(username: str):
 
         # Now that we have saved a new key for this user, we should invalidate any other keys
 
-
         return {"key:": secret_key}
 
     except Exception as e:
