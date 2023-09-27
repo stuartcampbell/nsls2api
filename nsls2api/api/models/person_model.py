@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 import pydantic
 
@@ -65,6 +65,9 @@ class Person(pydantic.BaseModel):
     username: str
     bnl_id: Optional[str]
     institution: str
+    orcid: Optional[str] = None
+    globus_username: Optional[str] = None
+    pass_unique_id: Optional[str] = None
     account_locked: bool
 
 
@@ -74,3 +77,15 @@ class PersonSummary(pydantic.BaseModel):
     email: str
     username: str
     institution: str
+
+
+class DataAdmins(pydantic.BaseModel):
+    nsls2_dataadmin: bool = False
+    lbms_dataadmin: bool = False
+    dataadmin: Optional[list] = None
+
+
+class DataSessionAccess(pydantic.BaseModel):
+    facility_all_access: List[str] = None
+    beamline_all_access: List[str] = None
+    data_sessions: List[str] = None
