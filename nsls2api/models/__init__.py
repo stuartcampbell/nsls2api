@@ -6,6 +6,6 @@ all_models = [
     proposal_types.ProposalType,
     beamlines.Beamline,
     proposals.Proposal,
-    apikeys.ApiKey
-
+    apikeys.ApiKey,
+    apikeys.ApiUser
 ]
