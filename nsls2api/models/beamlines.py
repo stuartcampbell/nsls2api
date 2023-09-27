@@ -76,11 +76,18 @@ class EpicsServicesServiceAccountView(pydantic.BaseModel):
         projection = {"username": "$service_accounts.epics_services"}
 
 
-class DataRootDirectoryView(pydantic.BaseModel):
-    data_root_prefix: str
+class LsdcServiceAccountView(pydantic.BaseModel):
+    username: str
 
     class Settings:
-        projection = {"data_root": "$data_root"}
+        projection = {"username": "$service_accounts.lsdc"}
+
+
+class DataRootDirectoryView(pydantic.BaseModel):
+    data_root: Optional[str] = None
+
+    class Settings:
+        projection = {"data_root": "$custom_root_directory"}
 
 
 class EndStation(pydantic.BaseModel):
@@ -102,7 +109,7 @@ class Beamline(beanie.Document):
     data_admins: Optional[list[str]]
     github_org: Optional[str]
     ups_id: Optional[str]
-    data_root: Optional[str]
+    data_root: Optional[str] = None
     services: Optional[list[BeamlineService]]
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now

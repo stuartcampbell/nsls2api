@@ -25,9 +25,9 @@ async def get_beamline_services(name: str):
     return beamline_services
 
 
-@router.get('/beamline/{name}/accounts')
+@router.get('/beamline/{name}/service-accounts')
 async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_api_key)):
-    service_accounts = await beamline_service.beamline_service_accounts(name)
+    service_accounts = await beamline_service.service_accounts(name)
     if service_accounts is None:
         raise HTTPException(status_code=404, detail=f"Beamline named {name} could not be found")
     return service_accounts

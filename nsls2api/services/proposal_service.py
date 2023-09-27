@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 
 from beanie.operators import In, Text, RegEx
@@ -186,10 +187,40 @@ async def directories(proposal_id: int):
     directory_list = []
 
     for beamline in proposal.instruments:
-        data_root = await beamline_service.data_root_directory(beamline)
-        print(f"Data Root ({beamline}) = {data_root}")
+
+        data_root = Path(await beamline_service.data_root_directory(beamline))
+        # print(f"Data Root ({beamline}) = {data_root}")
+
+        service_accounts = await beamline_service.service_accounts(beamline)
+        # print(f"service_accounts: {service_accounts}")
 
         if is_commissioning(proposal):
             cycles = ['commissioning']
+        else:
+            cycles = proposal.cycles
+
+        for cycle in cycles:
+
+            beamline_tla = str(beamline).lower()
+
+            users_acl: list[dict[str, str]] = []
+            groups_acl: list[dict[str, str]] = []
+
+            users_acl.append({'nsls2data': 'rw'})
+            users_acl.append({f"{service_accounts.workflow}": "rw"})
+            users_acl.append({f"{service_accounts.ioc}": "rw"})
+            groups_acl.append({str(proposal.data_session): "rw"})
+
+            # Add LSDC beamline users for the appropriate beamlines (i.e. if the account is defined)
+            if service_accounts.lsdc:
+                users_acl.append({f"{service_accounts.lsdc}": "rw"})
+
+            groups_acl.append({'n2sn-right-dataadmin': "rw"})
+            groups_acl.append({f"n2sn-right-dataadmin-{beamline_tla}": "rw"})
+
+            directory = {'path': data_root / 'proposals' / str(cycle) / proposal.data_session,
+                         'owner': 'nsls2data', 'group': proposal.data_session, 'group_writable': True,
+                         'users': users_acl, 'groups': groups_acl}
+            directory_list.append(directory)
 
     return directory_list

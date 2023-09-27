@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 
 from nsls2api.models.beamlines import (
@@ -10,7 +11,7 @@ from nsls2api.models.beamlines import (
     EpicsServicesServiceAccountView,
     BlueskyServiceAccountView,
     OperatorServiceAccountView,
-    DataRootDirectoryView,
+    DataRootDirectoryView, LsdcServiceAccountView,
 )
 
 
@@ -42,12 +43,28 @@ async def all_services(name: str) -> Optional[ServicesOnly]:
     return beamline_services.services
 
 
-async def beamline_service_accounts(name: str) -> Optional[ServiceAccounts]:
-    service_accounts = await Beamline.find_one(Beamline.name == name.upper()).project(
+async def service_accounts(name: str) -> Optional[ServiceAccounts]:
+    accounts = await Beamline.find_one(Beamline.name == name.upper()).project(
         ServiceAccountsView
     )
-    return service_accounts
+    return accounts.service_accounts
 
+async def data_root_directory(name: str) -> str:
+    default_root = Path("/nsls2/data")
+
+    data_root = await Beamline.find_one(Beamline.name == name.upper()).project(
+        DataRootDirectoryView
+    )
+
+    # print(f"data_root: {data_root} ")
+
+    if data_root.data_root is None:
+        data_root_prefix = default_root / name.lower()
+    else:
+        data_root_prefix = default_root / data_root.data_root
+    return data_root_prefix
+
+# TODO: Not sure if I really need any of the following methods, or just use the generic `service_accounts()` above.
 
 async def workflow_username(name: str) -> str:
     workflow_account = await Beamline.find_one(Beamline.name == name.upper()).project(
@@ -84,11 +101,8 @@ async def epics_services_username(name: str) -> str:
     return epics_services_account.username
 
 
-async def data_root_directory(name: str) -> str:
-    default_root = "/nsls2/data"
-
-    data_root_prefix = await Beamline.find_one(Beamline.name == name.upper()).project(
-        DataRootDirectoryView
-    )
-
-    return data_root_prefix
+async def lsdc_username(name: str) -> str:
+    lsdc_account = await Beamline.find_one(
+        Beamline.name == name.upper()
+    ).project(LsdcServiceAccountView)
+    return False if lsdc_account is None else lsdc_account.username
