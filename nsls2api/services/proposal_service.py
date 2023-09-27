@@ -52,6 +52,13 @@ async def recently_updated(count=5, beamline: str | None = None):
     return updated
 
 
+async def fetch_proposals_for_cycle(cycle: str) -> list[str]:
+    proposals = await Proposal.find(In(Proposal.cycles, [cycle])).to_list()
+    print(proposals)
+    result = [u.proposal_id for u in proposals if u.proposal_id is not None]
+    return result
+
+
 async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
     """
     Retrieve a proposal by its ID.
@@ -123,22 +130,22 @@ async def commissioning_proposals(beamline: str | None = None):
     return commissioning_proposal_list
 
 
-async def cycle_valid(proposal: Proposal):
+async def has_valid_cycle(proposal: Proposal):
     # If we don't have any cycles listed and this is not a commissioning
     # proposal then the cycle information is invalid
     return not (
-            (len(proposal.cycles) == 0)
-            and (
-                    proposal.pass_type_id != 300005
-                    or proposal.type == "Beamline Commissioning (beamline staff only)"
-            )
+        (len(proposal.cycles) == 0)
+        and (
+            proposal.pass_type_id != 300005
+            or proposal.type == "Beamline Commissioning (beamline staff only)"
+        )
     )
 
 
 async def is_commissioning(proposal: Proposal):
     return (
-            proposal.pass_type_id == "300005"
-            or proposal.type == "Beamline Commissioning (beamline staff only)"
+        proposal.pass_type_id == "300005"
+        or proposal.type == "Beamline Commissioning (beamline staff only)"
     )
 
 
@@ -148,11 +155,14 @@ async def search_proposals(search_text: str) -> list[Proposal]:
     query = Text(search=search_text, case_sensitive=False)
 
     # Not sure we need to sort here - but hey why not!
-    found_proposals = await Proposal.find(query).sort(
-        [('score', {'$meta': 'textScore'})]).to_list()
+    found_proposals = (
+        await Proposal.find(query).sort([("score", {"$meta": "textScore"})]).to_list()
+    )
 
     # Now do a special search just for the proposal id
-    found_proposals += await Proposal.find(RegEx(Proposal.proposal_id, pattern=f"{search_text}")).to_list()
+    found_proposals += await Proposal.find(
+        RegEx(Proposal.proposal_id, pattern=f"{search_text}")
+    ).to_list()
 
     return found_proposals
 
@@ -172,7 +182,7 @@ async def directories(proposal_id: int):
             f"Proposal {str(proposal.proposal_id)} does not contain a data_session."
         )
 
-    if not await cycle_valid(proposal):
+    if not await has_valid_cycle(proposal):
         insufficient_information = True
         error_msg.append(
             f"Proposal {str(proposal.proposal_id)} does not contain any cycle information."
@@ -187,7 +197,6 @@ async def directories(proposal_id: int):
     directory_list = []
 
     for beamline in proposal.instruments:
-
         data_root = Path(await beamline_service.data_root_directory(beamline))
         # print(f"Data Root ({beamline}) = {data_root}")
 
@@ -195,18 +204,17 @@ async def directories(proposal_id: int):
         # print(f"service_accounts: {service_accounts}")
 
         if is_commissioning(proposal):
-            cycles = ['commissioning']
+            cycles = ["commissioning"]
         else:
             cycles = proposal.cycles
 
         for cycle in cycles:
-
             beamline_tla = str(beamline).lower()
 
             users_acl: list[dict[str, str]] = []
             groups_acl: list[dict[str, str]] = []
 
-            users_acl.append({'nsls2data': 'rw'})
+            users_acl.append({"nsls2data": "rw"})
             users_acl.append({f"{service_accounts.workflow}": "rw"})
             users_acl.append({f"{service_accounts.ioc}": "rw"})
             groups_acl.append({str(proposal.data_session): "rw"})
@@ -215,12 +223,17 @@ async def directories(proposal_id: int):
             if service_accounts.lsdc:
                 users_acl.append({f"{service_accounts.lsdc}": "rw"})
 
-            groups_acl.append({'n2sn-right-dataadmin': "rw"})
+            groups_acl.append({"n2sn-right-dataadmin": "rw"})
             groups_acl.append({f"n2sn-right-dataadmin-{beamline_tla}": "rw"})
 
-            directory = {'path': data_root / 'proposals' / str(cycle) / proposal.data_session,
-                         'owner': 'nsls2data', 'group': proposal.data_session, 'group_writable': True,
-                         'users': users_acl, 'groups': groups_acl}
+            directory = {
+                "path": data_root / "proposals" / str(cycle) / proposal.data_session,
+                "owner": "nsls2data",
+                "group": proposal.data_session,
+                "group_writable": True,
+                "users": users_acl,
+                "groups": groups_acl,
+            }
             directory_list.append(directory)
 
     return directory_list

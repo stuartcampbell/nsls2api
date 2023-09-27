@@ -38,8 +38,22 @@ async def get_commissioning_proposals(beamline: str | None = None):
         return fastapi.responses.JSONResponse(
             {"error": f"Proposal {proposal_id} not found"}, status_code=404
         )
-    model = CommissioningProposalsModel(count=len(proposals), commissioning_proposals=proposals)
+    model = CommissioningProposalsModel(
+        count=len(proposals), commissioning_proposals=proposals
+    )
     return model
+
+
+@router.get("/proposals/{cycle}")
+async def get_proposals_for_cycle(cycle: str):
+    proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
+    if proposal_list is None:
+        return fastapi.responses.JSONResponse(
+            {"error": f"No proposals were found for cycle {cycle}"}, status_code=404
+        )
+
+    data = {"cycle": cycle, "proposals": proposal_list}
+    return data
 
 
 @router.get("/proposal/{proposal_id}", response_model=Proposal)
@@ -83,7 +97,9 @@ async def get_proposal_usernames(proposal_id: int):
             {"error": f"Proposal {proposal_id} not found"}, status_code=404
         )
 
-    proposal_usernames = await proposal_service.fetch_usernames_from_proposal(proposal_id)
+    proposal_usernames = await proposal_service.fetch_usernames_from_proposal(
+        proposal_id
+    )
     model = UsernamesModel(usernames=proposal_usernames)
 
     return model
