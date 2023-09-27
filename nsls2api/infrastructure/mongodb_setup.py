@@ -7,7 +7,7 @@ from nsls2api import models
 
 async def init_connection(hostname: str, port: int, db_name: str):
     conn_str = f"mongodb://{hostname}:{port}/{db_name}"
-    client = motor.motor_asyncio.AsyncIOMotorClient(conn_str)
+    client = motor.motor_asyncio.AsyncIOMotorClient(conn_str, uuidRepresentation="standard")
 
     await beanie.init_beanie(database=client[db_name], document_models=models.all_models)
 
