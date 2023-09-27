@@ -1,11 +1,11 @@
+import calendar
+import datetime
 import enum
 import secrets
 from typing import Optional
 
 from beanie import WriteRules
-from fastapi import (
-    Security, status, HTTPException,
-    Request, Depends)
+from fastapi import Security, status, HTTPException, Request, Depends
 from fastapi.security import APIKeyHeader, APIKeyQuery
 from passlib.handlers.argon2 import argon2 as crypto
 from pydantic_settings import BaseSettings
@@ -29,8 +29,8 @@ def verify_hashed_key(api_key, hashed_api_key):
 
 
 async def get_api_key(
-        query_key: str = Security(api_key_query),
-        header_key: str = Security(api_key_header),
+    query_key: str = Security(api_key_query),
+    header_key: str = Security(api_key_header),
 ):
     for api_key in [query_key, header_key]:
         if api_key is not None:
@@ -60,7 +60,7 @@ async def generate_api_key(username: str):
         new_key = ApiKey(
             user=user,
             username=username,
-            first_eight=secret_key[prefix_length:prefix_length + 8],
+            first_eight=secret_key[prefix_length : prefix_length + 8],
             secret_key=secret_key,  # TODO: After development - we will not be storing this one in the database
             hashed_key=to_hash,
             expires_after=None,
@@ -86,11 +86,14 @@ async def lookup_api_key(token: str) -> ApiKey:
     """
     prefix_length = len(API_KEY_PREFIX)
 
-    apikey: ApiKey = await ApiKey.find_one(ApiKey.first_eight == token[prefix_length:prefix_length + 8],
-                                           fetch_links=True)
+    apikey: ApiKey = await ApiKey.find_one(
+        ApiKey.first_eight == token[prefix_length : prefix_length + 8], fetch_links=True
+    )
 
     if apikey is None:
-        raise LookupError(f"Could not find an API key matching the one supplied: {token}")
+        raise LookupError(
+            f"Could not find an API key matching the one supplied: {token}"
+        )
 
     return apikey
 
@@ -115,10 +118,12 @@ class SpecialUsers(str, enum.Enum):
     admin = "admin"
 
 
-async def get_current_user(request: Request, api_key: str = Depends(get_api_key),
-                           settings: BaseSettings = Depends(get_settings)):
+async def get_current_user(
+    request: Request,
+    api_key: str = Depends(get_api_key),
+    settings: BaseSettings = Depends(get_settings),
+):
     if api_key is not None:
-
         key: ApiKey = await verify_api_key(api_key)
 
         if key:
@@ -133,8 +138,11 @@ async def get_current_user(request: Request, api_key: str = Depends(get_api_key)
         return SpecialUsers.anonymous
 
 
-async def validate_admin_role(request: Request, api_key: str = Depends(get_api_key),
-                              settings: BaseSettings = Depends(get_settings)):
+async def validate_admin_role(
+    request: Request,
+    api_key: str = Depends(get_api_key),
+    settings: BaseSettings = Depends(get_settings),
+):
     if api_key is not None:
         valid_key = await verify_api_key(api_key)
         key = await lookup_api_key(api_key)
@@ -144,3 +152,45 @@ async def validate_admin_role(request: Request, api_key: str = Depends(get_api_k
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid admin API key"
             )
+
+
+def default_apikey_expiration(months: int = 6) -> datetime.date:
+    """
+    Default Apikey Expiration
+
+    The `default_apikey_expiration` method calculates the expiration date for an API key based on the given number of months.
+
+    :param months: The number of months after which the API key should expire. Defaults to 6 if not provided. (type: int)
+
+    :return: The calculated expiration date as a `datetime` object. (type: datetime)
+
+    Example usage:
+        expiration_date = default_apikey_expiration(10)
+        print(expiration_date)
+        # Output: 2023-12-26
+
+    Dependencies:
+        This method has dependencies on the following modules:
+        - datetime
+        - calendar
+
+    """
+    date_now = datetime.datetime.now()
+    new_month = date_now.month + months
+
+    # Calculate the year
+    year = date_now.year + int(new_month / 12)
+
+    # Calculate the month
+    month = new_month % 12
+    if month == 0:
+        month = 12
+
+    # Calculate the day
+    day = date_now.day
+    last_day_of_month = calendar.monthrange(year, month)[1]
+    if day > last_day_of_month:
+        day = last_day_of_month
+
+    new_date = datetime.date(year, month, day)
+    return new_date
