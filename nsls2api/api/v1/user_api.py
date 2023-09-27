@@ -1,5 +1,9 @@
-import fastapi
+from typing import Annotated
 
+import fastapi
+from fastapi import Depends
+
+from infrastructure.security import generate_api_key, get_current_user, validate_admin_role
 from nsls2api.api.models.person_model import Person
 from nsls2api.services import bnlpeople_service
 
@@ -27,3 +31,14 @@ async def get_person_from_username(username: str):
 @router.get("/person/email/{email}")
 async def get_person_from_email(username: str):
     pass
+
+
+
+
+@router.get('/person/me', response_model=str)
+async def read_person_me(current_user: Annotated[Person, Depends(get_current_user)]):
+    return current_user
+
+
+
+
