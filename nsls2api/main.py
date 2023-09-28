@@ -15,9 +15,17 @@ from nsls2api.api.v1 import user_api as user_api_v1
 from nsls2api.infrastructure import config
 from nsls2api.views import diagnostics
 from nsls2api.views import home
+from pathlib import Path
 
 api = fastapi.FastAPI()
 
+current_file = Path(__file__)
+current_file_dir = current_file.parent
+current_file_dir_absolute = current_file_dir.absolute()
+project_root = current_file_dir.parent
+project_root_absolute = project_root.resolve()
+# static_root_absolute = project_root_absolute / "static"
+static_root_absolute = current_file_dir_absolute / "static"
 
 def main():
     configure_routing()
@@ -38,11 +46,16 @@ def configure_routing():
     # Add this for backwards compatibility (for now)
     api.include_router(proposal_api_v1.router, include_in_schema=False)
 
+    import subprocess
+    cmd = "pwd"
+    output = subprocess.run(cmd, shell=True)
+    print(f"Current working directory: {output}")
+
     # Also include our webpages
     api.include_router(home.router)
     api.include_router(diagnostics.router)
-    api.mount("/static", StaticFiles(directory="static"), name="static")
-    api.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
+    api.mount("/static", StaticFiles(directory=static_root_absolute), name="static")
+    api.mount("/assets", StaticFiles(directory=static_root_absolute / "assets"), name="assets")
 
 
 @api.get("/info", include_in_schema=False)
