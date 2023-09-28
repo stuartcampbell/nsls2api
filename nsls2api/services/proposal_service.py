@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
+from beanie.odm.operators.find.array import ElemMatch
 from beanie.operators import In, Text, RegEx
 
 # from models.proposals import Proposal
@@ -57,6 +58,14 @@ async def fetch_proposals_for_cycle(cycle: str) -> list[str]:
     print(proposals)
     result = [u.proposal_id for u in proposals if u.proposal_id is not None]
     return result
+
+
+async def fetch_data_sessions_for_username(username: str) -> list[str]:
+    proposals = await Proposal.find(
+        ElemMatch(Proposal.users, {"username": username})
+    ).to_list()
+    data_sessions = [p.data_session for p in proposals if p.data_session is not None]
+    return data_sessions
 
 
 async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:

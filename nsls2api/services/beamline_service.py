@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Optional
 
+from beanie.odm.operators.find.comparison import In
+
 from nsls2api.models.beamlines import (
     Beamline,
     ServicesOnly,
@@ -11,7 +13,8 @@ from nsls2api.models.beamlines import (
     EpicsServicesServiceAccountView,
     BlueskyServiceAccountView,
     OperatorServiceAccountView,
-    DataRootDirectoryView, LsdcServiceAccountView,
+    DataRootDirectoryView,
+    LsdcServiceAccountView,
 )
 
 
@@ -49,6 +52,7 @@ async def service_accounts(name: str) -> Optional[ServiceAccounts]:
     )
     return accounts.service_accounts
 
+
 async def data_root_directory(name: str) -> str:
     default_root = Path("/nsls2/data")
 
@@ -64,7 +68,9 @@ async def data_root_directory(name: str) -> str:
         data_root_prefix = default_root / data_root.data_root
     return data_root_prefix
 
+
 # TODO: Not sure if I really need any of the following methods, or just use the generic `service_accounts()` above.
+
 
 async def workflow_username(name: str) -> str:
     workflow_account = await Beamline.find_one(Beamline.name == name.upper()).project(
@@ -102,7 +108,13 @@ async def epics_services_username(name: str) -> str:
 
 
 async def lsdc_username(name: str) -> str:
-    lsdc_account = await Beamline.find_one(
-        Beamline.name == name.upper()
-    ).project(LsdcServiceAccountView)
+    lsdc_account = await Beamline.find_one(Beamline.name == name.upper()).project(
+        LsdcServiceAccountView
+    )
     return False if lsdc_account is None else lsdc_account.username
+
+
+async def data_roles_by_user(username: str) -> Optional[list[str]]:
+    beamlines = await Beamline.find(In(Beamline.data_admins, [username])).to_list()
+    beamline_names = [b.name.lower() for b in beamlines if b.name is not None]
+    return beamline_names
