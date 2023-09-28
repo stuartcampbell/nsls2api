@@ -2,7 +2,7 @@ from typing import Annotated
 
 import fastapi
 from fastapi import Depends
-from infrastructure.security import (
+from nsls2api.infrastructure.security import (
     get_current_user,
 )
 
