@@ -5,7 +5,7 @@ import uvicorn
 from fastapi import Depends
 from starlette.staticfiles import StaticFiles
 
-from infrastructure import mongodb_setup
+from nsls2api.infrastructure import mongodb_setup
 from nsls2api.api.v1 import admin_api as admin_api_v1
 from nsls2api.api.v1 import beamline_api as beamline_api_v1
 from nsls2api.api.v1 import facility_api as facility_api_v1
