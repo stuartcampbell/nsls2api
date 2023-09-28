@@ -3,8 +3,8 @@ from typing import Annotated
 import fastapi
 from fastapi import Depends
 
-from infrastructure.security import validate_admin_role, generate_api_key
-from models.apikeys import ApiUser
+from nsls2api.infrastructure.security import validate_admin_role, generate_api_key
+from nsls2api.models.apikeys import ApiUser
 
 router = fastapi.APIRouter()
 # router = fastapi.APIRouter(dependencies=[Depends(validate_admin_role)])
@@ -28,3 +28,8 @@ async def generate_user_apikey(username: str):
     :return: The generated API key.
     """
     return await generate_api_key(username)
+
+
+
+# The following endpoints are 'pass-through' routes to underlying services
+# They are here for convenience only

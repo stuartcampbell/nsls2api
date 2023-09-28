@@ -1,5 +1,6 @@
 from nsls2api.infrastructure import config
 from .helpers import _call_async_webservice
+from ..models.pass_models import PassCycle
 
 settings = config.get_settings()
 
@@ -33,11 +34,11 @@ async def get_pass_resources():
     return resources
 
 
-async def get_cycles():
+async def get_cycles() -> PassCycle:
     url = f'{base_url}/Proposal/GetCycles/{api_key}/NSLS-II'
     print(url)
     cycles = await _call_async_webservice(url)
-    return cycles
+    return PassCycle(**cycles)
 
 
 async def get_proposals_allocated():

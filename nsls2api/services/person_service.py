@@ -1,8 +1,18 @@
 # Helper and utility functions for people/users
 from typing import Optional
 
-from nsls2api.api.models.person_model import Person, ActiveDirectoryUser, PersonSummary
-from nsls2api.services import bnlpeople_service
+from nsls2api.api.models.person_model import (
+    Person,
+    ActiveDirectoryUser,
+    PersonSummary,
+    DataSessionAccess,
+)
+from nsls2api.services import (
+    bnlpeople_service,
+    facility_service,
+    beamline_service,
+    proposal_service,
+)
 from nsls2api.services import n2sn_service
 from nsls2api.services.pass_service import get_proposals_by_person
 
@@ -55,3 +65,21 @@ async def diagnostic_details_by_username(username: str) -> Optional[Person]:
         account_locked=ad_person.locked,
     )
     return person
+
+
+async def data_sessions_by_username(username: str):
+    print(f"Looking up if {username} has any special access")
+
+    facility_admin = await facility_service.data_roles_by_user(username)
+    beamline_admin = await beamline_service.data_roles_by_user(username)
+    data_session_list = await proposal_service.fetch_data_sessions_for_username(
+        username
+    )
+
+    data_access = DataSessionAccess(
+        data_sessions=data_session_list,
+        facility_all_access=facility_admin,
+        beamline_all_access=beamline_admin,
+    )
+
+    return data_access

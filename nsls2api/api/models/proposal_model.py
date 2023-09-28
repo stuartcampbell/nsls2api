@@ -1,3 +1,6 @@
+import datetime
+from typing import Optional
+
 import pydantic
 
 
@@ -12,3 +15,15 @@ class UsernamesModel(pydantic.BaseModel):
 class CommissioningProposalsModel(pydantic.BaseModel):
     count: int
     commissioning_proposals: list[str]
+
+
+class RecentProposal(pydantic.BaseModel):
+    proposal_id: str
+    title: str
+    updated: datetime.datetime
+    instruments: Optional[list[str]]
+
+
+class RecentProposalsModel(pydantic.BaseModel):
+    count: int
+    proposals: list[RecentProposal]

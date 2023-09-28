@@ -1,11 +1,13 @@
 import fastapi
+from fastapi import Depends, HTTPException
 
-from nsls2api.api.models.proposal_model import CommissioningProposalsModel
-from nsls2api.api.models.proposal_model import UsernamesModel
-from nsls2api.api.models.recent_proposal_model import (
-    RecentProposalsModel,
+from nsls2api.api.models.proposal_model import (
+    CommissioningProposalsModel,
     RecentProposal,
+    RecentProposalsModel,
 )
+from nsls2api.api.models.proposal_model import UsernamesModel
+from nsls2api.infrastructure.security import get_current_user
 from nsls2api.models.proposals import Proposal, User
 from nsls2api.services import proposal_service
 
@@ -62,6 +64,20 @@ async def get_proposal(proposal_id: int):
     if proposal is None:
         return fastapi.responses.JSONResponse(
             {"error": f"Proposal {proposal_id} not found"}, status_code=404
+        )
+    return proposal
+
+
+@router.post(
+    "/proposal/{proposal_id}",
+    response_model=Proposal,
+    dependencies=[Depends(get_current_user)],
+)
+async def create_proposal(proposal_id: int) -> Proposal:
+    proposal = await proposal_service.create_proposal(proposal_id)
+    if proposal is None:
+        raise HTTPException(
+            status_code=404, detail=f"Failed to create proposal {proposal_id}."
         )
     return proposal
 

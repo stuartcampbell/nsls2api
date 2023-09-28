@@ -6,7 +6,7 @@ from beanie.operators import In, Text, RegEx
 
 # from models.proposals import Proposal
 from nsls2api.models.proposals import Proposal, User, ProposalIdView
-from nsls2api.services import beamline_service
+from nsls2api.services import beamline_service, pass_service
 
 
 async def exists(proposal_id: int) -> bool:
@@ -98,7 +98,7 @@ async def fetch_usernames_from_proposal(proposal_id: int) -> Optional[list[str]]
     proposal = await proposal_by_id(proposal_id)
 
     if proposal is None:
-        raise Exception(f"Proposal {proposal_id} not found")
+        raise LookupError(f"Proposal {proposal_id} not found")
 
     usernames = [u.username for u in proposal.users if u.username is not None]
     return usernames
@@ -110,9 +110,9 @@ async def pi_from_proposal(proposal_id: int) -> Optional[list[User]]:
     pi = [u for u in proposal.users if u.is_pi]
 
     if len(pi) == 0:
-        raise Exception(f"Proposal {proposal_id} does not contain any PIs.")
+        raise LookupError(f"Proposal {proposal_id} does not contain any PIs.")
     elif len(pi) > 1:
-        raise Exception(f"Proposal {proposal_id} contains {len(pi)} different PIs.")
+        raise LookupError(f"Proposal {proposal_id} contains {len(pi)} different PIs.")
     else:
         return pi
 
@@ -203,6 +203,9 @@ async def directories(proposal_id: int):
             f"Proposal {str(proposal.proposal_id)} does not contain any beamlines."
         )
 
+    if len(error_msg) > 0:
+        raise Exception(error_msg)
+
     directory_list = []
 
     for beamline in proposal.instruments:
@@ -246,3 +249,16 @@ async def directories(proposal_id: int):
             directory_list.append(directory)
 
     return directory_list
+
+
+def create_or_update_proposal(proposal_id):
+
+    # Does the proposal already exist in our system
+    proposal_exists = exists(proposal_id)
+
+    # Let's see what PASS has for this proposal.
+    pass_proposal = pass_service.get_proposal(proposal_id)
+
+    proposal = Proposal(
+        proposal_id=pass_proposal
+    )
