@@ -17,7 +17,9 @@ from nsls2api.views import diagnostics
 from nsls2api.views import home
 from pathlib import Path
 
-api = fastapi.FastAPI()
+api = fastapi.FastAPI(
+    title="NSLS-II API",
+)
 
 current_file = Path(__file__)
 current_file_dir = current_file.parent
