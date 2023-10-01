@@ -43,8 +43,15 @@ class Settings(BaseSettings):
     n2sn_user_search: str
     n2sn_group_search: str
     bnlroot_ca_certs_file: str
+    mongodb_server: str = "localhost"
+    mongodb_port: int = 27017
+    mongodb_db_name: str = "nsls2core-test"
+    mongodb_username: str | None
+    mongodb_password: str | None
+
     use_socks_proxy: bool = False
     socks_proxy: str
+
 
     model_config = SettingsConfigDict(env_file=".env")
 
