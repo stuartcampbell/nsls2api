@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -46,12 +47,11 @@ class Settings(BaseSettings):
     mongodb_server: str = "localhost"
     mongodb_port: int = 27017
     mongodb_db_name: str = "nsls2core-test"
-    mongodb_username: str | None
-    mongodb_password: str | None
+    mongodb_username: Optional[str] = None
+    mongodb_password: Optional[str] = None
 
     use_socks_proxy: bool = False
     socks_proxy: str
-
 
     model_config = SettingsConfigDict(env_file=".env")
 
