@@ -1,5 +1,4 @@
 FROM python:3.11
-LABEL authors="scampbell"
 
 WORKDIR /code
 
@@ -9,5 +8,5 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY ./nsls2api /code/nsls2api
 
-CMD ["uvicorn", "nsls2api.main:api", "--proxy-headers", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "nsls2api.main:api", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]
 
