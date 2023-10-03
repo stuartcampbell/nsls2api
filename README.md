@@ -3,4 +3,4 @@
 
 podman build -t nsls2api .
 
-podman run -d --name apicontainer -v ./nsls2api/.env:/code/.env -p 8090:80 nsls2api
+podman run --rm -d --name apicontainer --network=host --env-file=./nsls2api/.env -p 9092:8080 nsls2api
