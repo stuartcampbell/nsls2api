@@ -1,6 +1,7 @@
 from functools import lru_cache
 from typing import Optional
 
+from pydantic import MongoDsn, HttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -38,7 +39,7 @@ class Settings(BaseSettings):
     settings.bnlroot_ca_certs_file = "/path/to/ca_certs.pem"
     """
     pass_api_key: str
-    pass_api_url: str = "https://passservices.bnl.gov/passapi"
+    pass_api_url: HttpUrl = "https://passservices.bnl.gov/passapi"
     active_directory_server: str
     active_directory_server_list: str
     n2sn_user_search: str
