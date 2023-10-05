@@ -68,7 +68,6 @@ async def info(settings: Annotated[config.Settings, Depends(config.get_settings)
 
 @api.on_event("startup")
 async def configure_db():
-    await mongodb_setup.init_connection("localhost", 27017, "nsls2core-test")
     await mongodb_setup.init_connection("mongodb://localhost:27017/nsls2core-test")
 
 
