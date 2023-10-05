@@ -44,7 +44,8 @@ class Settings(BaseSettings):
     n2sn_user_search: str
     n2sn_group_search: str
     bnlroot_ca_certs_file: str
-    mongodb_dsn: MongoDsn = "mongodb://localhost:27017/nsls2core-test"
+    mongodb_dsn: MongoDsn
+    # mongodb_dsn: MongoDsn = "mongodb://localhost:27017/nsls2core-test"
 
     use_socks_proxy: bool = False
     socks_proxy: str
