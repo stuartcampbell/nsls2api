@@ -39,17 +39,18 @@ def main():
 
 
 def configure_routing():
-    api.include_router(proposal_api_v1.router, prefix="/v1", tags=['proposal'])
+    api.include_router(proposal_api_v1.router, prefix="/v1", tags=["proposal"])
     api.include_router(stats_api_v1.router, prefix="/v1")
-    api.include_router(beamline_api_v1.router, prefix="/v1", tags=['beamline'])
-    api.include_router(facility_api_v1.router, prefix="/v1", tags=['facility'])
-    api.include_router(user_api_v1.router, prefix="/v1", tags=['user'])
-    api.include_router(admin_api_v1.router, prefix="/v1", tags=['admin'])
+    api.include_router(beamline_api_v1.router, prefix="/v1", tags=["beamline"])
+    api.include_router(facility_api_v1.router, prefix="/v1", tags=["facility"])
+    api.include_router(user_api_v1.router, prefix="/v1", tags=["user"])
+    api.include_router(admin_api_v1.router, prefix="/v1", tags=["admin"])
 
     # Add this for backwards compatibility (for now)
     api.include_router(proposal_api_v1.router, include_in_schema=False)
 
     import subprocess
+
     cmd = "pwd"
     output = subprocess.run(cmd, shell=True)
     print(f"Current working directory: {output}")
@@ -57,12 +58,20 @@ def configure_routing():
     # Also include our webpages
     api.include_router(home.router)
     api.include_router(diagnostics.router)
-    api.mount("/static", StaticFiles(directory=static_root_absolute), name="static")
-    api.mount("/assets", StaticFiles(directory=static_root_absolute / "assets"), name="assets")
+    api.mount(
+        "/static", StaticFiles(directory=static_root_absolute), name="static"
+    )
+    api.mount(
+        "/assets",
+        StaticFiles(directory=static_root_absolute / "assets"),
+        name="assets",
+    )
 
 
 @api.get("/info", include_in_schema=False)
-async def info(settings: Annotated[config.Settings, Depends(config.get_settings)]):
+async def info(
+    settings: Annotated[config.Settings, Depends(config.get_settings)]
+):
     return settings
 
 
@@ -76,8 +85,6 @@ async def healthy():
 @api.on_event("startup")
 async def configure_db():
     await mongodb_setup.init_connection(settings.mongodb_dsn.unicode_string())
-    # await mongodb_setup.init_connection("mongodb://localhost:27017/nsls2core-test")
-
 
 
 if __name__ == "__main__":
