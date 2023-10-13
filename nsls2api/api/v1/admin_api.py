@@ -3,17 +3,23 @@ from typing import Annotated
 import fastapi
 from fastapi import Depends
 
+from nsls2api.infrastructure import config
 from nsls2api.infrastructure.security import validate_admin_role, generate_api_key
 from nsls2api.models.apikeys import ApiUser
 
-router = fastapi.APIRouter()
-# router = fastapi.APIRouter(dependencies=[Depends(validate_admin_role)])
+# router = fastapi.APIRouter()
+router = fastapi.APIRouter(dependencies=[Depends(validate_admin_role)])
 
 
+@router.get("/admin/settings")#, include_in_schema=False)
+async def info(
+    settings: Annotated[config.Settings, Depends(config.get_settings)]
+):
+    return settings
 @router.get('/admim/validate', response_model=str)
-async def check_admin_validation(admin_user: Annotated[ApiUser, Depends(validate_admin_role)]):
+async def check_admin_validation(admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None):
     """
-    :param admin_user: Annotated[ApiUser, Depends(validate_admin_role)] - The admin user to be checked for validation.
+    :param admin_user: - The admin user to be checked for validation.
     :return: str - The username of the validated admin user.
     """
     return admin_user.username

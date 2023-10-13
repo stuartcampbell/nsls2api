@@ -68,12 +68,6 @@ def configure_routing():
     )
 
 
-@api.get("/info", include_in_schema=False)
-async def info(
-    settings: Annotated[config.Settings, Depends(config.get_settings)]
-):
-    return settings
-
 
 @api.get("/healthy")
 async def healthy():
