@@ -19,17 +19,20 @@ router = fastapi.APIRouter()
 async def get_person_from_username(username: str):
     bnl_person = await bnlpeople_service.get_person_by_username(username)
     print(bnl_person)
-    if len(bnl_person) == 1:
+    if bnl_person:
         person = Person(
-            firstname=bnl_person[0]["FirstName"],
-            lastname=bnl_person[0]["LastName"],
-            email=bnl_person[0]["BNLEmail"],
-            bnl_id=bnl_person[0]["EmployeeNumber"],
+            firstname=bnl_person.FirstName,
+            lastname=bnl_person.LastName,
+            email=bnl_person.BNLEmail,
+            bnl_id=bnl_person.EmployeeNumber,
+            institution=bnl_person.Institution,
+            username=bnl_person.ActiveDirectoryName,
+            cyber_agreement_signed=bnl_person.CyberAgreementSigned,
         )
         return person
     else:
         return fastapi.responses.JSONResponse(
-            {"error": f"Multiple people with username {username} found."},
+            {"error": f"No people with username {username} found."},
             status_code=404,
         )
 
@@ -40,11 +43,15 @@ async def get_person_from_email(username: str):
 
 
 @router.get("/person/me", response_model=str)
-async def get_myself(current_user: Annotated[Person, Depends(get_current_user)]):
+async def get_myself(
+    current_user: Annotated[Person, Depends(get_current_user)]
+):
     return current_user
 
 
-@router.get("/data-session/{username}", response_model=DataSessionAccess, tags=["data"])
+@router.get(
+    "/data-session/{username}", response_model=DataSessionAccess, tags=["data"]
+)
 @router.get(
     "/data_session/{username}",
     response_model=DataSessionAccess,

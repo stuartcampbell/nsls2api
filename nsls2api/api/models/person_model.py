@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional, List
 
 import pydantic
@@ -64,11 +65,12 @@ class Person(pydantic.BaseModel):
     email: str
     username: str
     bnl_id: Optional[str]
-    institution: str
+    institution: Optional[str] = None
     orcid: Optional[str] = None
     globus_username: Optional[str] = None
     pass_unique_id: Optional[str] = None
-    account_locked: bool
+    account_locked: Optional[bool] = None
+    cyber_agreement_signed: Optional[datetime.datetime] = None
 
 
 class PersonSummary(pydantic.BaseModel):
