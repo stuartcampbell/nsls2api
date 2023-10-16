@@ -87,7 +87,8 @@ async def lookup_api_key(token: str) -> ApiKey:
     prefix_length = len(API_KEY_PREFIX)
 
     apikey: ApiKey = await ApiKey.find_one(
-        ApiKey.first_eight == token[prefix_length : prefix_length + 8], fetch_links=True
+        ApiKey.first_eight == token[prefix_length : prefix_length + 8],
+        fetch_links=True,
     )
 
     if apikey is None:
@@ -131,7 +132,8 @@ async def get_current_user(
             # return {'username': key.username}
         else:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid API key",
             )
     else:
         # No form of authentication is being used.
@@ -150,8 +152,14 @@ async def validate_admin_role(
             return key.user.username
         else:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid admin API key"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid admin API key",
             )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No API key supplied",
+        )
 
 
 def default_apikey_expiration(months: int = 6) -> datetime.date:
