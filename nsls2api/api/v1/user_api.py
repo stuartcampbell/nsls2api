@@ -38,8 +38,25 @@ async def get_person_from_username(username: str):
 
 
 @router.get("/person/email/{email}")
-async def get_person_from_email(username: str):
-    pass
+async def get_person_from_email(email: str):
+    bnl_person = await bnlpeople_service.get_person_by_email(email)
+    print(bnl_person)
+    if bnl_person:
+        person = Person(
+            firstname=bnl_person.FirstName,
+            lastname=bnl_person.LastName,
+            email=bnl_person.BNLEmail,
+            bnl_id=bnl_person.EmployeeNumber,
+            institution=bnl_person.Institution,
+            username=bnl_person.ActiveDirectoryName,
+            cyber_agreement_signed=bnl_person.CyberAgreementSigned,
+        )
+        return person
+    else:
+        return fastapi.responses.JSONResponse(
+            {"error": f"No people with username {username} found."},
+            status_code=404,
+        )
 
 
 @router.get("/person/me", response_model=str)
