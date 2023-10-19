@@ -63,6 +63,7 @@ async def diagnostic_details_by_username(username: str) -> Optional[Person]:
         institution=bnl_person.Institution,
         bnl_id=bnl_person.EmployeeNumber,
         account_locked=ad_person.locked,
+        cyber_agreement_signed=bnl_person.CyberAgreementSigned
     )
     return person
 
