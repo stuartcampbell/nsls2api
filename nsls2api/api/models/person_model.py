@@ -65,13 +65,16 @@ class Person(pydantic.BaseModel):
     email: str
     username: str
     bnl_id: Optional[str]
+    bnl_employee: Optional[bool] = None
     institution: Optional[str] = None
     orcid: Optional[str] = None
     globus_username: Optional[str] = None
     pass_unique_id: Optional[str] = None
     account_locked: Optional[bool] = None
     cyber_agreement_signed: Optional[datetime.datetime] = None
-
+    facility_code: Optional[str] = None
+    facility_name: Optional[str] = None
+    citizenship: Optional[str] = None
 
 class PersonSummary(pydantic.BaseModel):
     firstname: str
