@@ -1,0 +1,6 @@
+
+### GET request with a header
+GET http://{{host}}/v1/facility/nsls2/cycles/current
+Accept: application/json
+
+
