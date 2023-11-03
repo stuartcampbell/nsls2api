@@ -64,7 +64,9 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
     proposals = await Proposal.find(
         ElemMatch(Proposal.users, {"username": username})
     ).to_list()
-    data_sessions = [p.data_session for p in proposals if p.data_session is not None]
+    data_sessions = [
+        p.data_session for p in proposals if p.data_session is not None
+    ]
     return data_sessions
 
 
@@ -84,7 +86,9 @@ async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
     )
 
     if proposal is None:
-        raise LookupError(f"Could not find a proposal with an ID of {proposal_id}")
+        raise LookupError(
+            f"Could not find a proposal with an ID of {proposal_id}"
+        )
 
     return proposal
 
@@ -94,7 +98,9 @@ async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
     return proposal.users
 
 
-async def fetch_usernames_from_proposal(proposal_id: int) -> Optional[list[str]]:
+async def fetch_usernames_from_proposal(
+    proposal_id: int,
+) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
 
     if proposal is None:
@@ -112,7 +118,9 @@ async def pi_from_proposal(proposal_id: int) -> Optional[list[User]]:
     if len(pi) == 0:
         raise LookupError(f"Proposal {proposal_id} does not contain any PIs.")
     elif len(pi) > 1:
-        raise LookupError(f"Proposal {proposal_id} contains {len(pi)} different PIs.")
+        raise LookupError(
+            f"Proposal {proposal_id} contains {len(pi)} different PIs."
+        )
     else:
         return pi
 
@@ -133,7 +141,9 @@ async def commissioning_proposals(beamline: str | None = None):
         )
 
     commissioning_proposal_list = [
-        p.proposal_id for p in await proposals.to_list() if p.proposal_id is not None
+        p.proposal_id
+        for p in await proposals.to_list()
+        if p.proposal_id is not None
     ]
 
     return commissioning_proposal_list
@@ -165,7 +175,9 @@ async def search_proposals(search_text: str) -> list[Proposal]:
 
     # Not sure we need to sort here - but hey why not!
     found_proposals = (
-        await Proposal.find(query).sort([("score", {"$meta": "textScore"})]).to_list()
+        await Proposal.find(query)
+        .sort([("score", {"$meta": "textScore"})])
+        .to_list()
     )
 
     # Now do a special search just for the proposal id
@@ -239,7 +251,10 @@ async def directories(proposal_id: int):
             groups_acl.append({f"n2sn-right-dataadmin-{beamline_tla}": "rw"})
 
             directory = {
-                "path": data_root / "proposals" / str(cycle) / proposal.data_session,
+                "path": data_root
+                / "proposals"
+                / str(cycle)
+                / proposal.data_session,
                 "owner": "nsls2data",
                 "group": proposal.data_session,
                 "group_writable": True,
@@ -252,13 +267,10 @@ async def directories(proposal_id: int):
 
 
 def create_or_update_proposal(proposal_id):
-
     # Does the proposal already exist in our system
     proposal_exists = exists(proposal_id)
 
     # Let's see what PASS has for this proposal.
     pass_proposal = pass_service.get_proposal(proposal_id)
 
-    proposal = Proposal(
-        proposal_id=pass_proposal
-    )
+    proposal = Proposal(proposal_id=pass_proposal)
