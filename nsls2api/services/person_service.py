@@ -33,8 +33,8 @@ async def summary_details_by_username(username: str) -> Optional[PersonSummary]:
 async def diagnostic_details_by_username(username: str) -> Optional[Person]:
     try:
         bnl_person = await bnlpeople_service.get_person_by_username(username)
-        ad_person: ActiveDirectoryUser = await n2sn_service.get_user_by_username(
-            username
+        ad_person: ActiveDirectoryUser = (
+            await n2sn_service.get_user_by_username(username)
         )
         ad_groups = await n2sn_service.get_groups_by_username(username)
         proposals = await get_proposals_by_person(bnl_person.EmployeeNumber)
@@ -63,8 +63,19 @@ async def diagnostic_details_by_username(username: str) -> Optional[Person]:
         institution=bnl_person.Institution,
         bnl_id=bnl_person.EmployeeNumber,
         account_locked=ad_person.locked,
-        cyber_agreement_signed=bnl_person.CyberAgreementSigned
+        cyber_agreement_signed=bnl_person.CyberAgreementSigned,
+        facility_code=bnl_person.FacilityCode,
+        facility_name=bnl_person.Facility,
     )
+
+    # If the person is an Employee then set their institution to BNL
+    if (
+        bnl_person.EmployeeStatus == "Active"
+        and bnl_person.EmployeeType == "Employee"
+    ):
+        person.bnl_employee = True
+        person.institution = "Brookhaven National Laboratory"
+
     return person
 
 
