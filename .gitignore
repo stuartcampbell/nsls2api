@@ -1,6 +1,9 @@
 # Project exclude paths
 /venv/
 
+# HTTP Client environments
+http-client.private.env.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
