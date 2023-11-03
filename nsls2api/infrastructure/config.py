@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import MongoDsn, HttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -50,7 +51,7 @@ class Settings(BaseSettings):
     use_socks_proxy: bool = False
     socks_proxy: str
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=str(Path(__file__).parent.parent / ".env"))
 
 
 @lru_cache()
