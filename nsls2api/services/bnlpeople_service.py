@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import HTTPException
 
@@ -23,7 +23,7 @@ async def _call_bnlpeople_webservice(url: str):
 
 async def get_all_people():
     url = f"{base_url}/api/BNLPeople"
-    people = await _call_async_webservice(url)
+    people = await _call_bnlpeople_webservice(url)
     return people
 
 
@@ -37,26 +37,37 @@ async def get_person_by_username(username: str) -> Optional[BNLPerson]:
     return BNLPerson(**person[0])
 
 
-async def get_person_by_id(lifenumber: str):
+async def get_person_by_id(lifenumber: str) -> Optional[BNLPerson]:
     url = f"{base_url}/api/BNLPeople?employeeNumber={lifenumber}"
-    person = await _call_async_webservice(url)
+    person = await _call_bnlpeople_webservice(url)
     if len(person) == 0 or len(person) > 1:
         raise LookupError(
             f"BNL People could not find a person with an employee/life number of {lifenumber}"
         )
-    return person
+    return BNLPerson(**person[0])
 
 
-async def get_person_by_email(email: str):
+async def get_person_by_email(email: str) -> Optional[BNLPerson]:
     url = f"{base_url}/api/BNLPeople?email={email}"
-    person = await _call_async_webservice(url)
-    return person
+    person = await _call_bnlpeople_webservice(url)
+    if len(person) == 0 or len(person) > 1:
+        raise LookupError(
+            f"BNL People could not find a person with an email of {email}"
+        )
+    return BNLPerson(**person[0])
 
 
-async def get_people_by_department(department_code: str):
+async def get_people_by_department(
+    department_code: str,
+) -> Optional[List[BNLPerson]]:
     url = f"{base_url}/api/BNLPeople?departmentCode={department_code}"
-    people = await _call_async_webservice(url)
-    return people
+    people = await _call_bnlpeople_webservice(url)
+    if len(people) == 0:
+        raise LookupError(
+            f"BNL People could not find a person with the department code of {department_code}"
+        )
+    people_in_department = [BNLPerson(**p) for p in people]
+    return people_in_department
 
 
 async def get_people_by_status(status: str):
@@ -65,7 +76,7 @@ async def get_people_by_status(status: str):
             "Status must be either 'Active', 'Inactive', 'Pending'"
         )
     url = f"{base_url}/api/BNLPeople?status={status}"
-    people = await _call_async_webservice(url)
+    people = await _call_bnlpeople_webservice(url)
     return people
 
 
@@ -75,5 +86,5 @@ async def get_people_by_calcstatus(calculated_status: str):
             "Calculated Status must be either 'Active', 'Inactive'"
         )
     url = f"{base_url}/api/BNLPeople?status={calculated_status}"
-    people = await _call_async_webservice(url)
+    people = await _call_bnlpeople_webservice(url)
     return people
