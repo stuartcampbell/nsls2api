@@ -6,3 +6,4 @@ ipython
 pytest
 ruff
 textual-dev
+typer-cli
