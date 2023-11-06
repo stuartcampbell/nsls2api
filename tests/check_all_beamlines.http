@@ -1,0 +1,354 @@
+
+### Check AMX Details
+# @name amx-details
+GET http://{{host}}/v1/beamline/amx
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check ARI Details
+# @name ari-details
+GET http://{{host}}/v1/beamline/ari
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 451, "ARI should not exist yet!");
+    });
+%}
+
+
+### Check BMM Details
+# @name bmm-details
+GET http://{{host}}/v1/beamline/bmm
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check CDI Details
+# @name = cdi-details
+GET http://{{host}}/v1/beamline/cdi
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 451, "CDI should not exist yet!");
+    });
+%}
+
+### Check CHX Details
+# @name chx-details
+GET http://{{host}}/v1/beamline/chx
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check CMS Details
+# @name cms-details
+GET http://{{host}}/v1/beamline/cms
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check CSX Details
+# @name csx-details
+GET http://{{host}}/v1/beamline/csx
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check ESM Details
+# @name esm-details
+GET http://{{host}}/v1/beamline/esm
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check FIS Details
+# @name fis-details
+GET http://{{host}}/v1/beamline/fis
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check FMX Details
+# @name fmx-details
+GET http://{{host}}/v1/beamline/fmx
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check FXI Details
+# @name fxi-details
+GET http://{{host}}/v1/beamline/fxi
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check HEX Details
+# @name hex-details
+GET http://{{host}}/v1/beamline/hex
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check HXN Details
+# @name hxn-details
+GET http://{{host}}/v1/beamline/hxn
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check IOS Details
+# @name ios-details
+GET http://{{host}}/v1/beamline/ios
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check ISR Details
+# @name isr-details
+GET http://{{host}}/v1/beamline/isr
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check ISS Details
+# @name iss-details
+GET http://{{host}}/v1/beamline/iss
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check IXS Details
+# @name ixs-details
+GET http://{{host}}/v1/beamline/ixs
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check LiX Details
+# @name lix-details
+GET http://{{host}}/v1/beamline/lix
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check MET Details
+# @name met-details
+GET http://{{host}}/v1/beamline/met
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check NYX Details
+# @name nyx-details
+GET http://{{host}}/v1/beamline/nyx
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check PDF Details
+# @name pdf-details
+GET http://{{host}}/v1/beamline/pdf
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check QAS Details
+# @name qas-details
+GET http://{{host}}/v1/beamline/qas
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check SIX Details
+# @name six-details
+GET http://{{host}}/v1/beamline/six
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check SMI Details
+# @name smi-details
+GET http://{{host}}/v1/beamline/smi
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check SRX Details
+# @name srx-details
+GET http://{{host}}/v1/beamline/srx
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check SST1 Details
+# @name sst1-details
+GET http://{{host}}/v1/beamline/sst1
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check SST2 Details
+# @name sst2-details
+GET http://{{host}}/v1/beamline/sst2
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check SXN Details
+# @name sxn-details
+GET http://{{host}}/v1/beamline/sxn
+Accept: application/json
+
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 451, "SXN should not exist yet!");
+    });
+%}
+
+### Check TES Details
+# @name tes-details
+GET http://{{host}}/v1/beamline/tes
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check XFM Details
+# @name xfm-details
+GET http://{{host}}/v1/beamline/xfm
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check XFP Details
+# @name xfp-details
+GET http://{{host}}/v1/beamline/xfp
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Check XPD Details
+# @name xpd-details
+GET http://{{host}}/v1/beamline/xpd
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
