@@ -1,6 +1,5 @@
 aiofiles
 argon2_cffi
-asgi_lifespan
 beanie
 fastapi
 gunicorn

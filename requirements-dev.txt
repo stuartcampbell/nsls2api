@@ -120,7 +120,7 @@ python-dateutil==2.8.2
     # via faker
 rich==13.6.0
     # via textual
-ruff==0.1.3
+ruff==0.1.4
     # via -r requirements-dev.in
 shellingham==1.4.0
     # via typer-cli

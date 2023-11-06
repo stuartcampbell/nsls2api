@@ -11,14 +11,12 @@ annotated-types==0.6.0
 anyio==3.7.1
     # via
     #   fastapi
-    #   httpcore
+    #   httpx
     #   starlette
 argon2-cffi==23.1.0
     # via -r requirements.in
 argon2-cffi-bindings==21.2.0
     # via argon2-cffi
-asgi-lifespan==2.1.0
-    # via -r requirements.in
 async-timeout==4.0.3
     # via httpx-socks
 beanie==1.23.1
@@ -76,15 +74,15 @@ h11==0.14.0
     # via
     #   httpcore
     #   uvicorn
-httpcore==0.18.0
+httpcore==1.0.1
     # via
     #   httpx
     #   httpx-socks
-httpx==0.25.0
+httpx==0.25.1
     # via
     #   -r requirements.in
     #   httpx-socks
-httpx-socks[asyncio]==0.7.8
+httpx-socks[asyncio]==0.8.0
     # via -r requirements.in
 idna==3.4
     # via
@@ -179,8 +177,6 @@ six==1.16.0
 sniffio==1.3.0
     # via
     #   anyio
-    #   asgi-lifespan
-    #   httpcore
     #   httpx
 starlette==0.27.0
     # via fastapi
@@ -203,7 +199,7 @@ urllib3==2.0.7
     # via requests
 uuid==1.30
     # via -r requirements.in
-uvicorn==0.23.2
+uvicorn==0.24.0.post1
     # via -r requirements.in
 wcwidth==0.2.9
     # via prettytable
