@@ -2,6 +2,34 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "nsls2api"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = []
+authors = [
+  { name = "Stuart Campbell", email = "scampbell@bnl.gov" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "typer",
+]
+
+
+[project.scripts]
+nsls2api = "nsls2api.cli.main:app"
+
 [tool.black]
 line-length = 80
 target_version = ['py311']
