@@ -21,7 +21,9 @@ app = typer.Typer()
 
 def config_from_file() -> Optional[str]:
     config = configparser.ConfigParser()
-    config_filepath = os.path.expanduser("~").join(".config/nsls2")
+    config_userhome = os.path.expanduser("~")
+    config_filepath = Path(config_userhome) / ".config" / "nsls2"
+    print(f"Reading config from {config_filepath}")
 
     try:
         config.read(config_filepath)
