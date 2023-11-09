@@ -27,3 +27,9 @@ class RecentProposal(pydantic.BaseModel):
 class RecentProposalsModel(pydantic.BaseModel):
     count: int
     proposals: list[RecentProposal]
+
+
+class ProposalSummary(pydantic.BaseModel):
+    proposal_id: str
+    title: str
+

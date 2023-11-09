@@ -57,6 +57,10 @@ async def get_proposals_for_cycle(cycle: str):
     data = {"cycle": cycle, "proposals": proposal_list}
     return data
 
+@router.get("/proposals/")
+async def get_proposals():
+    proposal_list = await proposal_service.fetch_proposals()
+    return proposal_list
 
 @router.get("/proposal/{proposal_id}", response_model=Proposal)
 async def get_proposal(proposal_id: int):

@@ -6,6 +6,7 @@ from beanie.operators import In, Text, RegEx
 
 # from models.proposals import Proposal
 from nsls2api.models.proposals import Proposal, User, ProposalIdView
+from nsls2api.api.models.proposal_model import ProposalSummary
 from nsls2api.services import beamline_service, pass_service
 
 
@@ -91,6 +92,16 @@ async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
         )
 
     return proposal
+
+
+async def fetch_proposals():  # -> Optional[list[ProposalSummary]]:
+    proposals = await Proposal.find_all().to_list()
+    # proposal_list = [ProposalSummary(**p) for p in proposals]
+    proposal_list = []
+    for proposal in proposals:
+        proposal_summary = ProposalSummary(proposal**)
+        proposal_list.append()
+    return proposal_list
 
 
 async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
