@@ -13,8 +13,8 @@ from nsls2api.infrastructure.security import SpecialUsers
 from fastapi import requests
 
 BASE_URL = "http://localhost:8080"
-__logged_in_username = None
 
+global __logged_in_username
 
 app = typer.Typer()
 
@@ -42,9 +42,9 @@ def login():
         print("No API token found")
         token = getpass.getpass(prompt="Please enter your API token:")
         if len(token) == 0:
-            __logged_in_username = SpecialUsers.anonymous
+            globals()[__logged_in_username]: SpecialUsers = SpecialUsers.anonymous
             print("Logged in as anonymous")
-            return __logged_in_username
+            return
 
 
     # Let's test this token
@@ -54,12 +54,15 @@ def login():
             headers = {"Authorization": f"{token}"}
             response = client.get(url, headers=headers)
             response.raise_for_status()
-            print(response.json())
+            globals()[__logged_in_username] = response.json()
+            # nsls2api.cli.__logged_in_username = response.json()
+            # LOGGED_IN_USERNAME = response.json()
     except httpx.RequestError as exc:
         print(f"An error occurred while trying to login {exc}")
         raise
 
     print("Logging in...")
+
 
 
 @app.command()
@@ -70,5 +73,5 @@ def logout():
 @app.command()
 def status():
     print(
-        f"You might be logged in, or you might not be - {rich.emoji.Emoji('person_shrugging')}"
+        f"You might be logged in as {__logged_in_username} or {LOGGED_IN_USERNAME}, or you might not be - {rich.emoji.Emoji('person_shrugging')}"
     )

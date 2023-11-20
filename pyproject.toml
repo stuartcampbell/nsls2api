@@ -28,7 +28,7 @@ dependencies = [
 
 
 [project.scripts]
-nsls2api = "nsls2api.cli.main:app"
+nsls2api = "nsls2api.cli.cli:app"
 
 [tool.black]
 line-length = 80

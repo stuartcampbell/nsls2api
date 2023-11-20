@@ -1,3 +1,5 @@
+from typing import Optional
+
 import typer
 
 from nsls2api.cli import admin
@@ -7,6 +9,8 @@ from nsls2api.cli import beamline
 from nsls2api.cli import facility
 from nsls2api.cli import proposal
 
+__app_name__ = "nsls2api-cli"
+__version__ = "0.1.0"
 
 app = typer.Typer()
 app.add_typer(admin.app, name="admin", help="Do powerful admin level magic")
@@ -17,6 +21,21 @@ app.add_typer(facility.app, name="facility", help="Stuff about Facilities")
 app.add_typer(proposal.app, name="proposal", help="Stuff about Proposals")
 
 
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"{__app_name__} v{__version__}")
+        raise typer.Exit()
 
-if __name__ == "__main__":
-    app()
+
+@app.callback()
+def main(
+    version: Optional[bool] = typer.Option(
+        None,
+        "--version",
+        "-v",
+        help="Show the application's version and exit.",
+        callback=_version_callback,
+        is_eager=True,
+    )
+) -> None:
+    return

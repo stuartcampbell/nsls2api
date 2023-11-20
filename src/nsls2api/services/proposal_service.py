@@ -99,7 +99,7 @@ async def fetch_proposals():  # -> Optional[list[ProposalSummary]]:
     # proposal_list = [ProposalSummary(**p) for p in proposals]
     proposal_list = []
     for proposal in proposals:
-        proposal_summary = ProposalSummary(proposal**)
+        # proposal_summary = ProposalSummary(proposal**)
         proposal_list.append()
     return proposal_list
 
