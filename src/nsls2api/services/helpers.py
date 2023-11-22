@@ -16,7 +16,9 @@ async def _call_async_webservice(url: str, headers: dict = None) -> Response:
     if settings.use_socks_proxy:
         transport = httpx_socks.AsyncProxyTransport.from_url(settings.socks_proxy)
 
-    async with httpx.AsyncClient(timeout=httpx.Timeout(5.0, read=20.0), transport=transport) as client:
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(5.0, read=20.0), transport=transport
+    ) as client:
         resp: Response = await client.get(url)
         if resp.status_code != 200:
             raise ValidationError(resp.text, status_code=resp.status_code)

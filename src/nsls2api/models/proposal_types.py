@@ -11,9 +11,13 @@ class ProposalType(beanie.Document):
     description: Optional[str]
     pass_id: Optional[str]
     pass_description: Optional[str]
-    created_on: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.now)
-    last_updated: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.now)
+    created_on: datetime.datetime = pydantic.Field(
+        default_factory=datetime.datetime.now
+    )
+    last_updated: datetime.datetime = pydantic.Field(
+        default_factory=datetime.datetime.now
+    )
 
     class Settings:
-        name = 'proposal_types'
+        name = "proposal_types"
         indexes = []

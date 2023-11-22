@@ -51,16 +51,19 @@ async def get_proposals_for_cycle(cycle: str):
     proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
     if proposal_list is None:
         return fastapi.responses.JSONResponse(
-            {"error": f"No proposals were found for cycle {cycle}"}, status_code=404
+            {"error": f"No proposals were found for cycle {cycle}"},
+            status_code=404,
         )
 
     data = {"cycle": cycle, "proposals": proposal_list}
     return data
 
+
 @router.get("/proposals/")
 async def get_proposals():
     proposal_list = await proposal_service.fetch_proposals()
     return proposal_list
+
 
 @router.get("/proposal/{proposal_id}", response_model=Proposal)
 async def get_proposal(proposal_id: int):
@@ -98,7 +101,8 @@ async def get_proposal_principle_invesigator(proposal_id: int):
 
     if len(principle_invesigator) == 0:
         return fastapi.responses.JSONResponse(
-            {"error": f"PI not found for proposal {proposal_id}"}, status_code=404
+            {"error": f"PI not found for proposal {proposal_id}"},
+            status_code=404,
         )
     elif len(principle_invesigator) > 1:
         return fastapi.responses.JSONResponse(

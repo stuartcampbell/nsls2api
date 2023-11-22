@@ -12,11 +12,11 @@ from nsls2api.services import proposal_service
 
 def print_header():
     pad = 30
-    print('/' + "-" * pad + '\\')
-    print('|' + ' ' * pad + '|')
-    print('|      NSLS-II CLI v0.0.1 ' + ' ' * (pad - 25) + '|')
-    print('|' + ' ' * pad + '|')
-    print('\\' + "-" * pad + '/')
+    print("/" + "-" * pad + "\\")
+    print("|" + " " * pad + "|")
+    print("|      NSLS-II CLI v0.0.1 " + " " * (pad - 25) + "|")
+    print("|" + " " * pad + "|")
+    print("\\" + "-" * pad + "/")
     print()
 
 
@@ -49,13 +49,13 @@ async def search_for_proposal():
 async def recently_updated_proposals():
     proposals = await proposal_service.recently_updated()
     for n, p in enumerate(proposals, start=1):
-        print(f'{n}. {p.proposal_id} ({p.last_updated.date().isoformat()}): {p.title}')
+        print(f"{n}. {p.proposal_id} ({p.last_updated.date().isoformat()}): {p.title}")
     print()
 
 
 async def main():
     print_header()
-    await mongodb_setup.init_connection('localhost', 27017, 'nsls2core-test')
+    await mongodb_setup.init_connection("localhost", 27017, "nsls2core-test")
     print()
     # await summary()
 
@@ -66,18 +66,18 @@ async def main():
         print("[m] Most recently updated proposals")
         print("[x] Exit program")
         resp = input("Enter the character for your command: ").strip().lower()
-        print('-' * 40)
+        print("-" * 40)
 
         match resp:
-            case 's':
+            case "s":
                 await summary()
-            case 'b':
+            case "b":
                 await search_for_beamline()
-            case 'p':
+            case "p":
                 await search_for_proposal()
-            case 'm':
+            case "m":
                 await recently_updated_proposals()
-            case 'x':
+            case "x":
                 break
             case _:
                 print("Sorry, we don't understand that command.")
@@ -85,5 +85,5 @@ async def main():
         print()  # give the output a little space
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())

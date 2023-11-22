@@ -19,11 +19,11 @@ async def get_groups_by_username(username: str) -> Optional[ActiveDirectoryUserG
     """
 
     with ADObjects(
-            settings.active_directory_server,
-            user_search=settings.n2sn_user_search,
-            group_search=settings.n2sn_group_search,
-            authenticate=False,
-            ca_certs_file=settings.bnlroot_ca_certs_file,
+        settings.active_directory_server,
+        user_search=settings.n2sn_user_search,
+        group_search=settings.n2sn_group_search,
+        authenticate=False,
+        ca_certs_file=settings.bnlroot_ca_certs_file,
     ) as ad:
         user_details = ad.get_group_by_samaccountname(username)
     if len(user_details) == 0 or len(user_details) > 1:
@@ -31,8 +31,7 @@ async def get_groups_by_username(username: str) -> Optional[ActiveDirectoryUserG
     return ActiveDirectoryUserGroups(**user_details[0])
 
 
-async def get_user_by_username(username: str) -> Optional[
-    ActiveDirectoryUser]:
+async def get_user_by_username(username: str) -> Optional[ActiveDirectoryUser]:
     """
     Get a user by their username.
 
@@ -45,11 +44,11 @@ async def get_user_by_username(username: str) -> Optional[
     print(settings.pass_api_key)
 
     with ADObjects(
-            settings.active_directory_server,
-            user_search=settings.n2sn_user_search,
-            group_search=settings.n2sn_group_search,
-            authenticate=False,
-            ca_certs_file=settings.bnlroot_ca_certs_file,
+        settings.active_directory_server,
+        user_search=settings.n2sn_user_search,
+        group_search=settings.n2sn_group_search,
+        authenticate=False,
+        ca_certs_file=settings.bnlroot_ca_certs_file,
     ) as ad:
         user_details = ad.get_user_by_samaccountname(username)
     if len(user_details) == 0 or len(user_details) > 1:
@@ -65,11 +64,11 @@ async def get_user_by_id(bnl_id: str) -> ActiveDirectoryUser:
 
     """
     with ADObjects(
-            settings.active_directory_server,
-            user_search=settings.n2sn_user_search,
-            group_search=settings.n2sn_group_search,
-            authenticate=False,
-            ca_certs_file=settings.bnlroot_ca_certs_file,
+        settings.active_directory_server,
+        user_search=settings.n2sn_user_search,
+        group_search=settings.n2sn_group_search,
+        authenticate=False,
+        ca_certs_file=settings.bnlroot_ca_certs_file,
     ) as ad:
         user_details = ad.get_user_by_id(bnl_id)
     return ActiveDirectoryUser(**user_details[0])
@@ -84,11 +83,11 @@ async def get_users_in_group(group: str):
 
     """
     with ADObjects(
-            settings.active_directory_server,
-            user_search=settings.n2sn_user_search,
-            group_search=settings.n2sn_group_search,
-            authenticate=False,
-            ca_certs_file=settings.bnlroot_ca_certs_file,
+        settings.active_directory_server,
+        user_search=settings.n2sn_user_search,
+        group_search=settings.n2sn_group_search,
+        authenticate=False,
+        ca_certs_file=settings.bnlroot_ca_certs_file,
     ) as ad:
         users = ad.get_group_members(group)
     return users

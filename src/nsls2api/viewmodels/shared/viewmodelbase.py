@@ -4,10 +4,9 @@ from starlette.requests import Request
 
 
 class ViewModelBase:
-
     def __init__(self, request: Request):
         self.request: Request = request
-        self.is_htmx_request = request.headers.get('HX-Request')
+        self.is_htmx_request = request.headers.get("HX-Request")
 
         self.error: Optional[str] = None
         self.view_model = self.to_dict()

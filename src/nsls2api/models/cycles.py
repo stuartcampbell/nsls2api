@@ -16,9 +16,13 @@ class Cycle(beanie.Document):
     start_date: Optional[datetime.datetime]
     year: str
     proposals: Optional[list[str]]
-    created_on: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.now)
-    last_updated: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.now)
+    created_on: datetime.datetime = pydantic.Field(
+        default_factory=datetime.datetime.now
+    )
+    last_updated: datetime.datetime = pydantic.Field(
+        default_factory=datetime.datetime.now
+    )
 
     class Settings:
-        name = 'cycles'
+        name = "cycles"
         indexes = []

@@ -46,7 +46,6 @@ def login():
             print("Logged in as anonymous")
             return
 
-
     # Let's test this token
     url = f"{BASE_URL}/v1/person/me"
     try:
@@ -62,7 +61,6 @@ def login():
         raise
 
     print("Logging in...")
-
 
 
 @app.command()

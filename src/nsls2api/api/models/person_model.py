@@ -76,6 +76,7 @@ class Person(pydantic.BaseModel):
     facility_name: Optional[str] = None
     citizenship: Optional[str] = None
 
+
 class PersonSummary(pydantic.BaseModel):
     firstname: str
     lastname: str

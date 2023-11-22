@@ -32,4 +32,3 @@ class RecentProposalsModel(pydantic.BaseModel):
 class ProposalSummary(pydantic.BaseModel):
     proposal_id: str
     title: str
-

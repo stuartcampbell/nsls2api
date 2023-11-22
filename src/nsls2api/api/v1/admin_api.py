@@ -15,9 +15,7 @@ router = fastapi.APIRouter(dependencies=[Depends(validate_admin_role)])
 
 
 @router.get("/admin/settings")  # , include_in_schema=False)
-async def info(
-    settings: Annotated[config.Settings, Depends(config.get_settings)]
-):
+async def info(settings: Annotated[config.Settings, Depends(config.get_settings)]):
     return settings
 
 

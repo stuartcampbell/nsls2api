@@ -37,9 +37,7 @@ async def search_proposals(request: Request):
             "shared/partials/proposals_search_results.html", vm.to_dict()
         )
 
-    return templates.TemplateResponse(
-        "home/proposals_search.html", vm.to_dict()
-    )
+    return templates.TemplateResponse("home/proposals_search.html", vm.to_dict())
 
 
 @router.get("/proposals", include_in_schema=False)
@@ -59,16 +57,12 @@ def favicon():
 
 @router.get("/favicon-16x16.png", include_in_schema=False)
 def favicon16():
-    return fastapi.responses.RedirectResponse(
-        url="/static/images/favicon-16x16.png"
-    )
+    return fastapi.responses.RedirectResponse(url="/static/images/favicon-16x16.png")
 
 
 @router.get("/favicon-32x32.png", include_in_schema=False)
 def favicon32():
-    return fastapi.responses.RedirectResponse(
-        url="/static/images/favicon-32x32.png"
-    )
+    return fastapi.responses.RedirectResponse(url="/static/images/favicon-32x32.png")
 
 
 @router.get("/site.webmanifest", include_in_schema=False)

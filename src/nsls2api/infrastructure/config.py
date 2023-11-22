@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     settings.n2sn_group_search = "group@example.com"
     settings.bnlroot_ca_certs_file = "/path/to/ca_certs.pem"
     """
+
     pass_api_key: str
     pass_api_url: HttpUrl = "https://passservices.bnl.gov/passapi"
     active_directory_server: str
@@ -51,7 +52,9 @@ class Settings(BaseSettings):
     use_socks_proxy: bool = False
     socks_proxy: str
 
-    model_config = SettingsConfigDict(env_file=str(Path(__file__).parent.parent / ".env"))
+    model_config = SettingsConfigDict(
+        env_file=str(Path(__file__).parent.parent / ".env")
+    )
 
 
 @lru_cache()

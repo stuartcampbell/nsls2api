@@ -72,9 +72,7 @@ async def get_people_by_department(
 
 async def get_people_by_status(status: str):
     if status.title() not in ("Active", "Inactive", "Pending"):
-        raise ValueError(
-            "Status must be either 'Active', 'Inactive', 'Pending'"
-        )
+        raise ValueError("Status must be either 'Active', 'Inactive', 'Pending'")
     url = f"{base_url}/api/BNLPeople?status={status}"
     people = await _call_bnlpeople_webservice(url)
     return people
@@ -82,9 +80,7 @@ async def get_people_by_status(status: str):
 
 async def get_people_by_calcstatus(calculated_status: str):
     if calculated_status.title() not in ("Active", "Inactive"):
-        raise ValueError(
-            "Calculated Status must be either 'Active', 'Inactive'"
-        )
+        raise ValueError("Calculated Status must be either 'Active', 'Inactive'")
     url = f"{base_url}/api/BNLPeople?status={calculated_status}"
     people = await _call_bnlpeople_webservice(url)
     return people

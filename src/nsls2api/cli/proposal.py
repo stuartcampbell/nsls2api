@@ -15,9 +15,9 @@ def view(proposal: int):
 def search(proposal: int):
     print(f"Searching for Proposal: {proposal}")
     with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            transient=True,
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
     ) as progress:
         progress.add_task(description="Searching...", total=None)
         time.sleep(3)

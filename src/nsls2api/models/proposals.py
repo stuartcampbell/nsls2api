@@ -42,27 +42,32 @@ class Proposal(beanie.Document):
         name = "proposals"
         indexes = [
             pymongo.IndexModel(
-                keys=[("proposal_id", pymongo.DESCENDING)], name="proposal_id_descend"
+                keys=[("proposal_id", pymongo.DESCENDING)],
+                name="proposal_id_descend",
             ),
             pymongo.IndexModel(
-                keys=[("last_updated", pymongo.DESCENDING)], name="last_updated_descend"
+                keys=[("last_updated", pymongo.DESCENDING)],
+                name="last_updated_descend",
             ),
             pymongo.IndexModel(
                 keys=[("users.username", pymongo.ASCENDING)],
                 name="users_username_ascend",
             ),
             pymongo.IndexModel(
-                keys=[("users.email", pymongo.ASCENDING)], name="users_email_ascend"
+                keys=[("users.email", pymongo.ASCENDING)],
+                name="users_email_ascend",
             ),
             pymongo.IndexModel(
-                keys=[("users.bnl_id", pymongo.ASCENDING)], name="users_bnl_id_ascend"
+                keys=[("users.bnl_id", pymongo.ASCENDING)],
+                name="users_bnl_id_ascend",
             ),
             pymongo.IndexModel(
                 keys=[("users.last_name", pymongo.ASCENDING)],
                 name="users_last_name_ascend",
             ),
             pymongo.IndexModel(
-                keys=[("safs.saf_id", pymongo.DESCENDING)], name="safs_saf_id_descend"
+                keys=[("safs.saf_id", pymongo.DESCENDING)],
+                name="safs_saf_id_descend",
             ),
             pymongo.IndexModel(
                 keys=[

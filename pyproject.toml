@@ -16,6 +16,7 @@ classifiers = [
   "Development Status :: 4 - Beta",
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -26,14 +27,17 @@ dependencies = [
   "typer",
 ]
 
-[tool.hatch.version]
-source = "vcs"
-
 [project.scripts]
 nsls2api = "nsls2api.cli.cli:app"
 
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "src/nsls2api/_version.py"
+
 [tool.black]
-line-length = 80
 target_version = ['py311']
 include = '\.pyi?$'
+
+[tool.ruff]
+target-version = "py311"
 

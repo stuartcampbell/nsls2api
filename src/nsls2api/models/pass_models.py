@@ -14,4 +14,3 @@ class PassCycle(pydantic.BaseModel):
     Name: str
     Description: str
     User_Facility_ID: str
-

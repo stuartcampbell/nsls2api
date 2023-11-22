@@ -60,23 +60,17 @@ async def get_person_from_email(email: str):
 
 @router.get("/person/department/{department}")
 async def get_person_by_department(department_code: str = "PS"):
-    bnl_people = await bnlpeople_service.get_people_by_department(
-        department_code
-    )
+    bnl_people = await bnlpeople_service.get_people_by_department(department_code)
     if bnl_people:
         return bnl_people
 
 
 @router.get("/person/me", response_model=str)
-async def get_myself(
-    current_user: Annotated[Person, Depends(get_current_user)]
-):
+async def get_myself(current_user: Annotated[Person, Depends(get_current_user)]):
     return current_user
 
 
-@router.get(
-    "/data-session/{username}", response_model=DataSessionAccess, tags=["data"]
-)
+@router.get("/data-session/{username}", response_model=DataSessionAccess, tags=["data"])
 @router.get(
     "/data_session/{username}",
     response_model=DataSessionAccess,

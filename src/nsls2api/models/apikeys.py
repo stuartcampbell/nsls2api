@@ -46,10 +46,12 @@ class ApiUser(beanie.Document):
             pymongo.IndexModel(keys=[("type", pymongo.ASCENDING)], name="type_ascend"),
             pymongo.IndexModel(keys=[("role", pymongo.ASCENDING)], name="role_ascend"),
             pymongo.IndexModel(
-                keys=[("created_date", pymongo.DESCENDING)], name="created_date_descend"
+                keys=[("created_date", pymongo.DESCENDING)],
+                name="created_date_descend",
             ),
             pymongo.IndexModel(
-                keys=[("last_login", pymongo.DESCENDING)], name="last_login_descend"
+                keys=[("last_login", pymongo.DESCENDING)],
+                name="last_login_descend",
             ),
         ]
 
@@ -76,10 +78,12 @@ class ApiKey(beanie.Document):
         keep_nulls = False
         indexes = [
             pymongo.IndexModel(
-                keys=[("created_date", pymongo.DESCENDING)], name="created_date_descend"
+                keys=[("created_date", pymongo.DESCENDING)],
+                name="created_date_descend",
             ),
             pymongo.IndexModel(
-                keys=[("last_login", pymongo.DESCENDING)], name="last_login_descend"
+                keys=[("last_login", pymongo.DESCENDING)],
+                name="last_login_descend",
             ),
             pymongo.IndexModel(
                 keys=[("first_eight", pymongo.ASCENDING)],

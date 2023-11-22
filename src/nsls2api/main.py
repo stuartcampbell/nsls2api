@@ -58,15 +58,12 @@ def configure_routing():
     # Also include our webpages
     api.include_router(home.router)
     api.include_router(diagnostics.router)
-    api.mount(
-        "/static", StaticFiles(directory=static_root_absolute), name="static"
-    )
+    api.mount("/static", StaticFiles(directory=static_root_absolute), name="static")
     api.mount(
         "/assets",
         StaticFiles(directory=static_root_absolute / "assets"),
         name="assets",
     )
-
 
 
 @api.get("/healthy")
