@@ -6,6 +6,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip wheel
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
+COPY pyproject.toml .
 COPY src/ . 
 RUN pip install '.'
 
