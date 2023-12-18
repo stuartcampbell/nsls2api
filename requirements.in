@@ -7,7 +7,6 @@ httpx
 httpx-socks[asyncio]
 jinja2
 jinja-partials
-locust
 n2snusertools
 passlib
 pydantic

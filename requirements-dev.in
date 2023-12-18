@@ -3,6 +3,7 @@ black
 bunnet
 faker
 ipython
+locust
 pytest
 ruff
 textual-dev
