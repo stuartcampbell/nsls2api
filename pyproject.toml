@@ -25,6 +25,8 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
+  "hatch",
+  "hatch-vcs",
   "typer",
 ]
 
