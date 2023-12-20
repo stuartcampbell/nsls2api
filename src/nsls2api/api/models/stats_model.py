@@ -6,3 +6,8 @@ class StatsModel(pydantic.BaseModel):
     proposal_count: int
     beamline_count: int
     commissioning_proposal_count: int
+
+
+class AboutModel(pydantic.BaseModel):
+    description: str
+    version: str

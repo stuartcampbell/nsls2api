@@ -1,6 +1,7 @@
 import fastapi
 
-from nsls2api.api.models.stats_model import StatsModel
+from nsls2api._version import version as api_version
+from nsls2api.api.models.stats_model import StatsModel, AboutModel
 from nsls2api.services import (
     proposal_service,
     facility_service,
@@ -24,3 +25,12 @@ async def stats():
         commissioning_proposal_count=commissioning,
     )
     return model
+
+
+@router.get("/about", response_model=AboutModel)
+async def about():
+        model = AboutModel(
+            version=api_version,
+            description="NSLS-II Facility API"
+        )
+        return model
