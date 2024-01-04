@@ -1,6 +1,9 @@
 # Project exclude paths
 /venv/
 
+# Hatch managed version file
+src/nsls2api/_version.py
+
 # HTTP Client environments
 http-client.private.env.json
 
