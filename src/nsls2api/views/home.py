@@ -20,6 +20,15 @@ def index(request: Request):
     return templates.TemplateResponse("home/index.html", data)
 
 
+# This is a test endpoint to make sure the server is running
+# It is used by haproxy to determine if the server is healthy
+@router.get("/healthy", include_in_schema=False)
+async def healthy():
+    return fastapi.responses.PlainTextResponse(
+        "OK", status_code=fastapi.status.HTTP_200_OK
+    )
+
+
 @router.get("/default", include_in_schema=False)
 def index(request: Request):
     data = {"request": request}

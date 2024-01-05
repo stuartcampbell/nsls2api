@@ -66,13 +66,6 @@ def configure_routing():
     )
 
 
-@api.get("/healthy")
-async def healthy():
-    return fastapi.responses.PlainTextResponse(
-        "OK", status_code=fastapi.status.HTTP_200_OK
-    )
-
-
 @api.on_event("startup")
 async def configure_db():
     await mongodb_setup.init_connection(settings.mongodb_dsn.unicode_string())
