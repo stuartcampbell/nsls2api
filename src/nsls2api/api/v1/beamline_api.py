@@ -18,8 +18,8 @@ async def details(name: str):
         )
     return beamline
 
-
-@router.get("/beamline/{name}/services", response_model=list[BeamlineService])
+# TODO: Add back into schema when we fully decide on the data model for the beamline services.
+@router.get("/beamline/{name}/services", response_model=list[BeamlineService], include_in_schema=False)
 async def get_beamline_services(name: str):
     beamline_services = await beamline_service.all_services(name)
     if beamline_services is None:
@@ -39,7 +39,10 @@ async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_api_key
     return service_accounts
 
 
-@router.get("/beamline/{name}/accounts/workflow", response_model=str)
+# TODO: Review if we want to also have the following endpoints for the beamline accounts or 
+#       if we want to have a single endpoint (above) that returns all the accounts for a beamline.
+
+@router.get("/beamline/{name}/accounts/workflow", response_model=str, include_in_schema=False)
 async def get_beamline_workflow_username(name: str):
     workflow_user = await beamline_service.workflow_username(name)
     if workflow_user is None:
@@ -50,7 +53,7 @@ async def get_beamline_workflow_username(name: str):
     return workflow_user
 
 
-@router.get("/beamline/{name}/accounts/ioc", response_model=str)
+@router.get("/beamline/{name}/accounts/ioc", response_model=str, include_in_schema=False)
 async def get_beamline_ioc_username(name: str):
     ioc_user = await beamline_service.ioc_username(name)
     if ioc_user is None:
@@ -61,7 +64,7 @@ async def get_beamline_ioc_username(name: str):
     return ioc_user
 
 
-@router.get("/beamline/{name}/accounts/bluesky", response_model=str)
+@router.get("/beamline/{name}/accounts/bluesky", response_model=str, include_in_schema=False)
 async def get_beamline_bluesky_username(name: str):
     bluesky_user = await beamline_service.bluesky_username(name)
     if bluesky_user is None:
@@ -72,7 +75,7 @@ async def get_beamline_bluesky_username(name: str):
     return bluesky_user
 
 
-@router.get("/beamline/{name}/accounts/epics-services", response_model=str)
+@router.get("/beamline/{name}/accounts/epics-services", response_model=str, include_in_schema=False)
 async def get_beamline_epics_services_username(name: str):
     epics_user = await beamline_service.epics_services_username(name)
     if epics_user is None:
@@ -83,7 +86,7 @@ async def get_beamline_epics_services_username(name: str):
     return epics_user
 
 
-@router.get("/beamline/{name}/accounts/operator", response_model=str)
+@router.get("/beamline/{name}/accounts/operator", response_model=str, include_in_schema=False)
 async def get_beamline_operator_username(name: str):
     operator_user = await beamline_service.operator_username(name)
     if operator_user is None:
