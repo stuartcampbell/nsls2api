@@ -58,8 +58,8 @@ async def get_proposals_for_cycle(cycle: str):
     data = {"cycle": cycle, "proposals": proposal_list}
     return data
 
-
-@router.get("/proposals/")
+# TODO: Add back into schema when implemented.
+@router.get("/proposals/", include_in_schema=False)
 async def get_proposals():
     proposal_list = await proposal_service.fetch_proposals()
     return proposal_list
@@ -75,10 +75,12 @@ async def get_proposal(proposal_id: int):
     return proposal
 
 
+#TODO: Add back into schema when implemented.
 @router.post(
     "/proposal/{proposal_id}",
     response_model=Proposal,
     dependencies=[Depends(get_current_user)],
+    include_in_schema=False,
 )
 async def create_proposal(proposal_id: int) -> Proposal:
     proposal = await proposal_service.create_proposal(proposal_id)

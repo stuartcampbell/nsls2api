@@ -11,7 +11,7 @@ from nsls2api.infrastructure.security import (
 from nsls2api.models.apikeys import ApiUser
 
 # router = fastapi.APIRouter()
-router = fastapi.APIRouter(dependencies=[Depends(validate_admin_role)])
+router = fastapi.APIRouter(dependencies=[Depends(validate_admin_role)], include_in_schema=False)
 
 
 @router.get("/admin/settings")  # , include_in_schema=False)

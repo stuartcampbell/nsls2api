@@ -53,19 +53,19 @@ async def get_person_from_email(email: str):
         return person
     else:
         return fastapi.responses.JSONResponse(
-            {"error": f"No people with username {username} found."},
+            {"error": f"No people with username {email} found."},
             status_code=404,
         )
 
-
-@router.get("/person/department/{department}")
+# TODO: Add back into schema if we decide to use this endpoint.
+@router.get("/person/department/{department}", include_in_schema=False)
 async def get_person_by_department(department_code: str = "PS"):
     bnl_people = await bnlpeople_service.get_people_by_department(department_code)
     if bnl_people:
         return bnl_people
 
-
-@router.get("/person/me", response_model=str)
+# TODO: Add back into schema if we decide to use this endpoint.
+@router.get("/person/me", response_model=str, include_in_schema=False)
 async def get_myself(current_user: Annotated[Person, Depends(get_current_user)]):
     return current_user
 
@@ -77,6 +77,7 @@ async def get_myself(current_user: Annotated[Person, Depends(get_current_user)])
     tags=["data"],
     include_in_schema=False,
     description="Deprecated endpoint included for Tiled compatibility.",
+    deprecated=True,
 )
 async def get_data_sessions_by_username(username: str):
     data_access = await person_service.data_sessions_by_username(username)
