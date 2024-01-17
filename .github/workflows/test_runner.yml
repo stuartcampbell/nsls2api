@@ -1,0 +1,12 @@
+name: Print Hostname
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+    - name: Print hostname
+      run: echo "The hostname is $(hostname)"
