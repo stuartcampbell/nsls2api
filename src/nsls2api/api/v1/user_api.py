@@ -75,7 +75,7 @@ async def get_myself(current_user: Annotated[Person, Depends(get_current_user)])
     "/data_session/{username}",
     response_model=DataSessionAccess,
     tags=["data"],
-    include_in_schema=False,
+    include_in_schema=True,
     description="Deprecated endpoint included for Tiled compatibility.",
     deprecated=True,
 )
