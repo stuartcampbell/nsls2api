@@ -54,7 +54,6 @@ async def get_proposals_for_cycle(cycle: str):
             {"error": f"No proposals were found for cycle {cycle}"},
             status_code=404,
         )
-
     data = {"cycle": cycle, "proposals": proposal_list}
     return data
 
@@ -97,7 +96,7 @@ async def get_proposals_users(proposal_id: int):
     return users
 
 
-@router.get("/proposal/{proposal_id}/principle_invesigator", response_model=list[User])
+@router.get("/proposal/{proposal_id}/principal-investigator", response_model=list[User])
 async def get_proposal_principle_invesigator(proposal_id: int):
     principle_invesigator = await proposal_service.pi_from_proposal(proposal_id)
 
