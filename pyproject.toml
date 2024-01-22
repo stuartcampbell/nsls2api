@@ -9,7 +9,7 @@ description = ''
 readme = "README.md"
 requires-python = ">=3.9"
 license = "BSD-3-Clause"
-keywords = []
+curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bashkeywords = []
 authors = [
   { name = "Stuart Campbell", email = "scampbell@bnl.gov" },
 ]
@@ -18,21 +18,17 @@ classifiers = [
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
 ]
-#dependencies = [
-#  "hatch",
-#  "hatch-requirements-txt",
-#  "hatch-vcs",
-#  "typer",
-#]
 
 [project.scripts]
 nsls2api = "nsls2api.cli.cli:app"
+
+[project.urls]
+Source = "https://github.com/nsls2/nsls2api/"
 
 [tool.hatch]
 version.source = "vcs"
@@ -40,6 +36,14 @@ build.hooks.vcs.version-file = "src/nsls2api/_version.py"
 
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
+
+[tool.hatch.build]
+packages = ["src/nsls2api"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+	"/.github",
+]
 
 #[tool.hatch.metadata.hooks.requirements_txt.optional-dependencies]
 #dev = ["requirements-dev.txt"]
