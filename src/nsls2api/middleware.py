@@ -13,15 +13,14 @@ class ProcessTimeMiddleware:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
-        start_time = time.time()
+        start_time = time.perf_counter()
 
         async def send_wrapper(message: Message) -> None:
             if message["type"] == "http.response.start":
                 headers = MutableHeaders(scope=message)
-                end_time = time.time()
-                process_time = end_time - start_time
-                headers["x-process-time"] = str(process_time)
-                headers["Server-Timing"] = f"total;dur={process_time:.3f}"
+                end_time = time.perf_counter()
+                lapsed_time = end_time - start_time
+                headers["Server-Timing"] = f"total;dur={lapsed_time:.3f}"
             await send(message)
         
         await self.app(scope, receive, send_wrapper)
