@@ -25,10 +25,7 @@ settings = get_settings()
 
 middleware = [Middleware(ProcessTimeMiddleware)]
 
-app = fastapi.FastAPI(
-    title="NSLS-II API",
-    middleware=middleware
-)
+app = fastapi.FastAPI(title="NSLS-II API", middleware=middleware)
 
 current_file = Path(__file__)
 current_file_dir = current_file.parent
@@ -70,13 +67,6 @@ def configure_routing():
         name="assets",
     )
 
-# @api.middleware("http")
-# async def add_server_timing_header(request: fastapi.Request, call_next):
-#     start_time = time.perf_counter()
-#     response = await call_next(request)
-#     process_time = time.perf_counter() - start_time
-#     response.headers["Server-Timing"] = f"total;dur=1.1234"
-#     return response
 
 @app.on_event("startup")
 async def configure_db():
