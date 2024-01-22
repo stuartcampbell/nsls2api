@@ -9,7 +9,6 @@ description = ''
 readme = "README.md"
 requires-python = ">=3.9"
 license = "BSD-3-Clause"
-curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bashkeywords = []
 authors = [
   { name = "Stuart Campbell", email = "scampbell@bnl.gov" },
 ]
