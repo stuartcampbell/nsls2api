@@ -1,3 +1,4 @@
+from typing import List
 import fastapi
 from fastapi import Depends, HTTPException
 
@@ -6,7 +7,7 @@ from nsls2api.api.models.proposal_model import (
     RecentProposal,
     RecentProposalsModel,
 )
-from nsls2api.api.models.proposal_model import UsernamesModel
+from nsls2api.api.models.proposal_model import UsernamesModel, ProposalDirectories
 from nsls2api.infrastructure.security import get_current_user
 from nsls2api.models.proposals import Proposal, User
 from nsls2api.services import proposal_service
@@ -119,6 +120,6 @@ async def get_proposal_usernames(proposal_id: int):
 
 
 @router.get("/proposal/{proposal_id}/directories")
-async def get_proposal_directories(proposal_id: int):
+async def get_proposal_directories(proposal_id: int) -> List[ProposalDirectories]:
     directories = await proposal_service.directories(proposal_id)
     return directories
