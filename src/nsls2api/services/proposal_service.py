@@ -4,7 +4,7 @@ from typing import Optional
 from beanie.odm.operators.find.array import ElemMatch
 from beanie.operators import And, In, RegEx, Text
 
-from nsls2api.api.models.proposal_model import ProposalFullDetails
+from nsls2api.api.models.proposal_model import ProposalDiagnostics, ProposalFullDetails
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
 from nsls2api.services import beamline_service, pass_service
@@ -357,10 +357,22 @@ async def directories(proposal_id: int):
     return directory_list
 
 
-#
-
-
 # TODO: This function is not yet complete
+async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnostics]:
+    proposal = await proposal_by_id(proposal_id)
+
+    if proposal is None:
+        raise LookupError(f"Proposal {proposal_id} not found")
+
+    proposal_diagnostics = ProposalDiagnostics(
+        proposal_id=proposal.proposal_id,
+        title=proposal.title,
+        updated=proposal.last_updated,
+    )
+
+    return proposal_diagnostics
+
+
 def create_or_update_proposal(proposal_id):
     # Does the proposal already exist in our system
     proposal_exists = exists(proposal_id)

@@ -131,3 +131,9 @@ class ProposalFullDetailsList(pydantic.BaseModel):
     page_size: int | None = None
     page: int | None = None
     links: PageLinks | None = None
+
+
+class ProposalDiagnostics(pydantic.BaseModel):
+    proposal_id: str
+    title: str
+    updated: datetime.datetime
