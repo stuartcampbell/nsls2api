@@ -6,7 +6,7 @@ from beanie.operators import In, Text, RegEx
 
 # from models.proposals import Proposal
 from nsls2api.models.proposals import Proposal, User, ProposalIdView
-from nsls2api.api.models.proposal_model import ProposalSummary
+from nsls2api.api.models.proposal_model import ProposalDiagnostics, ProposalSummary
 from nsls2api.services import beamline_service, pass_service
 
 
@@ -262,6 +262,22 @@ async def directories(proposal_id: int):
             directory_list.append(directory)
 
     return directory_list
+
+
+async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnostics]:
+
+    proposal = await proposal_by_id(proposal_id)
+
+    if proposal is None:
+        raise LookupError(f"Proposal {proposal_id} not found")
+    
+    proposal_diagnostics = ProposalDiagnostics(
+        proposal_id=proposal.proposal_id,
+        title=proposal.title,
+        updated=proposal.last_updated,
+    )
+    
+    return proposal_diagnostics
 
 
 def create_or_update_proposal(proposal_id):

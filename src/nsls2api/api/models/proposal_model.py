@@ -32,3 +32,8 @@ class RecentProposalsModel(pydantic.BaseModel):
 class ProposalSummary(pydantic.BaseModel):
     proposal_id: str
     title: str
+
+class ProposalDiagnostics(pydantic.BaseModel):
+    proposal_id: str
+    title: str
+    updated: datetime.datetime
