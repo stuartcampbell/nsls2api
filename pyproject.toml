@@ -31,13 +31,13 @@ Source = "https://github.com/nsls2/nsls2api/"
 
 [tool.hatch]
 version.source = "vcs"
-build.hooks.vcs.version-file = "src/nsls2api/_version.py"
 
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
 
 [tool.hatch.build]
 packages = ["src/nsls2api"]
+hooks.vcs.version-file = "src/nsls2api/_version.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
