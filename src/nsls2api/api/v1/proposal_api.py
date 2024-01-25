@@ -45,18 +45,6 @@ async def get_commissioning_proposals(beamline: str | None = None):
     )
     return model
 
-
-@router.get("/proposals/{cycle}")
-async def get_proposals_for_cycle(cycle: str):
-    proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
-    if proposal_list is None:
-        return fastapi.responses.JSONResponse(
-            {"error": f"No proposals were found for cycle {cycle}"},
-            status_code=404,
-        )
-    data = {"cycle": cycle, "proposals": proposal_list}
-    return data
-
 # TODO: Add back into schema when implemented.
 @router.get("/proposals/", include_in_schema=False)
 async def get_proposals():
