@@ -25,8 +25,10 @@ jobs:
     - name: Unzip ijhttp.zip
       run: unzip -q ijhttp.zip -d ijhttp
 
+    - name: directory listing
+      run: ls -l
+
     - name : Run ijhttp
       run: ./ijhttp/bin/ijhttp --env-file http-client.env.json --env production check_all_beamlines.http
-      working-directory: ./nsls2api/integration-tests
-      continue-on-error: true
+      working-directory: ./integration-tests
 
