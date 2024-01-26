@@ -26,7 +26,7 @@ jobs:
       run: unzip -q ijhttp.zip -d ijhttp
 
     - name: directory listing
-      run: ls -l
+      run: ls -l ijhttp
 
     - name : Run ijhttp
       run: ./ijhttp/ijhttp --env-file ./integration-tests/http-client.env.json --env production ./integration-tests/check_all_beamlines.http
