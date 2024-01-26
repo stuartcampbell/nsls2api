@@ -10,3 +10,23 @@ jobs:
     steps:
     - name: Print hostname
       run: echo "The hostname is $(hostname)"
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '17'
+    
+    - name: Download ijhttp.zip 
+      run: curl -f -L -o ijhttp.zip "https://jb.gg/ijhttp/latest"
+
+    - name: Unzip ijhttp.zip
+      run: unzip -q ijhttp.zip -d ijhttp
+
+    - name : Run ijhttp
+      run: ./ijhttp/bin/ijhttp --env-file http-client.env.json --env production check_all_beamlines.http
+      working-directory: ./src/nsls2/nsls2api/integration-tests
+      continue-on-error: true
+
