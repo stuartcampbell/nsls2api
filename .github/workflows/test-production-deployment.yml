@@ -1,6 +1,8 @@
 name: Integration Tests for Deployed API
 
 on:
+  schedule:
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -28,6 +30,6 @@ jobs:
   tests:
     runs-on: self-hosted
     steps:
-      - name : Beamline endpoint tests
+      - name: Beamline endpoint tests
         run: ./ijhttp/ijhttp --env-file ./integration-tests/http-client.env.json --env production ./integration-tests/check_all_beamlines.http
   
