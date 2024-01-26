@@ -29,5 +29,5 @@ jobs:
       run: ls -l
 
     - name : Run ijhttp
-      run: ./ijhttp/bin/ijhttp --env-file ./integration-tests/http-client.env.json --env production ./integration-tests/check_all_beamlines.http
+      run: ./ijhttp/ijhttp --env-file ./integration-tests/http-client.env.json --env production ./integration-tests/check_all_beamlines.http
 
