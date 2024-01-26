@@ -23,7 +23,7 @@ jobs:
       run: curl -f -L -o ijhttp.zip "https://jb.gg/ijhttp/latest"
 
     - name: Unzip ijhttp.zip
-      run: unzip -q ijhttp.zip -d ijhttp
+      run: unzip -q ijhttp.zip
 
     - name: directory listing
       run: ls -l ijhttp
