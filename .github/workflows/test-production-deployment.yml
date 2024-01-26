@@ -8,7 +8,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  setup:
+  integration_tests:
     runs-on: self-hosted
 
     steps:
@@ -29,9 +29,6 @@ jobs:
     - name: Unzip ijhttp.zip
       run: unzip -q ijhttp.zip
 
-  tests:
-    runs-on: self-hosted
-    steps:
-      - name: Beamline endpoint tests
-        run: ./ijhttp/ijhttp --env-file ./integration-tests/http-client.env.json --env production ./integration-tests/check_all_beamlines.http
-  
+    - name: Beamline endpoint tests
+      run: ./ijhttp/ijhttp --env-file ./integration-tests/http-client.env.json --env production ./integration-tests/check_all_beamlines.http
+
