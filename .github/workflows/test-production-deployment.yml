@@ -30,5 +30,9 @@ jobs:
       run: unzip -q ijhttp.zip
 
     - name: Beamline endpoint tests
-      run: ./ijhttp/ijhttp --env-file ./integration-tests/http-client.env.json --env production ./integration-tests/check_all_beamlines.http
+      run: |
+        ./ijhttp/ijhttp --env-file ./integration-tests/http-client.env.json \
+        --env production \
+        --report \
+        ./integration-tests/check_all_beamlines.http
 
