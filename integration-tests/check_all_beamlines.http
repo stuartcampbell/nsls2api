@@ -1,4 +1,7 @@
 
+# Quick test for ensure failure (will revert)
+GET https://{{host}}/v1/beamline/xyz
+
 ### Check AMX Details
 # @name amx-details
 GET http://{{host}}/v1/beamline/amx
