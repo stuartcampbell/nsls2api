@@ -27,6 +27,6 @@ jobs:
 
     - name : Run ijhttp
       run: ./ijhttp/bin/ijhttp --env-file http-client.env.json --env production check_all_beamlines.http
-      working-directory: ./nsls2api/src/nsls2/nsls2api/integration-tests
+      working-directory: ./nsls2api/integration-tests
       continue-on-error: true
 
