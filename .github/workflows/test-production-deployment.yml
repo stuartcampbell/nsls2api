@@ -35,3 +35,8 @@ jobs:
         --env production \
         ./integration-tests/check_all_beamlines.http
 
+    - name: Check API Service
+      run: |
+        ./ijhttp/ijhttp --env-file ./integration-tests/http-client.env.json \
+        --env production \
+        ./integration-tests/check_service_health.http
