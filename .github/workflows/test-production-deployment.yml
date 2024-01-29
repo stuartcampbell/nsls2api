@@ -33,6 +33,5 @@ jobs:
       run: |
         ./ijhttp/ijhttp --env-file ./integration-tests/http-client.env.json \
         --env production \
-        --report \
         ./integration-tests/check_all_beamlines.http
 
