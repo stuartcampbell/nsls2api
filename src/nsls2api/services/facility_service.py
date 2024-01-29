@@ -15,7 +15,7 @@ async def facilities_count() -> int:
     return await Facility.count()
 
 
-async def facility_cycles(facility: str):
+async def facility_cycles(facility: str) -> Optional[list[str]]:
     """
     Facility Cycles
 
@@ -24,8 +24,9 @@ async def facility_cycles(facility: str):
     :param facility: The facility name (str).
     :return: A list of cycles for the facility (list[Cycle]).
     """
-    cycles = Cycle.find(Cycle.facility == facility)
-    return cycles
+    cycles = await Cycle.find(Cycle.facility == facility).to_list()
+    cycle_list = [c.name for c in cycles if c.name is not None]
+    return cycle_list
 
 
 async def data_roles_by_user(username: str) -> Optional[list[str]]:

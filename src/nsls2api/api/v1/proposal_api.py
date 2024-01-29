@@ -1,3 +1,4 @@
+from typing import List
 import fastapi
 from fastapi import Depends, HTTPException
 
@@ -6,7 +7,7 @@ from nsls2api.api.models.proposal_model import (
     RecentProposal,
     RecentProposalsModel,
 )
-from nsls2api.api.models.proposal_model import UsernamesModel
+from nsls2api.api.models.proposal_model import UsernamesModel, ProposalDirectories
 from nsls2api.infrastructure.security import get_current_user
 from nsls2api.models.proposals import Proposal, User
 from nsls2api.services import proposal_service
@@ -44,18 +45,6 @@ async def get_commissioning_proposals(beamline: str | None = None):
         count=len(proposals), commissioning_proposals=proposals
     )
     return model
-
-
-@router.get("/proposals/{cycle}")
-async def get_proposals_for_cycle(cycle: str):
-    proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
-    if proposal_list is None:
-        return fastapi.responses.JSONResponse(
-            {"error": f"No proposals were found for cycle {cycle}"},
-            status_code=404,
-        )
-    data = {"cycle": cycle, "proposals": proposal_list}
-    return data
 
 # TODO: Add back into schema when implemented.
 @router.get("/proposals/", include_in_schema=False)
@@ -131,6 +120,6 @@ async def get_proposal_usernames(proposal_id: int):
 
 
 @router.get("/proposal/{proposal_id}/directories")
-async def get_proposal_directories(proposal_id: int):
+async def get_proposal_directories(proposal_id: int) -> List[ProposalDirectories]:
     directories = await proposal_service.directories(proposal_id)
     return directories

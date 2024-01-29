@@ -29,6 +29,10 @@ async def get_person_from_username(username: str):
             username=bnl_person.ActiveDirectoryName,
             cyber_agreement_signed=bnl_person.CyberAgreementSigned,
         )
+         # If the person is an Employee then set their institution to BNL
+        if bnl_person.EmployeeStatus == "Active" and bnl_person.EmployeeType == "Employee":
+            person.bnl_employee = True
+            person.institution = "Brookhaven National Laboratory"
         return person
     else:
         return fastapi.responses.JSONResponse(
