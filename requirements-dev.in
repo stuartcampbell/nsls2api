@@ -7,4 +7,3 @@ locust
 pytest
 ruff
 textual-dev
-typer-cli

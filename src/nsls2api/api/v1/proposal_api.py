@@ -1,7 +1,4 @@
-<<<<<<< Updated upstream
-=======
 from typing import Annotated, List, Optional
->>>>>>> Stashed changes
 import fastapi
 from fastapi import Depends, HTTPException, Query
 
@@ -10,7 +7,7 @@ from nsls2api.api.models.proposal_model import (
     RecentProposal,
     RecentProposalsModel,
 )
-from nsls2api.api.models.proposal_model import UsernamesModel
+from nsls2api.api.models.proposal_model import UsernamesModel, ProposalDirectories
 from nsls2api.infrastructure.security import get_current_user
 from nsls2api.models.proposals import Proposal, User
 from nsls2api.services import proposal_service
@@ -44,7 +41,7 @@ async def get_commissioning_proposals(beamline: str | None = None):
     proposals = await proposal_service.commissioning_proposals(beamline=beamline)
     if proposals is None:
         return fastapi.responses.JSONResponse(
-            {"error": f"Proposal {proposal_id} not found"}, status_code=404
+            {"error": "Commissioning Proposals not found"}, status_code=404
         )
     model = CommissioningProposalsModel(
         count=len(proposals), commissioning_proposals=proposals
@@ -58,7 +55,6 @@ async def get_proposals(
     proposal_id: Annotated[list[str] | None, Query()] = None,
     beamline: Annotated[list[str] | None, Query()] = None,
     cycle: Annotated[list[str] | None, Query()] = None,
-    facility: Annotated[list[FacilityName]]  = FacilityName.nsls2,
     page_size: int = 10,
     page: int = 1,
 ):
@@ -139,6 +135,6 @@ async def get_proposal_usernames(proposal_id: int):
 
 
 @router.get("/proposal/{proposal_id}/directories")
-async def get_proposal_directories(proposal_id: int):
+async def get_proposal_directories(proposal_id: int) -> List[ProposalDirectories]:
     directories = await proposal_service.directories(proposal_id)
     return directories
