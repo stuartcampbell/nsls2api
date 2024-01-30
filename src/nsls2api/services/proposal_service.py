@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 
 from beanie.odm.operators.find.array import ElemMatch
-from beanie.operators import In, Text, RegEx
+from beanie.operators import And, In, Text, RegEx
 
 # from models.proposals import Proposal
 from nsls2api.models.proposals import Proposal, User, ProposalIdView
@@ -71,7 +71,7 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
 
 async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
     """
-    Retrieve a proposal by its ID.
+    Retrieve a single proposal by its ID.
 
     :param proposal_id: The ID of the proposal to retrieve.
     :return: The proposal if found, or None if not found.
@@ -90,17 +90,55 @@ async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
     return proposal
 
 
-async def fetch_proposals():  # -> Optional[list[ProposalSummary]]:
-    proposals = await Proposal.find_all().to_list()
-    # proposal_list = [ProposalSummary(**p) for p in proposals]
-    proposal_list = []
-    for proposal in proposals:
-        # proposal_summary = ProposalSummary(proposal**)
-        proposal_list.append()
-    return proposal_list
+# Get a list of proposals that match the given criteria
+async def fetch_proposals(
+    proposal_id: list[str] | None = None,
+    beamline: list[str] | None = None,
+    cycle: list[str] | None = None,
+    page_size: int = 10,
+    page: int = 1,
+) -> Optional[list[ProposalSummary]]:
+    query = []
+
+    if beamline:
+        query.append(In(Proposal.instruments, [beamline]))
+
+    if cycle:
+        query.append(In(Proposal.cycles, [cycle]))
+
+    if proposal_id:
+        query.append(In(Proposal.proposal_id, [proposal_id]))
+
+    if len(query) == 0:
+        proposals = (
+            await Proposal.find_many()
+            .sort(-Proposal.last_updated)
+            .limit(page_size)
+            .skip(page_size * (page - 1))
+            .to_list()
+        )
+    else:
+        proposals = (
+            await Proposal.find_many(And(*query))
+            .sort(-Proposal.last_updated)
+            .limit(page_size)
+            .skip(page_size * (page - 1))
+            .to_list()
+        )
+
+    return proposals
 
 
 async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
+    """
+    Fetches the users associated with a given proposal.
+
+    Args:
+        proposal_id (int): The ID of the proposal.
+
+    Returns:
+        Optional[list[User]]: A list of User objects associated with the proposal, or None if the proposal is not found.
+    """
     proposal = await proposal_by_id(proposal_id)
     return proposal.users
 
@@ -136,7 +174,6 @@ async def commissioning_proposals(beamline: str | None = None):
         # Ensure we match the case in the database for the beamline name
         beamline = beamline.upper()
 
-        query = In(Proposal.instruments, [beamline])
         proposals = Proposal.find(In(Proposal.instruments, [beamline])).find(
             Proposal.pass_type_id == "300005"
         )
@@ -252,7 +289,9 @@ async def directories(proposal_id: int):
             groups_acl.append({f"n2sn-right-dataadmin-{beamline_tla}": "rw"})
 
             directory = {
-                "path": data_root / "proposals" / str(cycle) / proposal.data_session,
+                "path": str(
+                    data_root / "proposals" / str(cycle) / proposal.data_session
+                ),
                 "owner": "nsls2data",
                 "group": proposal.data_session,
                 "group_writable": True,
