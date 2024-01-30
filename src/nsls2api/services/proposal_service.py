@@ -4,9 +4,8 @@ from typing import Optional
 from beanie.odm.operators.find.array import ElemMatch
 from beanie.operators import And, In, Text, RegEx
 
-# from models.proposals import Proposal
 from nsls2api.models.proposals import Proposal, User, ProposalIdView
-from nsls2api.api.models.proposal_model import ProposalSummary
+from nsls2api.api.models.proposal_model import ProposalFullDetails
 from nsls2api.services import beamline_service, pass_service
 
 
@@ -56,7 +55,6 @@ async def recently_updated(count=5, beamline: str | None = None):
 
 async def fetch_proposals_for_cycle(cycle: str) -> list[str]:
     proposals = await Proposal.find(In(Proposal.cycles, [cycle])).to_list()
-    print(proposals)
     result = [u.proposal_id for u in proposals if u.proposal_id is not None]
     return result
 
@@ -95,19 +93,21 @@ async def fetch_proposals(
     proposal_id: list[str] | None = None,
     beamline: list[str] | None = None,
     cycle: list[str] | None = None,
+    facility: list[str] | None = None,
     page_size: int = 10,
     page: int = 1,
-) -> Optional[list[ProposalSummary]]:
+    include_directories: bool = False,
+) -> Optional[list[ProposalFullDetails]]:
     query = []
 
     if beamline:
-        query.append(In(Proposal.instruments, [beamline]))
+        query.append(In(Proposal.instruments, beamline))
 
     if cycle:
-        query.append(In(Proposal.cycles, [cycle]))
+        query.append(In(Proposal.cycles, cycle))
 
     if proposal_id:
-        query.append(In(Proposal.proposal_id, [proposal_id]))
+        query.append(In(Proposal.proposal_id, proposal_id))
 
     if len(query) == 0:
         proposals = (
@@ -126,7 +126,18 @@ async def fetch_proposals(
             .to_list()
         )
 
-    return proposals
+    # Add directories field to each proposal
+    if include_directories:
+        detailed_proposals = []
+        for proposal in proposals:
+            new_proposal = ProposalFullDetails(
+                **proposal.model_dump(),
+                directories=await directories(proposal.proposal_id),
+            )
+            detailed_proposals.append(new_proposal)
+        return detailed_proposals
+    else:
+        return proposals
 
 
 async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
@@ -209,7 +220,6 @@ async def is_commissioning(proposal: Proposal):
 
 
 async def search_proposals(search_text: str) -> list[Proposal]:
-    results: list[Proposal] = []
 
     query = Text(search=search_text, case_sensitive=False)
 
@@ -232,23 +242,19 @@ async def directories(proposal_id: int):
 
     # if any of the following are null or zero length, then we don't have
     # enough information to create any directories
-    insufficient_information = False
     error_msg = []
 
     if proposal.data_session is None:
-        insufficient_information = True
         error_msg.append(
             f"Proposal {str(proposal.proposal_id)} does not contain a data_session."
         )
 
     if not await has_valid_cycle(proposal):
-        insufficient_information = True
         error_msg.append(
             f"Proposal {str(proposal.proposal_id)} does not contain any cycle information."
         )
 
     if len(proposal.instruments) == 0:
-        insufficient_information = True
         error_msg.append(
             f"Proposal {str(proposal.proposal_id)} does not contain any beamlines."
         )
@@ -289,7 +295,9 @@ async def directories(proposal_id: int):
             groups_acl.append({f"n2sn-right-dataadmin-{beamline_tla}": "rw"})
 
             directory = {
-                "path": str(data_root / "proposals" / str(cycle) / proposal.data_session),
+                "path": str(
+                    data_root / "proposals" / str(cycle) / proposal.data_session
+                ),
                 "owner": "nsls2data",
                 "group": proposal.data_session,
                 "group_writable": True,
@@ -301,11 +309,15 @@ async def directories(proposal_id: int):
     return directory_list
 
 
+# TODO: This function is not yet complete
 def create_or_update_proposal(proposal_id):
     # Does the proposal already exist in our system
     proposal_exists = exists(proposal_id)
 
     # Let's see what PASS has for this proposal.
-    pass_proposal = pass_service.get_proposal(proposal_id)
+    if proposal_exists:
+        pass_proposal = pass_service.get_proposal(proposal_id)
 
     proposal = Proposal(proposal_id=pass_proposal)
+
+    return proposal
