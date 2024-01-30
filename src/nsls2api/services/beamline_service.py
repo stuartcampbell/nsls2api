@@ -5,6 +5,8 @@ from beanie.odm.operators.find.comparison import In
 
 from nsls2api.models.beamlines import (
     Beamline,
+    Detector,
+    DetectorView,
     ServicesOnly,
     ServiceAccounts,
     ServiceAccountsView,
@@ -44,6 +46,17 @@ async def all_services(name: str) -> Optional[ServicesOnly]:
         ServicesOnly
     )
     return beamline_services.services
+
+
+async def detectors(name: str) -> Optional[list[Detector]]:
+    detectors = await Beamline.find_one(Beamline.name == name.upper()).project(
+        DetectorView
+    )  
+    
+    if detectors is None:
+        return None
+    
+    return detectors.detectors
 
 
 async def service_accounts(name: str) -> Optional[ServiceAccounts]:
