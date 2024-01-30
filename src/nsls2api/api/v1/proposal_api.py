@@ -1,5 +1,9 @@
+<<<<<<< Updated upstream
+=======
+from typing import Annotated, List, Optional
+>>>>>>> Stashed changes
 import fastapi
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Query
 
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsModel,
@@ -10,6 +14,8 @@ from nsls2api.api.models.proposal_model import UsernamesModel
 from nsls2api.infrastructure.security import get_current_user
 from nsls2api.models.proposals import Proposal, User
 from nsls2api.services import proposal_service
+from nsls2api.api.models.facility_model import FacilityName
+
 
 router = fastapi.APIRouter()
 
@@ -46,26 +52,28 @@ async def get_commissioning_proposals(beamline: str | None = None):
     return model
 
 
-@router.get("/proposals/{cycle}")
-async def get_proposals_for_cycle(cycle: str):
-    proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
-    if proposal_list is None:
-        return fastapi.responses.JSONResponse(
-            {"error": f"No proposals were found for cycle {cycle}"},
-            status_code=404,
-        )
-    data = {"cycle": cycle, "proposals": proposal_list}
-    return data
-
 # TODO: Add back into schema when implemented.
-@router.get("/proposals/", include_in_schema=False)
-async def get_proposals():
-    proposal_list = await proposal_service.fetch_proposals()
+@router.get("/proposals/", include_in_schema=True)
+async def get_proposals(
+    proposal_id: Annotated[list[str] | None, Query()] = None,
+    beamline: Annotated[list[str] | None, Query()] = None,
+    cycle: Annotated[list[str] | None, Query()] = None,
+    facility: Annotated[list[FacilityName]]  = FacilityName.nsls2,
+    page_size: int = 10,
+    page: int = 1,
+):
+    proposal_list = await proposal_service.fetch_proposals(
+        proposal_id=proposal_id,
+        beamline=beamline,
+        cycle=cycle,
+        page_size=page_size,
+        page=page,
+    )
     return proposal_list
 
 
 @router.get("/proposal/{proposal_id}", response_model=Proposal)
-async def get_proposal(proposal_id: int):
+async def get_proposal(proposal_id: int, beamline: str | None = None):
     proposal = await proposal_service.proposal_by_id(proposal_id)
     if proposal is None:
         return fastapi.responses.JSONResponse(
@@ -74,7 +82,7 @@ async def get_proposal(proposal_id: int):
     return proposal
 
 
-#TODO: Add back into schema when implemented.
+# TODO: Add back into schema when implemented.
 @router.post(
     "/proposal/{proposal_id}",
     response_model=Proposal,
