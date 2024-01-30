@@ -139,6 +139,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Hatch virtual environments
+.hatch
+
 # Local settings
 settings.json
 
