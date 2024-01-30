@@ -3,7 +3,7 @@ from fastapi import HTTPException, Depends
 from fastapi.security.api_key import APIKey
 
 from nsls2api.infrastructure.security import get_api_key
-from nsls2api.models.beamlines import Beamline, BeamlineService
+from nsls2api.models.beamlines import Beamline, BeamlineService, DetectorList
 from nsls2api.services import beamline_service
 
 router = fastapi.APIRouter()
@@ -17,6 +17,7 @@ async def details(name: str):
             status_code=451, detail=f"Beamline named {name} could not be found"
         )
     return beamline
+
 
 # TODO: Add back into schema when we fully decide on the data model for the beamline services.
 @router.get("/beamline/{name}/services", response_model=list[BeamlineService], include_in_schema=False)
@@ -39,7 +40,22 @@ async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_api_key
     return service_accounts
 
 
-# TODO: Review if we want to also have the following endpoints for the beamline accounts or 
+@router.get(
+    "/beamline/{name}/detectors", response_model=DetectorList, include_in_schema=True
+)
+async def get_beamline_detectors(name: str) -> DetectorList:
+    detectors = await beamline_service.detectors(name)
+    if detectors is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No detectors for the {name} beamline could not be found.",
+        )
+
+    response_model = DetectorList(detectors=detectors, count=len(detectors))
+    return response_model
+
+
+# TODO: Review if we want to also have the following endpoints for the beamline accounts or
 #       if we want to have a single endpoint (above) that returns all the accounts for a beamline.
 
 @router.get("/beamline/{name}/accounts/workflow", response_model=str, include_in_schema=False)
