@@ -228,7 +228,7 @@ async def directories(proposal_id: int):
         service_accounts = await beamline_service.service_accounts(beamline)
         # print(f"service_accounts: {service_accounts}")
 
-        if is_commissioning(proposal):
+        if await is_commissioning(proposal):
             cycles = ["commissioning"]
         else:
             cycles = proposal.cycles
@@ -252,7 +252,7 @@ async def directories(proposal_id: int):
             groups_acl.append({f"n2sn-right-dataadmin-{beamline_tla}": "rw"})
 
             directory = {
-                "path": data_root / "proposals" / str(cycle) / proposal.data_session,
+                "path": str(data_root / "proposals" / str(cycle) / proposal.data_session),
                 "owner": "nsls2data",
                 "group": proposal.data_session,
                 "group_writable": True,
