@@ -7,6 +7,7 @@ import pydantic
 
 class Detector(pydantic.BaseModel):
     name: str
+    directory_name: str | None = None
 
 class DetectorView(pydantic.BaseModel):
     detectors: list[Detector] | None = None
