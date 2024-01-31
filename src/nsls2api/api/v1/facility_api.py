@@ -1,6 +1,6 @@
 import fastapi
 
-from nsls2api.api.models.facility_model import FacilityName
+from nsls2api.api.models.facility_model import FacilityName, FacilityCyclesResponseModel
 from nsls2api.services import proposal_service, facility_service
 
 router = fastapi.APIRouter()
@@ -8,10 +8,22 @@ router = fastapi.APIRouter()
 
 # TODO: Add back into schema when implemented.
 @router.get(
-    "/facility/{facility}/cycles/current", response_model=str, include_in_schema=False
+    "/facility/{facility}/cycles/current", response_model=FacilityCyclesResponseModel, include_in_schema=True
 )
-async def get_current_facilty_cycle(facility: FacilityName):
-    return "2024-1"
+async def get_current_operating_cycle(facility: FacilityName):
+    current_cycle = await facility_service.current_operating_cycle(facility.name)
+    if current_cycle is None:
+        return fastapi.responses.JSONResponse(
+            {"error": f"No current operating cycle was found for facility {facility.name}"},
+            status_code=404,
+        )
+    
+    print("Are we healthy ? ")
+    print(await facility_service.is_healthy(facility.name))
+
+    response_model = FacilityCyclesResponseModel(facility=facility.name, cycles=[current_cycle])
+    
+    return response_model
 
 @router.get("/facility/{facility}/cycles", include_in_schema=True)
 async def get_facility_cycles(facility: FacilityName):
