@@ -134,7 +134,7 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
 
 
 async def proposal_directory_skeleton(name: str):
-    detetector_list = await detectors(name.upper())
+    detector_list = await detectors(name.upper())
 
     directory_list = []
 
@@ -165,16 +165,18 @@ async def proposal_directory_skeleton(name: str):
     }
     directory_list.append(asset_directory)
 
-    for detector in detetector_list:
-        directory = {
-            "path": f"{asset_directory_name}/{detector.directory_name}",
-            "is_absolute": False,
-            "owner": "nsls2data",
-            "users": users_acl,
-            "groups": groups_acl,
-            "beamline": name.upper(),
-        }
-        directory_list.append(directory)
+    # Add the detector subdirectories
+    if detector_list:
+        for detector in detector_list:
+            directory = {
+                "path": f"{asset_directory_name}/{detector.directory_name}",
+                "is_absolute": False,
+                "owner": "nsls2data",
+                "users": users_acl,
+                "groups": groups_acl,
+                "beamline": name.upper(),
+            }
+            directory_list.append(directory)
 
     # Add a default directory for non-named detectors
     default_directory = {
