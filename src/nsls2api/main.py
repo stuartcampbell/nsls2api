@@ -1,10 +1,13 @@
 from pathlib import Path
-import time
-from typing import Annotated
 
 import fastapi
+import logging
 import uvicorn
-from fastapi import Depends
+
+from asgi_correlation_id import CorrelationIdMiddleware
+
+from starlette.exceptions import HTTPException
+from starlette.middleware import Middleware
 from starlette.staticfiles import StaticFiles
 
 from nsls2api.api.v1 import admin_api as admin_api_v1
@@ -13,19 +16,32 @@ from nsls2api.api.v1 import facility_api as facility_api_v1
 from nsls2api.api.v1 import proposal_api as proposal_api_v1
 from nsls2api.api.v1 import stats_api as stats_api_v1
 from nsls2api.api.v1 import user_api as user_api_v1
-from nsls2api.infrastructure import config
 from nsls2api.infrastructure import mongodb_setup
 from nsls2api.infrastructure.config import get_settings
+from nsls2api.infrastructure.logging import configure_logging
 from nsls2api.views import diagnostics
 from nsls2api.views import home
 from nsls2api.middleware import ProcessTimeMiddleware
-from starlette.middleware import Middleware
+from nsls2api.middleware import log_request
+from fastapi.exceptions import RequestValidationError
+from nsls2api.exception_handlers import request_validation_exception_handler, http_exception_handler, unhandled_exception_handler
+
 
 settings = get_settings()
 
+logger = logging.getLogger(__name__)
+
 middleware = [Middleware(ProcessTimeMiddleware)]
 
-app = fastapi.FastAPI(title="NSLS-II API", middleware=middleware)
+app = fastapi.FastAPI(title="NSLS-II API", middleware=middleware, on_startup=[configure_logging])
+app.add_middleware(CorrelationIdMiddleware)
+
+app.middleware("http")(log_request)
+
+app.add_exception_handler(RequestValidationError, request_validation_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, unhandled_exception_handler)
+
 
 current_file = Path(__file__)
 current_file_dir = current_file.parent
@@ -41,6 +57,7 @@ def main():
 
 
 def configure_routing():
+    logger.info("Configuring routing")
     app.include_router(proposal_api_v1.router, prefix="/v1", tags=["proposal"])
     app.include_router(stats_api_v1.router, prefix="/v1")
     app.include_router(beamline_api_v1.router, prefix="/v1", tags=["beamline"])
