@@ -131,3 +131,47 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
     beamlines = await Beamline.find(In(Beamline.data_admins, [username])).to_list()
     beamline_names = [b.name.lower() for b in beamlines if b.name is not None]
     return beamline_names
+
+
+async def proposal_directory_skeleton(name: str):
+    
+    detetector_list = await detectors(name.upper())
+    
+    directory_list = []
+
+    # TODO: Make this parameter configurable (i.e. have field in beamline document model for this value)
+    asset_directory_name = "assets"
+
+    users_acl: list[dict[str, str]] = []
+    groups_acl: list[dict[str, str]] = []
+
+    users_acl.append({f"softioc-{name.lower()}": "rwx"})
+    users_acl.append({f"bluesky-{name.lower()}": "rwx"})
+    users_acl.append({f"workflows-{name.lower()}": "r-x"})
+    users_acl.append({"nsls2data": "r-x"})
+
+    groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r-x"})
+    groups_acl.append({"n2sn-dataadmin": "r-x"})
+
+    
+    for detector in detetector_list:
+        directory = {
+            "path": f"{asset_directory_name}/{detector.directory_name}",
+            "is_absolute": False,
+            "owner": "nsls2data",
+            "users": users_acl,
+            "groups": groups_acl
+        }
+        directory_list.append(directory)
+
+    # Add a default directory for non-named detectors
+    default_directory = {
+        "path": f"{asset_directory_name}/default",
+        "is_absolute": False,
+        "owner": "nsls2data",
+        "users": users_acl,
+        "groups": groups_acl
+    }
+    directory_list.append(default_directory)
+
+    return directory_list
