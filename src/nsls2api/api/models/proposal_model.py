@@ -56,8 +56,10 @@ class ProposalUser(pydantic.BaseModel):
 class ProposalDirectories(pydantic.BaseModel):
     path: str
     owner: str
-    group: str | None = ""
+    group: str | None = None
     group_writable: bool | None = False
+    beamline: str | None = None
+    cycle: str | None = None
     users: list[dict[str, str]]
     groups: list[dict[str, str]]
 
