@@ -51,11 +51,11 @@ async def all_services(name: str) -> Optional[ServicesOnly]:
 async def detectors(name: str) -> Optional[list[Detector]]:
     detectors = await Beamline.find_one(Beamline.name == name.upper()).project(
         DetectorView
-    )  
-    
+    )
+
     if detectors is None:
         return None
-    
+
     return detectors.detectors
 
 
@@ -134,9 +134,8 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
 
 
 async def proposal_directory_skeleton(name: str):
-    
     detetector_list = await detectors(name.upper())
-    
+
     directory_list = []
 
     # TODO: Make this parameter configurable (i.e. have field in beamline document model for this value)
@@ -161,17 +160,19 @@ async def proposal_directory_skeleton(name: str):
         "is_absolute": False,
         "owner": "nsls2data",
         "users": users_acl,
-        "groups": groups_acl
+        "groups": groups_acl,
+        "beamline": name.upper(),
     }
     directory_list.append(asset_directory)
-    
+
     for detector in detetector_list:
         directory = {
             "path": f"{asset_directory_name}/{detector.directory_name}",
             "is_absolute": False,
             "owner": "nsls2data",
             "users": users_acl,
-            "groups": groups_acl
+            "groups": groups_acl,
+            "beamline": name.upper(),
         }
         directory_list.append(directory)
 
@@ -181,7 +182,8 @@ async def proposal_directory_skeleton(name: str):
         "is_absolute": False,
         "owner": "nsls2data",
         "users": users_acl,
-        "groups": groups_acl
+        "groups": groups_acl,
+        "beamline": name.upper(),
     }
     directory_list.append(default_directory)
 
