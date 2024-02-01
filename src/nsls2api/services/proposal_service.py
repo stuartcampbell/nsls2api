@@ -139,9 +139,11 @@ async def fetch_proposals(
     else:
         return proposals
 
+
 async def data_session_for_proposal(proposal_id: int) -> Optional[str]:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
     return proposal.data_session
+
 
 async def beamlines_for_proposal(proposal_id: int) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
@@ -314,7 +316,6 @@ async def directories(proposal_id: int):
                 "cycle": str(cycle),
                 "owner": "nsls2data",
                 "group": proposal.data_session,
-                "group_writable": True,
                 "users": users_acl,
                 "groups": groups_acl,
             }
