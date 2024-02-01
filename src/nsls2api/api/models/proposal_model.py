@@ -101,6 +101,8 @@ class ProposalDirectorySkeleton(pydantic.BaseModel):
 
 class ProposalDirectoriesList(pydantic.BaseModel):
     directory_count: int
+    beamline: list[str] | None = []
+    cycles: list[str] | None = []
     directories: list[ProposalDirectories]
 
 
