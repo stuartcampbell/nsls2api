@@ -144,14 +144,14 @@ async def proposal_directory_skeleton(name: str):
     users_acl: list[dict[str, str]] = []
     groups_acl: list[dict[str, str]] = []
 
-    users_acl.append({f"softioc-{name.lower()}": "rwx"})
-    users_acl.append({"softioc": "rwx"})
-    users_acl.append({f"bluesky-{name.lower()}": "rwx"})
-    users_acl.append({f"workflows-{name.lower()}": "r-x"})
-    users_acl.append({"nsls2data": "r-x"})
+    users_acl.append({f"softioc-{name.lower()}": "rw"})
+    users_acl.append({"softioc": "rw"})
+    users_acl.append({f"bluesky-{name.lower()}": "rw"})
+    users_acl.append({f"workflows-{name.lower()}": "r"})
+    users_acl.append({"nsls2data": "r"})
 
-    groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r-x"})
-    groups_acl.append({"n2sn-dataadmin": "r-x"})
+    groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r"})
+    groups_acl.append({"n2sn-dataadmin": "r"})
 
     # Add the asset directory so this has the same permissions as the detector directories
     # and not just inherit from the parent (i.e. proposal) directory.
