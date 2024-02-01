@@ -57,7 +57,6 @@ class ProposalDirectories(pydantic.BaseModel):
     path: str
     owner: str
     group: str | None = None
-    group_writable: bool | None = False
     beamline: str | None = None
     cycle: str | None = None
     users: list[dict[str, str]]
@@ -67,17 +66,18 @@ class ProposalDirectories(pydantic.BaseModel):
         "json_schema_extra": {
             "examples": [
                 {
-                    "path": "/nsls2/xf11id1/2021-2/20210901",
-                    "owner": "xf11id1",
-                    "group": "xf11id1",
-                    "group_writable": True,
+                    "path": "/nsls2/xf31id1/2021-2/pass-666666",
+                    "owner": "xf31id1",
+                    "group": "xf31id1",
+                    "beamline": "TST",
+                    "cycle": "1066-1",
                     "users": [
-                        {"name": "xf11id1", "permissions": "rwx"},
-                        {"name": "xf11id2", "permissions": "rwx"},
+                        {"name": "xf31id", "permissions": "rw"},
+                        {"name": "service-account", "permissions": "rw"},
                     ],
                     "groups": [
-                        {"name": "xf11id1", "permissions": "rwx"},
-                        {"name": "xf11id2", "permissions": "rwx"},
+                        {"name": "dataadmins", "permissions": "rw"},
+                        {"name": "datareaders", "permissions": "r"},
                     ],
                 }
             ]
