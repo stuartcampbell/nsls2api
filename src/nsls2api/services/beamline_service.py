@@ -134,7 +134,7 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
 
 
 async def proposal_directory_skeleton(name: str):
-    detetector_list = await detectors(name.upper())
+    detector_list = await detectors(name.upper())
 
     directory_list = []
 
@@ -144,14 +144,14 @@ async def proposal_directory_skeleton(name: str):
     users_acl: list[dict[str, str]] = []
     groups_acl: list[dict[str, str]] = []
 
-    users_acl.append({f"softioc-{name.lower()}": "rwx"})
-    users_acl.append({"softioc": "rwx"})
-    users_acl.append({f"bluesky-{name.lower()}": "rwx"})
-    users_acl.append({f"workflows-{name.lower()}": "r-x"})
-    users_acl.append({"nsls2data": "r-x"})
+    users_acl.append({f"softioc-{name.lower()}": "rw"})
+    users_acl.append({"softioc": "rw"})
+    users_acl.append({f"bluesky-{name.lower()}": "rw"})
+    users_acl.append({f"workflows-{name.lower()}": "r"})
+    users_acl.append({"nsls2data": "r"})
 
-    groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r-x"})
-    groups_acl.append({"n2sn-dataadmin": "r-x"})
+    groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r"})
+    groups_acl.append({"n2sn-dataadmin": "r"})
 
     # Add the asset directory so this has the same permissions as the detector directories
     # and not just inherit from the parent (i.e. proposal) directory.
@@ -165,16 +165,18 @@ async def proposal_directory_skeleton(name: str):
     }
     directory_list.append(asset_directory)
 
-    for detector in detetector_list:
-        directory = {
-            "path": f"{asset_directory_name}/{detector.directory_name}",
-            "is_absolute": False,
-            "owner": "nsls2data",
-            "users": users_acl,
-            "groups": groups_acl,
-            "beamline": name.upper(),
-        }
-        directory_list.append(directory)
+    # Add the detector subdirectories
+    if detector_list:
+        for detector in detector_list:
+            directory = {
+                "path": f"{asset_directory_name}/{detector.directory_name}",
+                "is_absolute": False,
+                "owner": "nsls2data",
+                "users": users_acl,
+                "groups": groups_acl,
+                "beamline": name.upper(),
+            }
+            directory_list.append(directory)
 
     # Add a default directory for non-named detectors
     default_directory = {
