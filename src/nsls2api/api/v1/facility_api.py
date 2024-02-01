@@ -18,8 +18,9 @@ async def get_current_operating_cycle(facility: FacilityName):
             status_code=404,
         )
     
-    print("Are we healthy ? ")
-    print(await facility_service.is_healthy(facility.name))
+    # TODO: Maybe add a health check here
+    # print("Are we healthy ? ")
+    # print(await facility_service.is_healthy(facility.name))
 
     response_model = FacilityCyclesResponseModel(facility=facility.name, cycles=[current_cycle])
     
