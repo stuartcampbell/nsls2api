@@ -46,7 +46,7 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
     """
     cycle = await Cycle.find_one(
         Cycle.facility == facility,
-        Cycle.current_operating_cycle == True,  # noqa: E712
+        Cycle.is_current_operating_cycle == True,  # noqa: E712
     )
 
     if cycle is None:
