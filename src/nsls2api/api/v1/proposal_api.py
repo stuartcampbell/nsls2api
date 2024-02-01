@@ -174,7 +174,11 @@ async def get_proposal_directories(proposal_id: int) -> ProposalDirectoriesList:
             {"error": f"Directories not found for proposal {proposal_id}"},
             status_code=404,
         )
+
     response_model = ProposalDirectoriesList(
-        directories=directories, directory_count=len(directories)
+        directories=directories,
+        directory_count=len(directories),
+        beamline=await proposal_service.beamlines_for_proposal(proposal_id),
+        cycles=await proposal_service.cycles_for_proposal(proposal_id),
     )
     return response_model
