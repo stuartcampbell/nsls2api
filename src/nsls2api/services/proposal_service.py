@@ -310,6 +310,8 @@ async def directories(proposal_id: int):
                 "path": str(
                     data_root / "proposals" / str(cycle) / proposal.data_session
                 ),
+                "beamline": beamline.upper(),
+                "cycle": str(cycle),
                 "owner": "nsls2data",
                 "group": proposal.data_session,
                 "group_writable": True,
