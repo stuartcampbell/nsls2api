@@ -154,6 +154,16 @@ async def proposal_directory_skeleton(name: str):
     groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r-x"})
     groups_acl.append({"n2sn-dataadmin": "r-x"})
 
+    # Add the asset directory so this has the same permissions as the detector directories
+    # and not just inherit from the parent (i.e. proposal) directory.
+    asset_directory = {
+        "path": f"{asset_directory_name}",
+        "is_absolute": False,
+        "owner": "nsls2data",
+        "users": users_acl,
+        "groups": groups_acl
+    }
+    directory_list.append(asset_directory)
     
     for detector in detetector_list:
         directory = {
