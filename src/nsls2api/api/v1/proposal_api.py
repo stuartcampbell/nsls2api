@@ -168,10 +168,16 @@ async def get_proposal_usernames(proposal_id: int):
 
 @router.get("/proposal/{proposal_id}/directories")
 async def get_proposal_directories(proposal_id: int) -> ProposalDirectoriesList:
-    directories = await proposal_service.directories(proposal_id)
-    if directories is None:
+    try:
+        directories = await proposal_service.directories(proposal_id)
+        if directories is None:
+            return fastapi.responses.JSONResponse(
+                {"error": f"Directories not found for proposal {proposal_id}"},
+                status_code=404,
+            )
+    except LookupError as e:
         return fastapi.responses.JSONResponse(
-            {"error": f"Directories not found for proposal {proposal_id}"},
+            {"error": e.args[0]},
             status_code=404,
         )
 
