@@ -33,3 +33,23 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
     facilities = await Facility.find(In(Facility.data_admins, [username])).to_list()
     facility_names = [f.facility_id for f in facilities if f.facility_id is not None]
     return facility_names
+
+
+async def current_operating_cycle(facility: str) -> Optional[str]:
+    """
+    Current Operating Cycle
+
+    This method retrieves the current operating cycle for a given facility.
+
+    :param facility: The facility name (str).
+    :return: The current operating cycle (str) or None if no current operating cycle is found.
+    """
+    cycle = await Cycle.find_one(
+        Cycle.facility == facility,
+        Cycle.current_operating_cycle == True,  # noqa: E712
+    )
+
+    if cycle is None:
+        return None
+
+    return cycle.name

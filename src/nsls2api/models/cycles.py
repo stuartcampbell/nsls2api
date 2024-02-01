@@ -8,6 +8,7 @@ import pydantic
 class Cycle(beanie.Document):
     name: str
     accepting_proposals: Optional[bool]
+    current_operating_cycle: bool = False
     active: bool = False
     end_date: Optional[datetime.datetime]
     facility: str
