@@ -146,6 +146,7 @@ async def proposal_directory_skeleton(name: str):
     groups_acl: list[dict[str, str]] = []
 
     users_acl.append({f"softioc-{name.lower()}": "rwx"})
+    users_acl.append({"softioc": "rwx"})
     users_acl.append({f"bluesky-{name.lower()}": "rwx"})
     users_acl.append({f"workflows-{name.lower()}": "r-x"})
     users_acl.append({"nsls2data": "r-x"})
