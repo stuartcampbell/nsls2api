@@ -174,12 +174,12 @@ async def proposal_directory_skeleton(name: str):
     users_acl: list[dict[str, str]] = []
     groups_acl: list[dict[str, str]] = []
 
-    service_accounts = await service_accounts(name)
+    service_usernames = await service_accounts(name)
 
-    users_acl.append({f"{service_accounts.ioc}": "rw"})
+    users_acl.append({f"{service_usernames.ioc}": "rw"})
     users_acl.append({"softioc": "rw"})
-    users_acl.append({f"{service_accounts.bluesky}": "rw"})
-    users_acl.append({f"{service_accounts.workflow}": "r"})
+    users_acl.append({f"{service_usernames.bluesky}": "rw"})
+    users_acl.append({f"{service_usernames.workflow}": "r"})
     users_acl.append({"nsls2data": "r"})
 
     groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r"})
