@@ -125,6 +125,10 @@ async def operator_username(name: str) -> str:
     operator_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         OperatorServiceAccountView
     )
+
+    if operator_account is None:
+        raise LookupError(f"Could not find a the operattor account for the {name} beamline.")
+
     return operator_account.username
 
 
@@ -132,14 +136,23 @@ async def epics_services_username(name: str) -> str:
     epics_services_account = await Beamline.find_one(
         Beamline.name == name.upper()
     ).project(EpicsServicesServiceAccountView)
+
+    if epics_services_account is None:
+        # Let's make an educated guess
+        return f"epics-services-{name.lower()}"
+
     return epics_services_account.username
 
 
-async def lsdc_username(name: str) -> str:
+async def lsdc_username(name: str) -> Optional[str]:
     lsdc_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         LsdcServiceAccountView
     )
-    return False if lsdc_account is None else lsdc_account.username
+
+    if lsdc_account is None:
+        return None
+
+    return lsdc_account.username
 
 
 async def data_roles_by_user(username: str) -> Optional[list[str]]:
