@@ -79,13 +79,14 @@ async def get_beamline_proposal_directory_skeleton(name: str):
     return response_model
 
 
-
 @router.get(
     "/beamline/{name}/proposal-directory-skeleton-alternate",
-    response_model=Proposal,
+    response_model=ProposalDirectoriesList,
     include_in_schema=False,
 )
-async def get_beamline_proposal_directory_skeleton_alternate(name: str, proposal_id: int):
+async def get_beamline_proposal_directory_skeleton_alternate(
+    name: str, proposal_id: int
+):
     directory_skeleton = await beamline_service.proposal_directory_skeleton(name)
     if directory_skeleton is None:
         raise HTTPException(
@@ -96,9 +97,6 @@ async def get_beamline_proposal_directory_skeleton_alternate(name: str, proposal
         directory_count=len(directory_skeleton), directories=directory_skeleton
     )
     return response_model
-
-
-
 
 
 # TODO: Review if we want to also have the following endpoints for the beamline accounts or
