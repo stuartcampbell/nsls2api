@@ -117,7 +117,7 @@ async def bluesky_username(name: str) -> str:
     if bluesky_account is None:
         # Let's make an educated guess
         return f"bluesky-{name.lower()}"
-    
+
     return bluesky_account.username
 
 
@@ -127,7 +127,9 @@ async def operator_username(name: str) -> str:
     )
 
     if operator_account is None:
-        raise LookupError(f"Could not find a the operattor account for the {name} beamline.")
+        raise LookupError(
+            f"Could not find a the operattor account for the {name} beamline."
+        )
 
     return operator_account.username
 
@@ -172,15 +174,13 @@ async def proposal_directory_skeleton(name: str):
     users_acl: list[dict[str, str]] = []
     groups_acl: list[dict[str, str]] = []
 
-    ioc_username = await ioc_username(name)
-    workflow_username = await workflow_username(name)
-    bluesky_username = await bluesky_username(name)
+    service_accounts = await service_accounts(name)
 
-    users_acl.append({f"{ioc_username}}": "rwx"})
-    users_acl.append({"softioc": "rwx"})
-    users_acl.append({f"{bluesky_username}": "rwx"})
-    users_acl.append({f"{workflow_username}": "r-x"})
-    users_acl.append({"nsls2data": "r-x"})
+    users_acl.append({f"{service_accounts.ioc}": "rw"})
+    users_acl.append({"softioc": "rw"})
+    users_acl.append({f"{service_accounts.bluesky}": "rw"})
+    users_acl.append({f"{service_accounts.workflow}": "r"})
+    users_acl.append({"nsls2data": "r"})
 
     groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r"})
     groups_acl.append({"n2sn-dataadmin": "r"})
