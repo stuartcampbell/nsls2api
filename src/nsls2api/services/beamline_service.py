@@ -63,6 +63,10 @@ async def service_accounts(name: str) -> Optional[ServiceAccounts]:
     accounts = await Beamline.find_one(Beamline.name == name.upper()).project(
         ServiceAccountsView
     )
+
+    if accounts is None:
+        return None
+
     return accounts.service_accounts
 
 
@@ -89,6 +93,9 @@ async def workflow_username(name: str) -> str:
     workflow_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         WorkflowServiceAccountView
     )
+    if workflow_account is None:
+        # Let's make an educated guess
+        return f"workflow-{name.lower()}"
     return workflow_account.username
 
 
@@ -96,6 +103,10 @@ async def ioc_username(name: str) -> str:
     ioc_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         IOCServiceAccountView
     )
+    if ioc_account is None:
+        # Let's make an educated guess
+        return f"softioc-{name.lower()}"
+
     return ioc_account.username
 
 
@@ -103,6 +114,10 @@ async def bluesky_username(name: str) -> str:
     bluesky_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         BlueskyServiceAccountView
     )
+    if bluesky_account is None:
+        # Let's make an educated guess
+        return f"bluesky-{name.lower()}"
+
     return bluesky_account.username
 
 
@@ -110,6 +125,12 @@ async def operator_username(name: str) -> str:
     operator_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         OperatorServiceAccountView
     )
+
+    if operator_account is None:
+        raise LookupError(
+            f"Could not find a the operattor account for the {name} beamline."
+        )
+
     return operator_account.username
 
 
@@ -117,14 +138,23 @@ async def epics_services_username(name: str) -> str:
     epics_services_account = await Beamline.find_one(
         Beamline.name == name.upper()
     ).project(EpicsServicesServiceAccountView)
+
+    if epics_services_account is None:
+        # Let's make an educated guess
+        return f"epics-services-{name.lower()}"
+
     return epics_services_account.username
 
 
-async def lsdc_username(name: str) -> str:
+async def lsdc_username(name: str) -> Optional[str]:
     lsdc_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         LsdcServiceAccountView
     )
-    return False if lsdc_account is None else lsdc_account.username
+
+    if lsdc_account is None:
+        return None
+
+    return lsdc_account.username
 
 
 async def data_roles_by_user(username: str) -> Optional[list[str]]:
@@ -144,10 +174,12 @@ async def proposal_directory_skeleton(name: str):
     users_acl: list[dict[str, str]] = []
     groups_acl: list[dict[str, str]] = []
 
-    users_acl.append({f"softioc-{name.lower()}": "rw"})
+    service_accounts = await service_accounts(name)
+
+    users_acl.append({f"{service_accounts.ioc}": "rw"})
     users_acl.append({"softioc": "rw"})
-    users_acl.append({f"bluesky-{name.lower()}": "rw"})
-    users_acl.append({f"workflow-{name.lower()}": "r"})
+    users_acl.append({f"{service_accounts.bluesky}": "rw"})
+    users_acl.append({f"{service_accounts.workflow}": "r"})
     users_acl.append({"nsls2data": "r"})
 
     groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r"})
