@@ -61,6 +61,7 @@ class ProposalDirectories(pydantic.BaseModel):
     cycle: str | None = None
     users: list[dict[str, str]]
     groups: list[dict[str, str]]
+    create_ymd_directory_tree: bool | None = False
 
     model_config = {
         "json_schema_extra": {
