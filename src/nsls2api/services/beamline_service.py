@@ -63,6 +63,10 @@ async def service_accounts(name: str) -> Optional[ServiceAccounts]:
     accounts = await Beamline.find_one(Beamline.name == name.upper()).project(
         ServiceAccountsView
     )
+
+    if accounts is None:
+        return None
+
     return accounts.service_accounts
 
 
@@ -89,6 +93,9 @@ async def workflow_username(name: str) -> str:
     workflow_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         WorkflowServiceAccountView
     )
+    if workflow_account is None:
+        # Let's make an educated guess
+        return f"workflow-{name.lower()}"
     return workflow_account.username
 
 
@@ -96,6 +103,10 @@ async def ioc_username(name: str) -> str:
     ioc_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         IOCServiceAccountView
     )
+    if ioc_account is None:
+        # Let's make an educated guess
+        return f"softioc-{name.lower()}"
+
     return ioc_account.username
 
 
@@ -103,6 +114,10 @@ async def bluesky_username(name: str) -> str:
     bluesky_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         BlueskyServiceAccountView
     )
+    if bluesky_account is None:
+        # Let's make an educated guess
+        return f"bluesky-{name.lower()}"
+    
     return bluesky_account.username
 
 
@@ -144,11 +159,15 @@ async def proposal_directory_skeleton(name: str):
     users_acl: list[dict[str, str]] = []
     groups_acl: list[dict[str, str]] = []
 
-    users_acl.append({f"softioc-{name.lower()}": "rw"})
-    users_acl.append({"softioc": "rw"})
-    users_acl.append({f"bluesky-{name.lower()}": "rw"})
-    users_acl.append({f"workflows-{name.lower()}": "r"})
-    users_acl.append({"nsls2data": "r"})
+    ioc_username = await ioc_username(name)
+    workflow_username = await workflow_username(name)
+    bluesky_username = await bluesky_username(name)
+
+    users_acl.append({f"{ioc_username}}": "rwx"})
+    users_acl.append({"softioc": "rwx"})
+    users_acl.append({f"{bluesky_username}": "rwx"})
+    users_acl.append({f"{workflow_username}": "r-x"})
+    users_acl.append({"nsls2data": "r-x"})
 
     groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r"})
     groups_acl.append({"n2sn-dataadmin": "r"})
