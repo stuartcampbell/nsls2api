@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import fastapi
@@ -14,6 +15,7 @@ from nsls2api.api.v1 import stats_api as stats_api_v1
 from nsls2api.api.v1 import user_api as user_api_v1
 from nsls2api.infrastructure import mongodb_setup
 from nsls2api.infrastructure.config import get_settings
+from nsls2api.infrastructure.logging import logger
 from nsls2api.middleware import ProcessTimeMiddleware
 from nsls2api.views import diagnostics, home
 
@@ -32,9 +34,9 @@ app = fastapi.FastAPI(title="NSLS-II API", middleware=middleware)
 app.add_middleware(CorrelationIdMiddleware)
 
 
-def main():
-    configure_routing()
-    uvicorn.run(app, port=8081)
+def configure_uvicorn_logging():
+    uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
+    return uvicorn_log_config
 
 
 def configure_routing():
@@ -48,11 +50,7 @@ def configure_routing():
     # Add this for backwards compatibility (for now)
     app.include_router(proposal_api_v1.router, include_in_schema=False)
 
-    import subprocess
-
-    cmd = "pwd"
-    output = subprocess.run(cmd, shell=True)
-    print(f"Current working directory: {output}")
+    logger.info(f"Current working directory: {os.getcwd()}")
 
     # Also include our webpages
     app.include_router(home.router)
@@ -68,6 +66,11 @@ def configure_routing():
 @app.on_event("startup")
 async def configure_db():
     await mongodb_setup.init_connection(settings.mongodb_dsn.unicode_string())
+
+
+def main():
+    configure_routing()
+    uvicorn.run(app, port=8081)
 
 
 if __name__ == "__main__":
