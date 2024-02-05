@@ -25,6 +25,7 @@ router = fastapi.APIRouter()
 @router.get("/proposals/recent/{count}", response_model=RecentProposalsList)
 async def get_recent_proposals(count: int, beamline: str | None = None):
     count = max(1, count)
+
     proposals = await proposal_service.recently_updated(count, beamline=beamline)
 
     proposal_models = [
