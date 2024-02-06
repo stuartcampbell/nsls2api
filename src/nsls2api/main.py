@@ -1,10 +1,11 @@
+import os
 from pathlib import Path
-import time
-from typing import Annotated
 
 import fastapi
 import uvicorn
-from fastapi import Depends
+from asgi_correlation_id import CorrelationIdMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware import Middleware
 from starlette.staticfiles import StaticFiles
 
 from nsls2api.api.v1 import admin_api as admin_api_v1
@@ -13,19 +14,13 @@ from nsls2api.api.v1 import facility_api as facility_api_v1
 from nsls2api.api.v1 import proposal_api as proposal_api_v1
 from nsls2api.api.v1 import stats_api as stats_api_v1
 from nsls2api.api.v1 import user_api as user_api_v1
-from nsls2api.infrastructure import config
 from nsls2api.infrastructure import mongodb_setup
 from nsls2api.infrastructure.config import get_settings
-from nsls2api.views import diagnostics
-from nsls2api.views import home
+from nsls2api.infrastructure.logging import logger
 from nsls2api.middleware import ProcessTimeMiddleware
-from starlette.middleware import Middleware
+from nsls2api.views import diagnostics, home
 
 settings = get_settings()
-
-middleware = [Middleware(ProcessTimeMiddleware)]
-
-app = fastapi.FastAPI(title="NSLS-II API", middleware=middleware)
 
 current_file = Path(__file__)
 current_file_dir = current_file.parent
@@ -34,10 +29,20 @@ project_root = current_file_dir.parent
 project_root_absolute = project_root.resolve()
 static_root_absolute = current_file_dir_absolute / "static"
 
+middleware = [Middleware(ProcessTimeMiddleware)]
 
-def main():
-    configure_routing()
-    uvicorn.run(app, port=8081)
+app = fastapi.FastAPI(
+    title="NSLS-II API", middleware=middleware
+)
+app.add_middleware(CorrelationIdMiddleware)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["X-Requested-With", "X-Request-ID"],
+    expose_headers=["X-Request-ID"],
+)
 
 
 def configure_routing():
@@ -48,14 +53,8 @@ def configure_routing():
     app.include_router(user_api_v1.router, prefix="/v1", tags=["user"])
     app.include_router(admin_api_v1.router, prefix="/v1", tags=["admin"])
 
-    # Add this for backwards compatibility (for now)
-    app.include_router(proposal_api_v1.router, include_in_schema=False)
-
-    import subprocess
-
-    cmd = "pwd"
-    output = subprocess.run(cmd, shell=True)
-    print(f"Current working directory: {output}")
+    # Just log the current working directory - useful is some of the static files are not found.
+    logger.info(f"Current working directory: {os.getcwd()}")
 
     # Also include our webpages
     app.include_router(home.router)
@@ -71,6 +70,11 @@ def configure_routing():
 @app.on_event("startup")
 async def configure_db():
     await mongodb_setup.init_connection(settings.mongodb_dsn.unicode_string())
+
+
+def main():
+    configure_routing()
+    uvicorn.run(app, port=8081, log_config="uvicorn_log_config.yml")
 
 
 if __name__ == "__main__":
