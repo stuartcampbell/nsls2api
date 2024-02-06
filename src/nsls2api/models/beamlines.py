@@ -122,6 +122,7 @@ class Beamline(beanie.Document):
     service_accounts: ServiceAccounts | None = None
     endstations: Optional[list[EndStation]]
     data_admins: Optional[list[str]]
+    custom_data_admin_group: Optional[str] = None
     github_org: Optional[str]
     ups_id: Optional[str]
     data_root: Optional[str] = None
