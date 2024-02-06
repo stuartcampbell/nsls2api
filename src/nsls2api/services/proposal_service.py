@@ -141,6 +141,21 @@ async def fetch_proposals(
         return proposals
 
 
+async def data_session_for_proposal(proposal_id: int) -> Optional[str]:
+    proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
+    return proposal.data_session
+
+
+async def beamlines_for_proposal(proposal_id: int) -> Optional[list[str]]:
+    proposal = await proposal_by_id(proposal_id)
+    return proposal.instruments
+
+
+async def cycles_for_proposal(proposal_id: int) -> Optional[list[str]]:
+    proposal = await proposal_by_id(proposal_id)
+    return proposal.cycles
+
+
 async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
     """
     Fetches the users associated with a given proposal.
@@ -302,15 +317,19 @@ async def directories(proposal_id: int):
                 "path": str(
                     data_root / "proposals" / str(cycle) / proposal.data_session
                 ),
+                "beamline": beamline.upper(),
+                "cycle": str(cycle),
                 "owner": "nsls2data",
                 "group": proposal.data_session,
-                "group_writable": True,
                 "users": users_acl,
                 "groups": groups_acl,
             }
             directory_list.append(directory)
 
     return directory_list
+
+
+#
 
 
 # TODO: This function is not yet complete

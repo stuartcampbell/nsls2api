@@ -1,6 +1,9 @@
 import fastapi
 from fastapi import HTTPException, Depends
 from fastapi.security.api_key import APIKey
+from nsls2api.api.models.proposal_model import (
+    ProposalDirectoriesList,
+)
 
 from nsls2api.infrastructure.security import get_api_key
 from nsls2api.models.beamlines import Beamline, BeamlineService, DetectorList
@@ -20,7 +23,11 @@ async def details(name: str):
 
 
 # TODO: Add back into schema when we fully decide on the data model for the beamline services.
-@router.get("/beamline/{name}/services", response_model=list[BeamlineService], include_in_schema=False)
+@router.get(
+    "/beamline/{name}/services",
+    response_model=list[BeamlineService],
+    include_in_schema=False,
+)
 async def get_beamline_services(name: str):
     beamline_services = await beamline_service.all_services(name)
     if beamline_services is None:
@@ -55,10 +62,50 @@ async def get_beamline_detectors(name: str) -> DetectorList:
     return response_model
 
 
+@router.get(
+    "/beamline/{name}/proposal-directory-skeleton",
+    response_model=ProposalDirectoriesList,
+)
+async def get_beamline_proposal_directory_skeleton(name: str):
+    directory_skeleton = await beamline_service.proposal_directory_skeleton(name)
+    if directory_skeleton is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No proposal directory skeleton for the {name} beamline could be generated.",
+        )
+    response_model = ProposalDirectoriesList(
+        directory_count=len(directory_skeleton), directories=directory_skeleton
+    )
+    return response_model
+
+
+@router.get(
+    "/beamline/{name}/proposal-directory-skeleton-alternate",
+    response_model=ProposalDirectoriesList,
+    include_in_schema=False,
+)
+async def get_beamline_proposal_directory_skeleton_alternate(
+    name: str, proposal_id: int
+):
+    directory_skeleton = await beamline_service.proposal_directory_skeleton(name)
+    if directory_skeleton is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No proposal directory skeleton for the {name} beamline could be generated.",
+        )
+    response_model = ProposalDirectoriesList(
+        directory_count=len(directory_skeleton), directories=directory_skeleton
+    )
+    return response_model
+
+
 # TODO: Review if we want to also have the following endpoints for the beamline accounts or
 #       if we want to have a single endpoint (above) that returns all the accounts for a beamline.
 
-@router.get("/beamline/{name}/accounts/workflow", response_model=str, include_in_schema=False)
+
+@router.get(
+    "/beamline/{name}/accounts/workflow", response_model=str, include_in_schema=False
+)
 async def get_beamline_workflow_username(name: str):
     workflow_user = await beamline_service.workflow_username(name)
     if workflow_user is None:
@@ -69,7 +116,9 @@ async def get_beamline_workflow_username(name: str):
     return workflow_user
 
 
-@router.get("/beamline/{name}/accounts/ioc", response_model=str, include_in_schema=False)
+@router.get(
+    "/beamline/{name}/accounts/ioc", response_model=str, include_in_schema=False
+)
 async def get_beamline_ioc_username(name: str):
     ioc_user = await beamline_service.ioc_username(name)
     if ioc_user is None:
@@ -80,7 +129,9 @@ async def get_beamline_ioc_username(name: str):
     return ioc_user
 
 
-@router.get("/beamline/{name}/accounts/bluesky", response_model=str, include_in_schema=False)
+@router.get(
+    "/beamline/{name}/accounts/bluesky", response_model=str, include_in_schema=False
+)
 async def get_beamline_bluesky_username(name: str):
     bluesky_user = await beamline_service.bluesky_username(name)
     if bluesky_user is None:
@@ -91,7 +142,11 @@ async def get_beamline_bluesky_username(name: str):
     return bluesky_user
 
 
-@router.get("/beamline/{name}/accounts/epics-services", response_model=str, include_in_schema=False)
+@router.get(
+    "/beamline/{name}/accounts/epics-services",
+    response_model=str,
+    include_in_schema=False,
+)
 async def get_beamline_epics_services_username(name: str):
     epics_user = await beamline_service.epics_services_username(name)
     if epics_user is None:
@@ -102,7 +157,9 @@ async def get_beamline_epics_services_username(name: str):
     return epics_user
 
 
-@router.get("/beamline/{name}/accounts/operator", response_model=str, include_in_schema=False)
+@router.get(
+    "/beamline/{name}/accounts/operator", response_model=str, include_in_schema=False
+)
 async def get_beamline_operator_username(name: str):
     operator_user = await beamline_service.operator_username(name)
     if operator_user is None:

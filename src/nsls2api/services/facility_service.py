@@ -39,7 +39,7 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
 
 
 async def current_operating_cycle(facility: str) -> Optional[str]:
-    """         
+    """
     Current Operating Cycle
 
     This method retrieves the current operating cycle for a given facility.
@@ -48,7 +48,8 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
     :return: The current operating cycle (str) or None if no current operating cycle is found.
     """
     cycle = await Cycle.find_one(
-        Cycle.facility == facility, Cycle.current_operating_cycle == True
+        Cycle.facility == facility,
+        Cycle.is_current_operating_cycle == True,  # noqa: E712
     )
 
     if cycle is None:
@@ -56,6 +57,7 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
     
     return cycle.name
 
+  
 async def is_healthy(facility: str) -> bool:
     """
     Database Health Check
@@ -88,3 +90,4 @@ async def is_healthy(facility: str) -> bool:
         health_status = False
     
     return health_status
+

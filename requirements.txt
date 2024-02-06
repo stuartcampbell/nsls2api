@@ -35,7 +35,7 @@ decorator==5.1.1
     # via gssapi
 dnspython==2.5.0
     # via pymongo
-fastapi==0.109.0
+fastapi==0.109.1
     # via -r requirements.in
 gssapi==1.8.3
     # via n2snusertools
