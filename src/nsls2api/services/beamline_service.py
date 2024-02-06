@@ -208,7 +208,6 @@ async def proposal_directory_skeleton(name: str):
                 "users": users_acl,
                 "groups": groups_acl,
                 "beamline": name.upper(),
-                "create_ymd_directory_tree": True,
                 "directory_most_granular_level": AssetDirectoryGranularity.day,
             }
             directory_list.append(directory)
@@ -221,7 +220,6 @@ async def proposal_directory_skeleton(name: str):
         "users": users_acl,
         "groups": groups_acl,
         "beamline": name.upper(),
-        "create_ymd_directory_tree": True,
         "directory_most_granular_level": AssetDirectoryGranularity.day,
     }
     directory_list.append(default_directory)
