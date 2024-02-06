@@ -4,6 +4,7 @@ from pathlib import Path
 import fastapi
 import uvicorn
 from asgi_correlation_id import CorrelationIdMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware import Middleware
 from starlette.staticfiles import StaticFiles
 
@@ -30,13 +31,18 @@ static_root_absolute = current_file_dir_absolute / "static"
 
 middleware = [Middleware(ProcessTimeMiddleware)]
 
-app = fastapi.FastAPI(title="NSLS-II API", middleware=middleware)
+app = fastapi.FastAPI(
+    title="NSLS-II API", middleware=middleware
+)
 app.add_middleware(CorrelationIdMiddleware)
 
-
-def configure_uvicorn_logging():
-    uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
-    return uvicorn_log_config
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["X-Requested-With", "X-Request-ID"],
+    expose_headers=["X-Request-ID"],
+)
 
 
 def configure_routing():
@@ -68,7 +74,7 @@ async def configure_db():
 
 def main():
     configure_routing()
-    uvicorn.run(app, port=8081)
+    uvicorn.run(app, port=8081, log_config="uvicorn_log_config.yml")
 
 
 if __name__ == "__main__":
