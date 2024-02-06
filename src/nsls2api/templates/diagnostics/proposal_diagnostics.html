@@ -2,18 +2,67 @@
 
 {% block content %}
 
-    <h2>Diagnostic Information for {{ proposal.proposal_id }}.</h2>
+<h2>Diagnostic Information for {{ proposal.proposal_id }}.</h2>
 
-    <table>
-        <tr>
-            <th>Title:</th>
-            <th>{{ proposal.title }} </th>
-        </tr>
+<table>
+    <tr>
+        <th>Title:</th>
+        <th>{{ proposal.title }} </th>
+    </tr>
+    <tr>
+        <th>Proposal ID:</th>
+        <th>{{ proposal.proposal_id }} </th>
+    </tr>
+    <tr>
+        <th>PI:</th>
+        <th>{{ proposal.pi.first_name }} {{ proposal.pi.last_name }}</th>
+    </tr> 
+    <tr>
+        <th>Type:</th>
+        <th>{{ proposal.proposal_type }} </th>
+    </tr>
+    <tr>
+        <th>Data Session:</th>
+        <th>{{ proposal.data_session }}</th>
+    </tr>
+    <tr>
+        <th>Beamlines:</th>
+        <th>{{ proposal.beamlines|join(', ') }}</th>
+    </tr>
+
+    <tr>
+        <th>Cycles</th>
+        <th>{{ proposal.cycles|join(', ')  }}</th>
+    </tr>
+    <tr>
+        <th>Users:</th>
+        <th>
+
+            <table>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Username</th>
+                </tr>
+                {% for user in proposal.users %}
+                <tr>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td><a href="/diagnostics/username/{{ user.username }}">{{ user.username }}</a></td>
+                </tr>
+                {% endfor %}
+            </table>
+
+        </th>
+    </tr>
+    <tr>
         <th>Last Updated:</th>
         <th>{{ proposal.updated }} </th>
     </tr>
 
-    </table>
+</table>
 
 
 {% endblock %}

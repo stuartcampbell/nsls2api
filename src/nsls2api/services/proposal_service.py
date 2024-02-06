@@ -4,7 +4,10 @@ from typing import Optional
 from beanie.odm.operators.find.array import ElemMatch
 from beanie.operators import And, In, RegEx, Text
 
-from nsls2api.api.models.proposal_model import ProposalDiagnostics, ProposalFullDetails
+from nsls2api.api.models.proposal_model import (
+    ProposalDiagnostics,
+    ProposalFullDetails,
+)
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
 from nsls2api.services import beamline_service, pass_service
@@ -364,14 +367,18 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
     if proposal is None:
         raise LookupError(f"Proposal {proposal_id} not found")
 
+    pi = await pi_from_proposal(proposal.proposal_id)
+
     proposal_diagnostics = ProposalDiagnostics(
         proposal_id=proposal.proposal_id,
         title=proposal.title,
         proposal_type=proposal.type,
-        updated=proposal.last_updated,
+        pi=pi[0],
+        users=proposal.users,
         data_session=proposal.data_session,
         beamlines=proposal.instruments,
-        cycles=proposal.cycles
+        cycles=proposal.cycles,
+        updated=proposal.last_updated,
     )
 
     return proposal_diagnostics
