@@ -79,7 +79,7 @@ async def is_healthy(facility: str) -> bool:
 
 
     # Check that there is only one current operating cycle for the facility.
-    cycles = await Cycle.find(Cycle.current_operating_cycle == facility).to_list()
+    cycles = await Cycle.find(Cycle.is_current_operating_cycle == facility).to_list()
     if len(cycles) > 1:
         logger.warning(
             f"There is more than one current operating cycle for the {facility}."
