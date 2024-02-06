@@ -1,9 +1,7 @@
-from starlette.types import ASGIApp, Message, Receive, Scope, Send
-from starlette.datastructures import MutableHeaders
 import time
-import logging
-import http
-from fastapi import Request
+
+from starlette.datastructures import MutableHeaders
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 
 class ProcessTimeMiddleware:
