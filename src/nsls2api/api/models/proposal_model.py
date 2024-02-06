@@ -135,5 +135,9 @@ class ProposalFullDetailsList(pydantic.BaseModel):
 
 class ProposalDiagnostics(pydantic.BaseModel):
     proposal_id: str
+    proposal_type: Optional[str]
     title: str
+    data_session: Optional[str]
+    beamlines: Optional[list[str]]
+    cycles: Optional[list[str]]
     updated: datetime.datetime

@@ -367,7 +367,11 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
     proposal_diagnostics = ProposalDiagnostics(
         proposal_id=proposal.proposal_id,
         title=proposal.title,
+        proposal_type=proposal.type,
         updated=proposal.last_updated,
+        data_session=proposal.data_session,
+        beamlines=proposal.instruments,
+        cycles=proposal.cycles
     )
 
     return proposal_diagnostics
