@@ -47,9 +47,7 @@ def configure_routing():
     app.include_router(user_api_v1.router, prefix="/v1", tags=["user"])
     app.include_router(admin_api_v1.router, prefix="/v1", tags=["admin"])
 
-    # Add this for backwards compatibility (for now)
-    app.include_router(proposal_api_v1.router, include_in_schema=False)
-
+    # Just log the current working directory - useful is some of the static files are not found.
     logger.info(f"Current working directory: {os.getcwd()}")
 
     # Also include our webpages
