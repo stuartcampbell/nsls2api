@@ -1,6 +1,6 @@
 aiofiles
 argon2_cffi
-asgi_correlation_id
+asgi-correlation-id
 beanie
 fastapi
 gunicorn
