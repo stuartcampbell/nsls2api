@@ -62,7 +62,6 @@ class ProposalDirectories(pydantic.BaseModel):
     cycle: str | None = None
     users: list[dict[str, str]]
     groups: list[dict[str, str]]
-    create_ymd_directory_tree: bool | None = False
     directory_most_granular_level: AssetDirectoryGranularity | None = None
 
     model_config = {
@@ -74,6 +73,7 @@ class ProposalDirectories(pydantic.BaseModel):
                     "group": "xf31id1",
                     "beamline": "TST",
                     "cycle": "1066-1",
+                    "directory_most_granular_level": "month",
                     "users": [
                         {"name": "xf31id", "permissions": "rw"},
                         {"name": "service-account", "permissions": "rw"},

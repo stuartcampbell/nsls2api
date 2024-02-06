@@ -195,7 +195,6 @@ async def proposal_directory_skeleton(name: str):
         "users": users_acl,
         "groups": groups_acl,
         "beamline": name.upper(),
-        "create_ymd_directory_tree": False,
     }
     directory_list.append(asset_directory)
 
