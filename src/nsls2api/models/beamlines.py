@@ -7,6 +7,21 @@ import pydantic
 
 class Detector(pydantic.BaseModel):
     name: str
+    directory_name: str | None = None
+
+class DetectorView(pydantic.BaseModel):
+    detectors: list[Detector] | None = None
+    
+    class Settings:
+        projection = {
+            "detectors": "$detectors",
+        }
+
+
+class DetectorList(pydantic.BaseModel):
+    detectors: list[Detector] | None = None
+    count: int | None = None
+
 
 
 class BeamlineService(pydantic.BaseModel):
@@ -17,7 +32,7 @@ class BeamlineService(pydantic.BaseModel):
 
 
 class ServicesOnly(pydantic.BaseModel):
-    services: list[BeamlineService]
+    services: list[BeamlineService] | None = None
 
     class Settings:
         projection = {
@@ -92,7 +107,7 @@ class DataRootDirectoryView(pydantic.BaseModel):
 
 class EndStation(pydantic.BaseModel):
     name: str
-    service_accounts: Optional[ServiceAccounts]
+    service_accounts: Optional[ServiceAccounts] = None
 
 
 class Beamline(beanie.Document):
@@ -104,13 +119,14 @@ class Beamline(beanie.Document):
     pass_name: Optional[str]
     pass_id: Optional[str]
     nsls2_redhat_satellite_location_name: Optional[str]
-    service_accounts: ServiceAccounts
+    service_accounts: ServiceAccounts | None = None
     endstations: Optional[list[EndStation]]
     data_admins: Optional[list[str]]
     github_org: Optional[str]
     ups_id: Optional[str]
     data_root: Optional[str] = None
-    services: Optional[list[BeamlineService]]
+    services: Optional[list[BeamlineService]] = []
+    detectors: Optional[list[Detector]] = []
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )

@@ -5,6 +5,8 @@ from beanie.odm.operators.find.comparison import In
 
 from nsls2api.models.beamlines import (
     Beamline,
+    Detector,
+    DetectorView,
     ServicesOnly,
     ServiceAccounts,
     ServiceAccountsView,
@@ -46,10 +48,25 @@ async def all_services(name: str) -> Optional[ServicesOnly]:
     return beamline_services.services
 
 
+async def detectors(name: str) -> Optional[list[Detector]]:
+    detectors = await Beamline.find_one(Beamline.name == name.upper()).project(
+        DetectorView
+    )
+
+    if detectors is None:
+        return None
+
+    return detectors.detectors
+
+
 async def service_accounts(name: str) -> Optional[ServiceAccounts]:
     accounts = await Beamline.find_one(Beamline.name == name.upper()).project(
         ServiceAccountsView
     )
+
+    if accounts is None:
+        return None
+
     return accounts.service_accounts
 
 
@@ -76,6 +93,9 @@ async def workflow_username(name: str) -> str:
     workflow_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         WorkflowServiceAccountView
     )
+    if workflow_account is None:
+        # Let's make an educated guess
+        return f"workflow-{name.lower()}"
     return workflow_account.username
 
 
@@ -83,6 +103,10 @@ async def ioc_username(name: str) -> str:
     ioc_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         IOCServiceAccountView
     )
+    if ioc_account is None:
+        # Let's make an educated guess
+        return f"softioc-{name.lower()}"
+
     return ioc_account.username
 
 
@@ -90,6 +114,10 @@ async def bluesky_username(name: str) -> str:
     bluesky_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         BlueskyServiceAccountView
     )
+    if bluesky_account is None:
+        # Let's make an educated guess
+        return f"bluesky-{name.lower()}"
+
     return bluesky_account.username
 
 
@@ -97,6 +125,12 @@ async def operator_username(name: str) -> str:
     operator_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         OperatorServiceAccountView
     )
+
+    if operator_account is None:
+        raise LookupError(
+            f"Could not find a the operattor account for the {name} beamline."
+        )
+
     return operator_account.username
 
 
@@ -104,17 +138,87 @@ async def epics_services_username(name: str) -> str:
     epics_services_account = await Beamline.find_one(
         Beamline.name == name.upper()
     ).project(EpicsServicesServiceAccountView)
+
+    if epics_services_account is None:
+        # Let's make an educated guess
+        return f"epics-services-{name.lower()}"
+
     return epics_services_account.username
 
 
-async def lsdc_username(name: str) -> str:
+async def lsdc_username(name: str) -> Optional[str]:
     lsdc_account = await Beamline.find_one(Beamline.name == name.upper()).project(
         LsdcServiceAccountView
     )
-    return False if lsdc_account is None else lsdc_account.username
+
+    if lsdc_account is None:
+        return None
+
+    return lsdc_account.username
 
 
 async def data_roles_by_user(username: str) -> Optional[list[str]]:
     beamlines = await Beamline.find(In(Beamline.data_admins, [username])).to_list()
     beamline_names = [b.name.lower() for b in beamlines if b.name is not None]
     return beamline_names
+
+
+async def proposal_directory_skeleton(name: str):
+    detector_list = await detectors(name.upper())
+
+    directory_list = []
+
+    # TODO: Make this parameter configurable (i.e. have field in beamline document model for this value)
+    asset_directory_name = "assets"
+
+    users_acl: list[dict[str, str]] = []
+    groups_acl: list[dict[str, str]] = []
+
+    service_usernames = await service_accounts(name)
+
+    users_acl.append({f"{service_usernames.ioc}": "rw"})
+    users_acl.append({"softioc": "rw"})
+    users_acl.append({f"{service_usernames.bluesky}": "rw"})
+    users_acl.append({f"{service_usernames.workflow}": "r"})
+    users_acl.append({"nsls2data": "r"})
+
+    groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r"})
+    groups_acl.append({"n2sn-dataadmin": "r"})
+
+    # Add the asset directory so this has the same permissions as the detector directories
+    # and not just inherit from the parent (i.e. proposal) directory.
+    asset_directory = {
+        "path": f"{asset_directory_name}",
+        "is_absolute": False,
+        "owner": "nsls2data",
+        "users": users_acl,
+        "groups": groups_acl,
+        "beamline": name.upper(),
+    }
+    directory_list.append(asset_directory)
+
+    # Add the detector subdirectories
+    if detector_list:
+        for detector in detector_list:
+            directory = {
+                "path": f"{asset_directory_name}/{detector.directory_name}",
+                "is_absolute": False,
+                "owner": "nsls2data",
+                "users": users_acl,
+                "groups": groups_acl,
+                "beamline": name.upper(),
+            }
+            directory_list.append(directory)
+
+    # Add a default directory for non-named detectors
+    default_directory = {
+        "path": f"{asset_directory_name}/default",
+        "is_absolute": False,
+        "owner": "nsls2data",
+        "users": users_acl,
+        "groups": groups_acl,
+        "beamline": name.upper(),
+    }
+    directory_list.append(default_directory)
+
+    return directory_list

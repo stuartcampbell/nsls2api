@@ -6,7 +6,7 @@ from nsls2api.api.models.person_model import (
     ActiveDirectoryUser,
     ActiveDirectoryUserGroups,
 )
-from ..infrastructure.config import get_settings
+from nsls2api.infrastructure.config import get_settings
 
 settings = get_settings()
 
