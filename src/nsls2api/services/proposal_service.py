@@ -2,13 +2,14 @@ from pathlib import Path
 from typing import Optional
 
 from beanie.odm.operators.find.array import ElemMatch
-from beanie.operators import And, In, Text, RegEx
+from beanie.operators import And, In, RegEx, Text
 
-from nsls2api.models.proposals import Proposal, User, ProposalIdView
 from nsls2api.api.models.proposal_model import (
     ProposalDiagnostics,
     ProposalFullDetails,
 )
+from nsls2api.infrastructure.logging import logger
+from nsls2api.models.proposals import Proposal, ProposalIdView, User
 from nsls2api.services import beamline_service, pass_service
 
 
@@ -262,19 +263,23 @@ async def directories(proposal_id: int):
     error_msg = []
 
     if proposal.data_session is None:
-        error_msg.append(
+        error_text = (
             f"Proposal {str(proposal.proposal_id)} does not contain a data_session."
         )
+        logger.error(error_text)
+        error_msg.append(error_text)
 
     if not await has_valid_cycle(proposal):
-        error_msg.append(
-            f"Proposal {str(proposal.proposal_id)} does not contain any cycle information."
-        )
+        error_text = f"Proposal {str(proposal.proposal_id)} does not contain any cycle information."
+        logger.error(error_text)
+        error_msg.append(error_text)
 
     if len(proposal.instruments) == 0:
-        error_msg.append(
+        error_text = (
             f"Proposal {str(proposal.proposal_id)} does not contain any beamlines."
         )
+        logger.error(error_text)
+        error_msg.append(error_text)
 
     if len(error_msg) > 0:
         raise Exception(error_msg)
@@ -309,7 +314,7 @@ async def directories(proposal_id: int):
                 users_acl.append({f"{service_accounts.lsdc}": "rw"})
 
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
-            groups_acl.append({f"n2sn-right-dataadmin-{beamline_tla}": "rw"})
+            groups_acl.append({f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"})
 
             directory = {
                 "path": str(

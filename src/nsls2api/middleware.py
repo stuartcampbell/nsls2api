@@ -1,6 +1,7 @@
-from starlette.types import ASGIApp, Message, Receive, Scope, Send
-from starlette.datastructures import MutableHeaders
 import time
+
+from starlette.datastructures import MutableHeaders
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 
 class ProcessTimeMiddleware:
@@ -19,8 +20,8 @@ class ProcessTimeMiddleware:
             if message["type"] == "http.response.start":
                 headers = MutableHeaders(scope=message)
                 end_time = time.perf_counter()
-                lapsed_time = end_time - start_time
-                headers["Server-Timing"] = f"total;dur={lapsed_time:.3f}"
+                lapsed_time = (end_time - start_time) * 1000
+                headers["Server-Timing"] = f"total;dur={lapsed_time:.3f} ms"
             await send(message)
-        
+
         await self.app(scope, receive, send_wrapper)

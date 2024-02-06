@@ -3,6 +3,7 @@ from typing import Optional
 
 from beanie.odm.operators.find.comparison import In
 
+from nsls2api.api.models.beamline_model import AssetDirectoryGranularity
 from nsls2api.models.beamlines import (
     Beamline,
     Detector,
@@ -163,6 +164,15 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
     return beamline_names
 
 
+async def custom_data_admin_group(name: str) -> str:
+    beamline = await Beamline.find_one(Beamline.name == name.upper())
+
+    if beamline.custom_data_admin_group is None:
+        return f"n2sn-right-dataadmin-{name.lower()}"
+    else:
+        return beamline.custom_data_admin_group
+
+
 async def proposal_directory_skeleton(name: str):
     detector_list = await detectors(name.upper())
 
@@ -182,8 +192,8 @@ async def proposal_directory_skeleton(name: str):
     users_acl.append({f"{service_usernames.workflow}": "r"})
     users_acl.append({"nsls2data": "r"})
 
-    groups_acl.append({f"n2sn-dataadmin-{name.lower()}": "r"})
-    groups_acl.append({"n2sn-dataadmin": "r"})
+    groups_acl.append({f"{await custom_data_admin_group(name)}": "r"})
+    groups_acl.append({"n2sn-right-dataadmin": "r"})
 
     # Add the asset directory so this has the same permissions as the detector directories
     # and not just inherit from the parent (i.e. proposal) directory.
@@ -207,6 +217,7 @@ async def proposal_directory_skeleton(name: str):
                 "users": users_acl,
                 "groups": groups_acl,
                 "beamline": name.upper(),
+                "directory_most_granular_level": AssetDirectoryGranularity.day,
             }
             directory_list.append(directory)
 
@@ -218,6 +229,7 @@ async def proposal_directory_skeleton(name: str):
         "users": users_acl,
         "groups": groups_acl,
         "beamline": name.upper(),
+        "directory_most_granular_level": AssetDirectoryGranularity.day,
     }
     directory_list.append(default_directory)
 

@@ -1,9 +1,12 @@
+from nsls2api.infrastructure.logging import logger
+
 from typing import Optional
 
 from beanie.odm.operators.find.comparison import In
 
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
+
 
 
 async def facilities_count() -> int:
@@ -51,5 +54,40 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
 
     if cycle is None:
         return None
-
+    
     return cycle.name
+
+  
+async def is_healthy(facility: str) -> bool:
+    """
+    Database Health Check
+
+    This method checks the health of the information in the database.
+    Basically, is the database populated with the correct information?
+    e.g. Is there only one current operating cycle for a facility?
+
+    :param facility: The facility name (str).
+    :return: True if the database is healthy, False otherwise.
+    """
+
+    # Let's start with assuming the database is healthy.
+    health_status = True
+
+    logger.info(f"Checking the health of the {facility} facility data.")
+
+    # TODO: Check that the facility exists in the database.
+
+
+    # Check that there is only one current operating cycle for the facility.
+    cycles = await Cycle.find(Cycle.is_current_operating_cycle == facility).to_list()
+    if len(cycles) > 1:
+        logger.warning(
+            f"There is more than one current operating cycle for the {facility}."
+        )
+        health_status = False
+    elif len(cycles) == 0:
+        logger.warning(f"There is not an operating cycle for the {facility}.")
+        health_status = False
+    
+    return health_status
+

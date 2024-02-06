@@ -10,7 +10,6 @@ from nsls2api.services import (
 
 router = fastapi.APIRouter()
 
-
 @router.get("/stats", response_model=StatsModel)
 async def stats():
     proposals = await proposal_service.proposal_count()
@@ -18,11 +17,14 @@ async def stats():
     facilities = await facility_service.facilities_count()
     commissioning = len(await proposal_service.commissioning_proposals())
 
+    faciltiy_data_health = await facility_service.is_healthy("nsls2")
+
     model = StatsModel(
         facility_count=facilities,
         beamline_count=beamlines,
         proposal_count=proposals,
         commissioning_proposal_count=commissioning,
+        facility_data_health=faciltiy_data_health,
     )
     return model
 
