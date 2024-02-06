@@ -4,6 +4,7 @@ from typing import Optional
 import pydantic
 
 from nsls2api.models.proposals import Proposal, User
+from nsls2api.api.models.beamline_model import AssetDirectoryGranularity
 
 
 class UsernamesList(pydantic.BaseModel):
@@ -61,6 +62,7 @@ class ProposalDirectories(pydantic.BaseModel):
     cycle: str | None = None
     users: list[dict[str, str]]
     groups: list[dict[str, str]]
+    directory_most_granular_level: AssetDirectoryGranularity | None = None
 
     model_config = {
         "json_schema_extra": {
@@ -71,6 +73,7 @@ class ProposalDirectories(pydantic.BaseModel):
                     "group": "xf31id1",
                     "beamline": "TST",
                     "cycle": "1066-1",
+                    "directory_most_granular_level": "month",
                     "users": [
                         {"name": "xf31id", "permissions": "rw"},
                         {"name": "service-account", "permissions": "rw"},
@@ -84,22 +87,26 @@ class ProposalDirectories(pydantic.BaseModel):
         }
     }
 
-# Not used - may remove 
+
+# Not used - may remove
 class ACL(pydantic.BaseModel):
     entity: str
     permissions: str
-    
-# Not used - may remove 
+
+
+# Not used - may remove
 class Directory(pydantic.BaseModel):
     path: str
     is_aboslute: bool
     owner: str
     group: str
-    acls: list[ACL] | None = []   
+    acls: list[ACL] | None = []
 
-# Not used - may remove 
+
+# Not used - may remove
 class ProposalDirectorySkeleton(pydantic.BaseModel):
     asset_directories: list[Directory]
+
 
 class ProposalDirectoriesList(pydantic.BaseModel):
     directory_count: int

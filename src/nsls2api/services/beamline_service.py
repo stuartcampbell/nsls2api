@@ -3,6 +3,7 @@ from typing import Optional
 
 from beanie.odm.operators.find.comparison import In
 
+from nsls2api.api.models.beamline_model import AssetDirectoryGranularity
 from nsls2api.models.beamlines import (
     Beamline,
     Detector,
@@ -207,6 +208,7 @@ async def proposal_directory_skeleton(name: str):
                 "users": users_acl,
                 "groups": groups_acl,
                 "beamline": name.upper(),
+                "directory_most_granular_level": AssetDirectoryGranularity.day,
             }
             directory_list.append(directory)
 
@@ -218,6 +220,7 @@ async def proposal_directory_skeleton(name: str):
         "users": users_acl,
         "groups": groups_acl,
         "beamline": name.upper(),
+        "directory_most_granular_level": AssetDirectoryGranularity.day,
     }
     directory_list.append(default_directory)
 
