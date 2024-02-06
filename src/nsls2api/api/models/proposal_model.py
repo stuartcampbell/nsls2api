@@ -37,13 +37,6 @@ class ProposalSummary(pydantic.BaseModel):
     proposal_id: str
     title: str
 
-
-class ProposalDiagnostics(pydantic.BaseModel):
-    proposal_id: str
-    title: str
-    updated: datetime.datetime
-
-
 class SingleProposal(pydantic.BaseModel):
     proposal: Proposal
 
@@ -121,4 +114,12 @@ class ProposalFullDetailsList(pydantic.BaseModel):
     count: int
     page_size: int | None = None
     page: int | None = None
+class ProposalDiagnostics(pydantic.BaseModel):
+    proposal_id: str
+    proposal_type: Optional[str]
+    title: str 
+    data_session: Optional[str]
+    beamlines: Optional[list[str]]
+    cycles: Optional[list[str]]
+    updated: datetime.datetime
 
