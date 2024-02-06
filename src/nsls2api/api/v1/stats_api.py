@@ -10,7 +10,6 @@ from nsls2api.services import (
 
 router = fastapi.APIRouter()
 
-
 @router.get("/stats", response_model=StatsModel)
 async def stats():
     proposals = await proposal_service.proposal_count()
