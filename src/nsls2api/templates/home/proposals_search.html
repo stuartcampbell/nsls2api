@@ -8,7 +8,7 @@
                class="form-control"
                type="text"
                value="{{ search_text or '' }}"
-               hx-get="/proposals/search"
+               hx-get="/search/proposals"
                hx-trigger="keyup changed delay:250ms"
                hx-target="#search-results"
                hx-push-url="true">
