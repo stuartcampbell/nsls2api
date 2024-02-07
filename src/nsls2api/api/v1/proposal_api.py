@@ -1,7 +1,9 @@
-from typing import Annotated
-import fastapi
-from fastapi import Depends, HTTPException, Query
+from typing import Annotated, Optional
 
+import fastapi
+from fastapi import Depends, HTTPException, Query, Request
+
+from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
     PageLinks,
@@ -12,14 +14,12 @@ from nsls2api.api.models.proposal_model import (
     RecentProposal,
     RecentProposalsList,
     SingleProposal,
+    UsernamesList,
 )
-from nsls2api.api.models.proposal_model import UsernamesList
-from nsls2api.infrastructure.security import get_current_user
 from nsls2api.infrastructure.logging import logger
+from nsls2api.infrastructure.security import get_current_user
 from nsls2api.models.proposals import Proposal
 from nsls2api.services import proposal_service
-from nsls2api.api.models.facility_model import FacilityName
-
 
 router = fastapi.APIRouter()
 
@@ -57,17 +57,29 @@ async def get_commissioning_proposals(beamline: str | None = None):
     return model
 
 
+def pagination_links() -> PageLinks:
+    pass
+
+
 @router.get("/proposals/", response_model=ProposalFullDetailsList)
 async def get_proposals(
+    request: Request,
     proposal_id: Annotated[list[str], Query()] = [],
     beamline: Annotated[list[str], Query()] = [],
     cycle: Annotated[list[str], Query()] = [],
     facility: Annotated[list[FacilityName], Query()] = [FacilityName.nsls2],
     page_size: int = 10,
-    page: int = 1,
-    include_directories: bool = False,
-    request: fastapi.Request = None,
+    include_directories: Optional[bool] = False,
 ):
+    proposal_count = await proposal_service.proposal_count(
+        proposal_id=proposal_id,
+        beamline=beamline,
+        cycle=cycle,
+        facility=facility,
+    )
+
+    logger.info(f"Proposal count: {proposal_count}")
+
     proposal_list = await proposal_service.fetch_proposals(
         proposal_id=proposal_id,
         beamline=beamline,
@@ -78,16 +90,28 @@ async def get_proposals(
         include_directories=include_directories,
     )
 
+    logger.info(f"url: {request.url}")
+    logger.info(f"url.hostname: {request.url.hostname}")
+    logger.info(f"url.path: {request.url.path}")
+    logger.info(f"url.path: {request.url.port}")
+    logger.info(f"url.scheme: {request.url.scheme}")
+    logger.info(f"url.query: {request.url.query}")
+    logger.info(f"url.query_params: {request.url.query}")
+    logger.info(f"base_url: {request.base_url}")
+    logger.info(f"url: {request.url}")
+
     if page > 1:
-        previous_page = f"/proposals/?page_size={page_size}&page={previous_page}"
+        previous_page = (
+            f"{request.base_url}proposals/?page_size={page_size}&page={page-1}"
+        )
     else:
         previous_page = None
 
-
     page_links = PageLinks(
+        self=f"{request.base_url}proposals/?page_size={page_size}&page={page}",
         first=f"{request.base_url}proposals/?page_size={page_size}&page=1",
-        next=f"{request.base_url}/proposals/?page_size={page_size}&page={page+1}",
-        previous=previous_page,
+        next=f"{request.base_url}proposals/?page_size={page_size}&page={page+1}",
+        prev=previous_page,
     )
 
     logger.info(f"Page links: {page_links}")
