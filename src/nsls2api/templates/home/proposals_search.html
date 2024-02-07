@@ -23,11 +23,15 @@
             <th>Proposal ID</th>
             <th>Title</th>
         </tr>
+        <tr>
             {% if search_text %}
                 {{ render_partial('shared/partials/proposals_search_results.html', proposals=proposals) }}
             {% endif %}
+        </tr>
         </table>
 
     </div>
 
+    <br/>
+    
 {% endblock %}
