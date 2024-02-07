@@ -128,4 +128,4 @@ class ProposalFullDetailsList(pydantic.BaseModel):
     count: int
     page_size: int | None = None
     page: int | None = None
-    PageLinks: PageLinks | None = None
+    links: PageLinks | None = None
