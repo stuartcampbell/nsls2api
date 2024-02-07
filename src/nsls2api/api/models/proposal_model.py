@@ -118,10 +118,12 @@ class ProposalFullDetails(Proposal):
 
 
 class PageLinks(pydantic.BaseModel):
-    first: str | None = None    
+    self: str
+    first: str | None = None
     last: str | None = None
     next: str | None = None
     prev: str | None = None
+
 
 class ProposalFullDetailsList(pydantic.BaseModel):
     proposals: list[ProposalFullDetails]
