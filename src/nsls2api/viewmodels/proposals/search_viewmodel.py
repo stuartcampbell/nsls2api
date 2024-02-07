@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import Request
 
 from nsls2api.models.proposals import Proposal
@@ -9,6 +10,9 @@ class SearchViewModel(ViewModelBase):
     def __init__(self, request: Request):
         super().__init__(request)
 
+        self.proposals: Optional[list[Proposal]] = []
+        self.request = request
+
         # self.search_text: str = request
         #
         # print(f"search_text={self.search_text}")
@@ -16,11 +20,9 @@ class SearchViewModel(ViewModelBase):
 
         try:
             self.search_text = request.query_params["search_text"]
-        except KeyError as error:
+        except KeyError:
             self.search_text = ""
 
-        self.proposals: list[Proposal] = []
-        self.request = request
 
     async def load(self):
         print(f"Searching for {self.search_text}")
