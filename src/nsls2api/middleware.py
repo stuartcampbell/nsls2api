@@ -21,7 +21,7 @@ class ProcessTimeMiddleware:
                 headers = MutableHeaders(scope=message)
                 end_time = time.perf_counter()
                 lapsed_time = (end_time - start_time) * 1000
-                headers["Server-Timing"] = f"total;dur={lapsed_time:.3f} ms"
+                headers["Server-Timing"] = f"total;dur={lapsed_time:.3f}"
             await send(message)
 
         await self.app(scope, receive, send_wrapper)
