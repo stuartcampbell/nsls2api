@@ -117,8 +117,15 @@ class ProposalFullDetails(Proposal):
     directories: list[ProposalDirectories] | None = None
 
 
+class PageLinks(pydantic.BaseModel):
+    first: str
+    last: str
+    next: str | None = None
+    prev: str | None = None
+
 class ProposalFullDetailsList(pydantic.BaseModel):
     proposals: list[ProposalFullDetails]
     count: int
     page_size: int | None = None
     page: int | None = None
+    PageLinks: PageLinks | None = None
