@@ -15,8 +15,32 @@ async def exists(proposal_id: int) -> bool:
     return False if proposal is None else True
 
 
-async def proposal_count() -> int:
-    return await Proposal.count()
+async def proposal_count(
+    proposal_id: list[str] | None = None,
+    beamline: list[str] | None = None,
+    cycle: list[str] | None = None,
+    facility: list[str] | None = None,
+) -> int:
+    # Get a list of proposals that match the given criteria
+    query = []
+
+    if beamline:
+        query.append(In(Proposal.instruments, [b.upper() for b in beamline]))
+
+    if cycle:
+        query.append(In(Proposal.cycles, cycle))
+
+    if proposal_id:
+        query.append(In(Proposal.proposal_id, proposal_id))
+
+    if len(query) == 0:
+        return await Proposal.count()
+    else:
+        query_filter = And(*query)
+        logger.info(f"Query: {query_filter}")
+        return await Proposal.get_motor_collection().count_documents(
+            filter=query_filter
+        )  # type: ignore
 
 
 async def recently_updated(count=5, beamline: str | None = None):
@@ -113,7 +137,7 @@ async def fetch_proposals(
     if len(query) == 0:
         proposals = (
             await Proposal.find_many()
-            .sort(-Proposal.last_updated)
+            .sort(-Proposal.last_updated)  # type: ignore
             .limit(page_size)
             .skip(page_size * (page - 1))
             .to_list()
@@ -121,7 +145,7 @@ async def fetch_proposals(
     else:
         proposals = (
             await Proposal.find_many(And(*query))
-            .sort(-Proposal.last_updated)
+            .sort(-Proposal.last_updated)  # type: ignore
             .limit(page_size)
             .skip(page_size * (page - 1))
             .to_list()
@@ -133,7 +157,7 @@ async def fetch_proposals(
         for proposal in proposals:
             new_proposal = ProposalFullDetails(
                 **proposal.model_dump(),
-                directories=await directories(proposal.proposal_id),
+                directories=await directories(int(proposal.proposal_id)),
             )
             detailed_proposals.append(new_proposal)
         return detailed_proposals
@@ -311,7 +335,11 @@ async def directories(proposal_id: int):
                 users_acl.append({f"{service_accounts.lsdc}": "rw"})
 
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
-            groups_acl.append({f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"})
+            groups_acl.append(
+                {
+                    f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"
+                }
+            )
 
             directory = {
                 "path": str(
