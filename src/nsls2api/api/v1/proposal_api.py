@@ -15,6 +15,7 @@ from nsls2api.api.models.proposal_model import (
 )
 from nsls2api.api.models.proposal_model import UsernamesList
 from nsls2api.infrastructure.security import get_current_user
+from nsls2api.infrastructure.logging import logger
 from nsls2api.models.proposals import Proposal
 from nsls2api.services import proposal_service
 from nsls2api.api.models.facility_model import FacilityName
@@ -78,21 +79,25 @@ async def get_proposals(
     )
 
     if page > 1:
-        previous_page = page - 1
+        previous_page = f"/proposals/?page_size={page_size}&page={previous_page}"
+    else:
+        previous_page = None
 
 
-    links = PageLinks(
-        first=f"{request.base_url}/proposals/?page_size={page_size}&page=1",
-        next=f"/proposals/?page_size={page_size}&page={page+1}",
-        previous=f"/proposals/?page_size={page_size}&page={previous_page}",
+    page_links = PageLinks(
+        first=f"{request.base_url}proposals/?page_size={page_size}&page=1",
+        next=f"{request.base_url}/proposals/?page_size={page_size}&page={page+1}",
+        previous=previous_page,
     )
+
+    logger.info(f"Page links: {page_links}")
 
     response_model = {
         "proposals": proposal_list,
         "page_size": page_size,
         "page": page,
         "count": len(proposal_list),
-        "links": links,
+        "links": page_links,
     }
 
     return response_model
