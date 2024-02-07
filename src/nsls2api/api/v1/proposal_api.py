@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, Query
 
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
+    PageLinks,
     ProposalDirectoriesList,
     ProposalFullDetailsList,
     ProposalUser,
@@ -64,6 +65,7 @@ async def get_proposals(
     page_size: int = 10,
     page: int = 1,
     include_directories: bool = False,
+    request: fastapi.Request = None,
 ):
     proposal_list = await proposal_service.fetch_proposals(
         proposal_id=proposal_id,
@@ -75,11 +77,22 @@ async def get_proposals(
         include_directories=include_directories,
     )
 
+    if page > 1:
+        previous_page = page - 1
+
+
+    links = PageLinks(
+        first=f"{request.base_url}/proposals/?page_size={page_size}&page=1",
+        next=f"/proposals/?page_size={page_size}&page={page+1}",
+        previous=f"/proposals/?page_size={page_size}&page={previous_page}",
+    )
+
     response_model = {
         "proposals": proposal_list,
         "page_size": page_size,
         "page": page,
         "count": len(proposal_list),
+        "links": links,
     }
 
     return response_model
