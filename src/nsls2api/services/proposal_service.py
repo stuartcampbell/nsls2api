@@ -91,6 +91,31 @@ async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
 
     return proposal
 
+# Get a list of proposals that match the search criteria
+async def search_proposals(search_text: str) -> Optional[list[Proposal]]:
+    query = Text(search=search_text, case_sensitive=False)
+
+    if len(search_text) < 3:
+        return []
+
+    logger.debug(f"Searching for '{search_text}'")
+
+    # Not sure we need to sort here - but hey why not!
+    found_proposals = (
+        await Proposal.find(query).sort([("score", {"$meta": "textScore"})]).to_list()
+    )
+
+    logger.info(f"Found {len(found_proposals)} proposals by search for the text '{search_text}'")
+
+    # Now do a special search just for the proposal id
+    found_proposals += await Proposal.find(
+        RegEx(Proposal.proposal_id, pattern=f"{search_text}")
+    ).to_list()
+
+    logger.info(f"Found {len(found_proposals)} proposals  after searching for '{search_text}' in just the proposal_id field")
+
+    return found_proposals
+
 
 # Get a list of proposals that match the given criteria
 async def fetch_proposals(
@@ -236,22 +261,6 @@ async def is_commissioning(proposal: Proposal):
         proposal.pass_type_id == "300005"
         or proposal.type == "Beamline Commissioning (beamline staff only)"
     )
-
-
-async def search_proposals(search_text: str) -> list[Proposal]:
-    query = Text(search=search_text, case_sensitive=False)
-
-    # Not sure we need to sort here - but hey why not!
-    found_proposals = (
-        await Proposal.find(query).sort([("score", {"$meta": "textScore"})]).to_list()
-    )
-
-    # Now do a special search just for the proposal id
-    found_proposals += await Proposal.find(
-        RegEx(Proposal.proposal_id, pattern=f"{search_text}")
-    ).to_list()
-
-    return found_proposals
 
 
 # Return the directories and permissions that should be present for a given proposal
