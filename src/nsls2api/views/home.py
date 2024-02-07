@@ -35,7 +35,7 @@ def index(request: Request):
     return templates.TemplateResponse("home/default.html", data)
 
 
-@router.get("/proposals/search", include_in_schema=False)
+@router.get("/search/proposals", include_in_schema=False)
 async def search_proposals(request: Request):
     vm = SearchViewModel(request)
     await vm.load()
@@ -49,7 +49,7 @@ async def search_proposals(request: Request):
     return templates.TemplateResponse("home/proposals_search.html", vm.to_dict())
 
 
-@router.get("/proposals", include_in_schema=False)
+@router.get("/proposal-details", include_in_schema=False)
 async def proposals(request: Request):
     vm = DetailsViewModel(311130, request)
     await vm.load()
