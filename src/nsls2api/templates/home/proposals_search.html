@@ -8,7 +8,7 @@
                class="form-control"
                type="text"
                value="{{ search_text or '' }}"
-               hx-get="/proposals/search"
+               hx-get="/search/proposals"
                hx-trigger="keyup changed delay:250ms"
                hx-target="#search-results"
                hx-push-url="true">
@@ -23,11 +23,15 @@
             <th>Proposal ID</th>
             <th>Title</th>
         </tr>
+        <tr>
             {% if search_text %}
                 {{ render_partial('shared/partials/proposals_search_results.html', proposals=proposals) }}
             {% endif %}
+        </tr>
         </table>
 
     </div>
 
+    <br/>
+    
 {% endblock %}
