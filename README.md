@@ -1,6 +1,15 @@
-# nsls2api
+# NSLS-II Facility API
+
+This is the repository for the NSLS-II Facility API codebase. 
 
 
-podman build -t nsls2api .
+### Updating Dependencies
 
-podman run --rm -d --name apicontainer --network=host --env-file=./nsls2api/.env nsls2api
+The project uses `pip-compile` to manage the `requirements.txt` and `requirements-dev.txt`. 
+In order to upgrade the packages you will need to install `pip-tools`.  Then to upgrade simply run 
+
+```
+pip-compile requirements-dev.in --upgrade
+pip-compile requirements.in --upgrade
+```
+
