@@ -2,6 +2,11 @@
 
 This is the repository for the NSLS-II Facility API codebase. 
 
+## Current Status
+
+[![Integration Tests for Deployed API](https://github.com/NSLS2/nsls2api/actions/workflows/test-production-deployment.yml/badge.svg)](https://github.com/NSLS2/nsls2api/actions/workflows/test-production-deployment.yml)
+
+## Developer Notes 
 
 ### Updating Dependencies
 
