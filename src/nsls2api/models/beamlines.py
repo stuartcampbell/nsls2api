@@ -9,9 +9,10 @@ class Detector(pydantic.BaseModel):
     name: str
     directory_name: str | None = None
 
+
 class DetectorView(pydantic.BaseModel):
     detectors: list[Detector] | None = None
-    
+
     class Settings:
         projection = {
             "detectors": "$detectors",
@@ -23,12 +24,12 @@ class DetectorList(pydantic.BaseModel):
     count: int | None = None
 
 
-
 class BeamlineService(pydantic.BaseModel):
     name: str
-    host: Optional[str]
-    port: Optional[int]
-    uri: Optional[str]
+    used_in_production: Optional[bool] = None
+    host: Optional[str] = None
+    port: Optional[int] = None
+    uri: Optional[str] = None
 
 
 class ServicesOnly(pydantic.BaseModel):
@@ -96,6 +97,13 @@ class LsdcServiceAccountView(pydantic.BaseModel):
 
     class Settings:
         projection = {"username": "$service_accounts.lsdc"}
+
+
+class BeamlineServicesSynchwebView(pydantic.BaseModel):
+    synchweb: BeamlineService
+
+    class Settings:
+        projection = {"synchweb": "$services.name"}
 
 
 class DataRootDirectoryView(pydantic.BaseModel):
