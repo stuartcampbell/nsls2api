@@ -44,11 +44,18 @@ async def get_recent_proposals(count: int, beamline: str | None = None):
 
 @router.get("/proposals/commissioning", response_model=CommissioningProposalsList)
 async def get_commissioning_proposals(beamline: str | None = None):
-    proposals = await proposal_service.commissioning_proposals(beamline=beamline)
-    if proposals is None:
+    try:
+        proposals = await proposal_service.commissioning_proposals(beamline=beamline)
+        if proposals is None:
+            return fastapi.responses.JSONResponse(
+                {"error": "Commissioning Proposals not found"}, status_code=404
+            )
+    except LookupError as e:
         return fastapi.responses.JSONResponse(
-            {"error": "Commissioning Proposals not found"}, status_code=404
+            {"error": e.args[0]},
+            status_code=404,
         )
+
     model = CommissioningProposalsList(
         count=len(proposals), commissioning_proposals=proposals
     )
@@ -86,11 +93,17 @@ async def get_proposals(
 
 
 @router.get("/proposal/{proposal_id}", response_model=SingleProposal)
-async def get_proposal(proposal_id: int, beamline: str | None = None):
-    proposal = await proposal_service.proposal_by_id(proposal_id)
-    if proposal is None:
+async def get_proposal(proposal_id: int):
+    try:
+        proposal = await proposal_service.proposal_by_id(proposal_id)
+        if proposal is None:
+            return fastapi.responses.JSONResponse(
+                {"error": f"Proposal {proposal_id} not found"}, status_code=404
+            )
+    except LookupError as e:
         return fastapi.responses.JSONResponse(
-            {"error": f"Proposal {proposal_id} not found"}, status_code=404
+            {"error": e.args[0]},
+            status_code=404,
         )
     response_model = SingleProposal(proposal=proposal)
     return response_model
@@ -104,21 +117,35 @@ async def get_proposal(proposal_id: int, beamline: str | None = None):
     include_in_schema=False,
 )
 async def create_proposal(proposal_id: int) -> Proposal:
-    proposal = await proposal_service.create_proposal(proposal_id)
-    if proposal is None:
-        raise HTTPException(
-            status_code=404, detail=f"Failed to create proposal {proposal_id}."
+    try:
+        proposal = await proposal_service.create_proposal(proposal_id)
+        if proposal is None:
+            raise HTTPException(
+                status_code=404, detail=f"Failed to create proposal {proposal_id}."
+            )
+    except LookupError as e:
+        return fastapi.responses.JSONResponse(
+            {"error": e.args[0]},
+            status_code=404,
         )
     return proposal
 
 
 @router.get("/proposal/{proposal_id}/users", response_model=ProposalUserList)
 async def get_proposals_users(proposal_id: int):
-    users = await proposal_service.fetch_users_on_proposal(proposal_id)
-    if users is None:
+    try:
+        users = await proposal_service.fetch_users_on_proposal(proposal_id)
+        if users is None:
+            return fastapi.responses.JSONResponse(
+                {"error": f"Users not found for proposal {proposal_id}"},
+                status_code=404,
+            )
+    except LookupError as e:
         return fastapi.responses.JSONResponse(
-            {"error": f"Users not found for proposal {proposal_id}"}, status_code=404
+            {"error": e.args[0]},
+            status_code=404,
         )
+
     response_model = ProposalUserList(
         proposal_id=str(proposal_id), users=users, count=len(users)
     )
@@ -129,17 +156,22 @@ async def get_proposals_users(proposal_id: int):
     "/proposal/{proposal_id}/principal-investigator", response_model=ProposalUser
 )
 async def get_proposal_principal_investigator(proposal_id: int):
-    principal_investigator = await proposal_service.pi_from_proposal(proposal_id)
-
-    if len(principal_investigator) == 0:
+    try:
+        principal_investigator = await proposal_service.pi_from_proposal(proposal_id)
+        if len(principal_investigator) == 0:
+            return fastapi.responses.JSONResponse(
+                {"error": f"PI not found for proposal {proposal_id}"},
+                status_code=404,
+            )
+        elif len(principal_investigator) > 1:
+            return fastapi.responses.JSONResponse(
+                {"error": f"Proposal {proposal_id} contains more than one PI"},
+                status_code=422,
+            )
+    except LookupError as e:
         return fastapi.responses.JSONResponse(
-            {"error": f"PI not found for proposal {proposal_id}"},
+            {"error": e.args[0]},
             status_code=404,
-        )
-    elif len(principal_investigator) > 1:
-        return fastapi.responses.JSONResponse(
-            {"error": f"Proposal {proposal_id} contains more than one PI"},
-            status_code=422,
         )
 
     response_model = ProposalUser(
@@ -150,10 +182,16 @@ async def get_proposal_principal_investigator(proposal_id: int):
 
 @router.get("/proposal/{proposal_id}/usernames", response_model=UsernamesList)
 async def get_proposal_usernames(proposal_id: int):
-    # Check to see if proposal exists
-    if not await proposal_service.exists(proposal_id):
+    try:
+        # Check to see if proposal exists
+        if not await proposal_service.exists(proposal_id):
+            return fastapi.responses.JSONResponse(
+                {"error": f"Proposal {proposal_id} not found"}, status_code=404
+            )
+    except LookupError as e:
         return fastapi.responses.JSONResponse(
-            {"error": f"Proposal {proposal_id} not found"}, status_code=404
+            {"error": e.args[0]},
+            status_code=404,
         )
 
     proposal_usernames = await proposal_service.fetch_usernames_from_proposal(
