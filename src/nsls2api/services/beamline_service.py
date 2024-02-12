@@ -1,9 +1,12 @@
+import datetime
 from pathlib import Path
 from typing import Optional
 
 from beanie.odm.operators.find.comparison import In
+from beanie.odm.operators.find.array import ElemMatch
 
 from nsls2api.api.models.beamline_model import AssetDirectoryGranularity
+from nsls2api.infrastructure.logging import logger
 from nsls2api.models.beamlines import (
     Beamline,
     BeamlineService,
@@ -237,11 +240,97 @@ async def proposal_directory_skeleton(name: str):
     return directory_list
 
 
-# TODO: Improve this method to determine if the beamline uses synchweb or not by looking at the information in the services field in the database.
-async def uses_synchweb(name: str) -> bool:
-    synchweb_beamlines = {"amx", "fmx", "nyx"}
+async def check_service_exists(beamline_name: str, service_name: str) -> bool:
+    """
+    Check if a service exists in a given beamline.
 
-    if name.lower() in synchweb_beamlines:
+    Args:
+        beamline_name (str): The name of the beamline.
+        service_name (str): The name of the service.
+
+    Returns:
+        bool: True if the service exists in the beamline, False otherwise.
+    """
+
+    # Get the beamline from the database
+    beamline = await Beamline.find_one(Beamline.name == beamline_name.upper())
+
+    # If the beamline does not exist, then by definition it can't have the service
+    if beamline is None:
+        return False
+
+    current_services = await beamline.find(
+        ElemMatch(Beamline.services, {"name": service_name})
+    ).to_list()
+
+    print(f"current_services: {current_services}")
+
+    if current_services is None or len(current_services) == 0:
+        logger.info(f"Service {service_name} not found in beamline {beamline_name}")
+        return False
+    else:
+        logger.info(f"Service {service_name} found in beamline {beamline_name}")
+        return True
+
+    return False
+
+
+async def add_service(
+    beamline_name: str,
+    service_name: str,
+    used_in_production: bool = False,
+    host: str = None,
+    port: int = None,
+    uri: str = None,
+) -> Optional[BeamlineService]:
+    """
+    Add a new service to a beamline.
+
+    Args:
+        beamline_name (str): The name of the beamline.
+        service_name (str): The name of the service.
+        used_in_production (bool, optional): Whether the service is used in production. Defaults to False.
+        host (str, optional): The host of the service. Defaults to None.
+        port (int, optional): The port of the service. Defaults to None.
+        uri (str, optional): The URI of the service. Defaults to None.
+
+    Returns:
+        Optional[BeamlineService]: The newly created BeamlineService object if successful, None otherwise.
+    """
+    beamline = await Beamline.find_one(Beamline.name == beamline_name.upper())
+
+    service = BeamlineService(
+        name=service_name,
+        used_in_production=used_in_production,
+        host=host,
+        port=port,
+        uri=uri,
+    )
+
+    if await check_service_exists(beamline_name, service_name):
+        logger.info(
+            f"Service {service_name} already exists in beamline {beamline_name}"
+        )
+        return None
+    else:
+        beamline.services.append(service)
+        beamline.last_updated = datetime.datetime.now()
+        await beamline.save()
+
+    return service
+
+
+async def uses_synchweb(name: str) -> bool:
+    """
+    Check if the specified beamline uses the SynchWeb service.
+
+    Args:
+        name (str): The name of the beamline.
+
+    Returns:
+        bool: True if the beamline uses SynchWeb, False otherwise.
+    """
+    if await check_service_exists(name, "synchweb"):
         return True
     else:
         return False
