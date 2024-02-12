@@ -91,6 +91,7 @@ async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
 
     return proposal
 
+
 # Get a list of proposals that match the search criteria
 async def search_proposals(search_text: str) -> Optional[list[Proposal]]:
     query = Text(search=search_text, case_sensitive=False)
@@ -105,14 +106,18 @@ async def search_proposals(search_text: str) -> Optional[list[Proposal]]:
         await Proposal.find(query).sort([("score", {"$meta": "textScore"})]).to_list()
     )
 
-    logger.info(f"Found {len(found_proposals)} proposals by search for the text '{search_text}'")
+    logger.info(
+        f"Found {len(found_proposals)} proposals by search for the text '{search_text}'"
+    )
 
     # Now do a special search just for the proposal id
     found_proposals += await Proposal.find(
         RegEx(Proposal.proposal_id, pattern=f"{search_text}")
     ).to_list()
 
-    logger.info(f"Found {len(found_proposals)} proposals  after searching for '{search_text}' in just the proposal_id field")
+    logger.info(
+        f"Found {len(found_proposals)} proposals  after searching for '{search_text}' in just the proposal_id field"
+    )
 
     return found_proposals
 
@@ -316,6 +321,11 @@ async def directories(proposal_id: int):
             users_acl.append({"nsls2data": "rw"})
             users_acl.append({f"{service_accounts.workflow}": "rw"})
             users_acl.append({f"{service_accounts.ioc}": "rw"})
+
+            # If beamline uses SynchWeb then add access for synchweb user
+            if beamline_service.uses_synchweb(beamline_tla):
+                users_acl.append({"synchweb": "r"})
+
             groups_acl.append({str(proposal.data_session): "rw"})
 
             # Add LSDC beamline users for the appropriate beamlines (i.e. if the account is defined)
@@ -323,7 +333,11 @@ async def directories(proposal_id: int):
                 users_acl.append({f"{service_accounts.lsdc}": "rw"})
 
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
-            groups_acl.append({f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"})
+            groups_acl.append(
+                {
+                    f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"
+                }
+            )
 
             directory = {
                 "path": str(
