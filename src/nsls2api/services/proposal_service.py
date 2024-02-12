@@ -4,7 +4,10 @@ from typing import Optional
 from beanie.odm.operators.find.array import ElemMatch
 from beanie.operators import And, In, RegEx, Text
 
-from nsls2api.api.models.proposal_model import ProposalFullDetails
+from nsls2api.api.models.proposal_model import (
+    ProposalDiagnostics,
+    ProposalFullDetails,
+)
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
 from nsls2api.services import beamline_service, pass_service
@@ -87,6 +90,36 @@ async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
         raise LookupError(f"Could not find a proposal with an ID of {proposal_id}")
 
     return proposal
+
+
+# Get a list of proposals that match the search criteria
+async def search_proposals(search_text: str) -> Optional[list[Proposal]]:
+    query = Text(search=search_text, case_sensitive=False)
+
+    if len(search_text) < 3:
+        return []
+
+    logger.debug(f"Searching for '{search_text}'")
+
+    # Not sure we need to sort here - but hey why not!
+    found_proposals = (
+        await Proposal.find(query).sort([("score", {"$meta": "textScore"})]).to_list()
+    )
+
+    logger.info(
+        f"Found {len(found_proposals)} proposals by search for the text '{search_text}'"
+    )
+
+    # Now do a special search just for the proposal id
+    found_proposals += await Proposal.find(
+        RegEx(Proposal.proposal_id, pattern=f"{search_text}")
+    ).to_list()
+
+    logger.info(
+        f"Found {len(found_proposals)} proposals  after searching for '{search_text}' in just the proposal_id field"
+    )
+
+    return found_proposals
 
 
 # Get a list of proposals that match the given criteria
@@ -235,22 +268,6 @@ async def is_commissioning(proposal: Proposal):
     )
 
 
-async def search_proposals(search_text: str) -> list[Proposal]:
-    query = Text(search=search_text, case_sensitive=False)
-
-    # Not sure we need to sort here - but hey why not!
-    found_proposals = (
-        await Proposal.find(query).sort([("score", {"$meta": "textScore"})]).to_list()
-    )
-
-    # Now do a special search just for the proposal id
-    found_proposals += await Proposal.find(
-        RegEx(Proposal.proposal_id, pattern=f"{search_text}")
-    ).to_list()
-
-    return found_proposals
-
-
 # Return the directories and permissions that should be present for a given proposal
 async def directories(proposal_id: int):
     proposal = await proposal_by_id(proposal_id)
@@ -304,6 +321,11 @@ async def directories(proposal_id: int):
             users_acl.append({"nsls2data": "rw"})
             users_acl.append({f"{service_accounts.workflow}": "rw"})
             users_acl.append({f"{service_accounts.ioc}": "rw"})
+
+            # If beamline uses SynchWeb then add access for synchweb user
+            if beamline_service.uses_synchweb(beamline_tla):
+                users_acl.append({"synchweb": "r"})
+
             groups_acl.append({str(proposal.data_session): "rw"})
 
             # Add LSDC beamline users for the appropriate beamlines (i.e. if the account is defined)
@@ -311,7 +333,11 @@ async def directories(proposal_id: int):
                 users_acl.append({f"{service_accounts.lsdc}": "rw"})
 
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
-            groups_acl.append({f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"})
+            groups_acl.append(
+                {
+                    f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"
+                }
+            )
 
             directory = {
                 "path": str(
@@ -329,7 +355,27 @@ async def directories(proposal_id: int):
     return directory_list
 
 
-#
+async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnostics]:
+    proposal = await proposal_by_id(proposal_id)
+
+    if proposal is None:
+        raise LookupError(f"Proposal {proposal_id} not found")
+
+    pi = await pi_from_proposal(proposal.proposal_id)
+
+    proposal_diagnostics = ProposalDiagnostics(
+        proposal_id=proposal.proposal_id,
+        title=proposal.title,
+        proposal_type=proposal.type,
+        pi=pi[0],
+        users=proposal.users,
+        data_session=proposal.data_session,
+        beamlines=proposal.instruments,
+        cycles=proposal.cycles,
+        updated=proposal.last_updated,
+    )
+
+    return proposal_diagnostics
 
 
 # TODO: This function is not yet complete

@@ -5,7 +5,8 @@ from nsls2api.api.models.proposal_model import (
     ProposalDirectoriesList,
 )
 
-from nsls2api.infrastructure.security import get_api_key
+from nsls2api.infrastructure.logging import logger
+from nsls2api.infrastructure.security import get_api_key, validate_admin_role
 from nsls2api.models.beamlines import Beamline, BeamlineService, DetectorList
 from nsls2api.services import beamline_service
 
@@ -168,3 +169,40 @@ async def get_beamline_operator_username(name: str):
             detail=f"No operator user has been defined for the {name} beamline",
         )
     return operator_user
+
+
+@router.get("/beamline/{name}/services/", response_model=list[BeamlineService])
+async def get_beamline_services(name: str):
+    beamline_services = await beamline_service.all_services(name)
+    if beamline_services is None:
+        raise HTTPException(
+            status_code=404, detail=f"Beamline named {name} could not be found"
+        )
+    return beamline_services
+
+
+@router.put(
+    "/beamline/{name}/services/",
+    include_in_schema=True,
+    response_model=BeamlineService,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def add_beamline_service(name: str, service: BeamlineService):
+    logger.info(f"Adding service {service.name} to beamline {name}")
+
+    new_service = await beamline_service.add_service(
+        beamline_name=name,
+        service_name=service.name,
+        used_in_production=service.used_in_production,
+        host=service.host,
+        port=service.port,
+        uri=service.uri,
+    )
+
+    if new_service is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Service {service.name} already exists in beamline {name}",
+        )
+
+    return new_service
