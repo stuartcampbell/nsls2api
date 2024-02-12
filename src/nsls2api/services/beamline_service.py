@@ -6,6 +6,7 @@ from beanie.odm.operators.find.comparison import In
 from nsls2api.api.models.beamline_model import AssetDirectoryGranularity
 from nsls2api.models.beamlines import (
     Beamline,
+    BeamlineService,
     Detector,
     DetectorView,
     ServicesOnly,
@@ -234,3 +235,13 @@ async def proposal_directory_skeleton(name: str):
     directory_list.append(default_directory)
 
     return directory_list
+
+
+# TODO: Improve this method to determine if the beamline uses synchweb or not by looking at the information in the services field in the database.
+async def uses_synchweb(name: str) -> bool:
+    synchweb_beamlines = {"amx", "fmx", "nyx"}
+
+    if name.lower() in synchweb_beamlines:
+        return True
+    else:
+        return False
