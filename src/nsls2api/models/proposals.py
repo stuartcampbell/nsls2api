@@ -15,7 +15,7 @@ class SafetyForm(pydantic.BaseModel):
 class User(pydantic.BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    email: str 
+    email: str
     bnl_id: Optional[str] = None
     username: Optional[str] = None
     is_pi: bool = False
