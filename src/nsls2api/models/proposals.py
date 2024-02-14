@@ -24,13 +24,13 @@ class User(pydantic.BaseModel):
 class Proposal(beanie.Document):
     proposal_id: str
     data_session: str
-    title: Optional[str]
-    type: Optional[str]
+    title: Optional[str] = None
+    type: Optional[str] = None
     pass_type_id: Optional[str]
-    instruments: Optional[list[str]]
-    cycles: Optional[list[str]]
-    users: list[User]
-    safs: Optional[list[SafetyForm]]
+    instruments: Optional[list[str]] = []
+    cycles: Optional[list[str]] = []
+    users: list[User] = []
+    safs: Optional[list[SafetyForm]] = []
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
