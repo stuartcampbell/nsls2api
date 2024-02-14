@@ -283,7 +283,7 @@ async def directories(proposal_id: int):
         logger.error(error_text)
         error_msg.append(error_text)
 
-    if not await has_valid_cycle(proposal):
+    if not await has_valid_cycle(proposal) and not await is_commissioning(proposal):
         error_text = f"Proposal {str(proposal.proposal_id)} does not contain any cycle information."
         logger.error(error_text)
         error_msg.append(error_text)
