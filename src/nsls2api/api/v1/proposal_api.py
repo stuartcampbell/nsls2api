@@ -78,11 +78,12 @@ async def get_proposals(
     page_size: int = 10,
     include_directories: Optional[bool] = False,
 ):
+    # TODO: Add facility into the query when we start supporting multiple facilities
+    #       (i.e. when we store the facility for a proposal)
     proposal_count = await proposal_service.proposal_count(
         proposal_id=proposal_id,
         beamline=beamline,
         cycle=cycle,
-        facility=facility,
     )
 
     logger.info(f"Proposal count: {proposal_count}")
@@ -106,6 +107,8 @@ async def get_proposals(
     logger.info(f"url.query_params: {request.url.query}")
     logger.info(f"base_url: {request.base_url}")
     logger.info(f"url: {request.url}")
+
+    root_url = f"{request.base_url}proposals/"
 
     if page > 1:
         previous_page = (
@@ -132,6 +135,8 @@ async def get_proposals(
     }
 
     return response_model
+
+
 
 
 @router.get("/proposal/{proposal_id}", response_model=SingleProposal)
