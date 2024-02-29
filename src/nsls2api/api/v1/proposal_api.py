@@ -76,6 +76,7 @@ async def get_proposals(
     cycle: Annotated[list[str], Query()] = [],
     facility: Annotated[list[FacilityName], Query()] = [FacilityName.nsls2],
     page_size: int = 10,
+    page: int = 1,
     include_directories: Optional[bool] = False,
 ):
     # TODO: Add facility into the query when we start supporting multiple facilities
@@ -108,7 +109,29 @@ async def get_proposals(
     logger.info(f"base_url: {request.base_url}")
     logger.info(f"url: {request.url}")
 
-    root_url = f"{request.base_url}proposals/"
+
+    for param in request.query_params.items():
+        logger.info(f"param: {param}, type: {type(param)}")
+
+    root_url = f"{request.base_url}{request.url.path}/?page_size={page_size}"
+
+    if len(proposal_id) > 0:
+        root_url += f"&proposal_id={','.join(proposal_id)}"
+
+    if len(beamline) > 0:
+        root_url += f"&beamline={','.join(beamline)}"
+
+    if len(cycle) > 0:
+        root_url += f"&cycle={','.join(cycle)}"
+    
+    if include_directories:
+        root_url += f"&include_directories={include_directories}"
+
+    # TODO: Fix this when we start supporting multiple facilities
+    # if len(facility) > 0:
+    #     root_url += f"&facility={','.join(facility.name)}"
+
+    logger.info(f"Root URL: {root_url}")
 
     if page > 1:
         previous_page = (
@@ -118,9 +141,9 @@ async def get_proposals(
         previous_page = None
 
     page_links = PageLinks(
-        self=f"{request.base_url}proposals/?page_size={page_size}&page={page}",
-        first=f"{request.base_url}proposals/?page_size={page_size}&page=1",
-        next=f"{request.base_url}proposals/?page_size={page_size}&page={page+1}",
+        self=f"{request.url}",
+        first=f"{root_url}&page=1",
+        next=f"{root_url}&page={page+1}",
         prev=previous_page,
     )
 
@@ -130,7 +153,7 @@ async def get_proposals(
         "proposals": proposal_list,
         "page_size": page_size,
         "page": page,
-        "count": len(proposal_list),
+        "count": proposal_count,
         "links": page_links,
     }
 
