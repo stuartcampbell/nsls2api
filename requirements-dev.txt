@@ -39,7 +39,7 @@ dnspython==2.6.1
     # via pymongo
 executing==2.0.1
     # via stack-data
-faker==24.1.0
+faker==24.2.0
 flask==3.0.2
     # via
     #   flask-cors
@@ -151,7 +151,7 @@ rich==13.7.1
 roundrobin==0.0.4
     # via locust
 ruff==0.3.2
-setuptools==69.1.1
+setuptools==69.2.0
     # via
     #   zope-event
     #   zope-interface
