@@ -23,13 +23,13 @@ cffi==1.16.0
 click==8.1.7
     # via
     #   beanie
-    #   typer
+    #   typer-slim
     #   uvicorn
 decorator==5.1.1
     # via gssapi
 dnspython==2.6.1
     # via pymongo
-fastapi==0.110.0
+fastapi==0.110.1
 gssapi==1.8.3
     # via n2snusertools
 gunicorn==21.2.0
@@ -37,7 +37,7 @@ h11==0.14.0
     # via
     #   httpcore
     #   uvicorn
-httpcore==1.0.4
+httpcore==1.0.5
     # via
     #   httpx
     #   httpx-socks
@@ -70,7 +70,7 @@ mdit-py-plugins==0.4.0
     # via markdown-it-py
 mdurl==0.1.2
     # via markdown-it-py
-motor==3.3.2
+motor==3.4.0
     # via beanie
 n2snusertools==0.3.7
 packaging==24.0
@@ -78,9 +78,9 @@ packaging==24.0
 passlib==1.7.4
 prettytable==3.10.0
     # via n2snusertools
-pyasn1==0.5.1
+pyasn1==0.6.0
     # via ldap3
-pycparser==2.21
+pycparser==2.22
     # via cffi
 pydantic==2.6.4
     # via
@@ -93,7 +93,7 @@ pydantic-core==2.16.3
 pydantic-settings==2.2.1
 pygments==2.17.2
     # via rich
-pymongo==4.6.2
+pymongo==4.6.3
     # via motor
 python-dotenv==1.0.1
     # via pydantic-settings
@@ -103,30 +103,40 @@ python-socks==2.4.4
 pyyaml==6.0.1
     # via n2snusertools
 rich==13.7.1
-    # via textual
+    # via
+    #   textual
+    #   typer-slim
+shellingham==1.5.4
+    # via typer-slim
 sniffio==1.3.1
     # via
     #   anyio
     #   httpx
-starlette==0.36.3
+starlette==0.37.2
     # via
     #   asgi-correlation-id
     #   fastapi
-textual==0.52.1
+textual==0.55.1
 toml==0.10.2
     # via beanie
-typer==0.9.0
+typer==0.12.0
+typer-cli==0.12.0
+    # via typer
+typer-slim==0.12.0
+    # via
+    #   typer
+    #   typer-cli
 typing-extensions==4.10.0
     # via
     #   fastapi
     #   pydantic
     #   pydantic-core
     #   textual
-    #   typer
+    #   typer-slim
 uc-micro-py==1.0.3
     # via linkify-it-py
 uuid==1.30
-uvicorn==0.28.0
+uvicorn==0.29.0
 wcwidth==0.2.13
     # via prettytable
-werkzeug==3.0.1
+werkzeug==3.0.2
