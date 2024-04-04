@@ -1,6 +1,8 @@
+from pydantic import ValidationError
 from nsls2api.infrastructure import config
-from .helpers import _call_async_webservice
-from ..models.pass_models import PassCycle
+from nsls2api.infrastructure.logging import logger
+from nsls2api.services.helpers import _call_async_webservice
+from nsls2api.models.pass_models import PassCycle, PassProposal
 
 settings = config.get_settings()
 
@@ -8,10 +10,19 @@ api_key = settings.pass_api_key
 base_url = settings.pass_api_url
 
 
-async def get_proposal(proposal_id: int):
+async def get_proposal(proposal_id: int) -> PassProposal :
     url = f"{base_url}/Proposal/GetProposal/{api_key}/NSLS-II/{proposal_id}"
-    print(url)
-    proposal = await _call_async_webservice(url)
+    
+    try:
+        raw_proposal = await _call_async_webservice(url)
+        proposal = PassProposal(**raw_proposal)
+    except ValidationError as e:
+        logger.error(f"Error validating data recevied from PASS for proposal: {e}")
+        proposal = None
+    except Exception as e:
+        logger.error(f"Error retrieving proposal from PASS: {e}")
+        proposal = None
+
     return proposal
 
 
