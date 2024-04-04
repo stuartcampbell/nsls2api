@@ -5,6 +5,7 @@ from nsls2api.models import (
     beamlines,
     proposals,
     apikeys,
+    jobs,
 )
 
 all_models = [
@@ -15,4 +16,5 @@ all_models = [
     proposals.Proposal,
     apikeys.ApiKey,
     apikeys.ApiUser,
+    jobs.BackgroundJob,
 ]
