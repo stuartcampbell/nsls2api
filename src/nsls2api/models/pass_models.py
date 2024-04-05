@@ -2,6 +2,33 @@ from typing import Optional
 import pydantic
 
 
+class PassAllocation(pydantic.BaseModel):
+    """
+    This class represents PASS's representation of an Allocation.
+    """
+    Expired: Optional[bool] = None
+    Expiration_Date: Optional[str] = None
+    Allocated_Proposal_Type_ID: Optional[int] = None
+    Created_Proposal_Type_ID: Optional[int] = None
+    Creator_User_ID: Optional[int] = None
+    Cycle_Request_ID: Optional[int] = None
+    Proposal_ID: Optional[int] = None
+    PI_User_ID: Optional[int] = None
+    PRP_Hours_Recommended: Optional[float] = None
+    Total_Hours_Requested: Optional[float] = None
+    Total_Hours_Awarded: Optional[float] = None
+    Allocated_Proposal_Type_Description: Optional[str] = None
+    Beamline_Description: Optional[str] = None
+    Comments: Optional[str] = None
+    Created_Proposal_Type_Description: Optional[str] = None
+    Cycle_Requested_Description: Optional[str] = None
+    Short_Name: Optional[str] = None
+    Title: Optional[str] = None
+    User_Facility_ID: Optional[str] = None
+    Creator: Optional[PassPerson] = None
+    PI: Optional[PassPerson] = None
+
+    
 class PassCycle(pydantic.BaseModel):
     """
     This class represents PASS's representation of a Cycle.
