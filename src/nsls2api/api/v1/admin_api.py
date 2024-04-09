@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import fastapi
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.security import (
@@ -9,9 +9,12 @@ from nsls2api.infrastructure.security import (
     generate_api_key,
 )
 from nsls2api.models.apikeys import ApiUser
+from nsls2api.services import background_service
 
 # router = fastapi.APIRouter()
-router = fastapi.APIRouter(dependencies=[Depends(validate_admin_role)], include_in_schema=False, tags=["admin"])
+router = fastapi.APIRouter(
+    dependencies=[Depends(validate_admin_role)], include_in_schema=True, tags=["admin"]
+)
 
 
 @router.get("/admin/settings")  # , include_in_schema=False)
@@ -21,7 +24,7 @@ async def info(settings: Annotated[config.Settings, Depends(config.get_settings)
 
 @router.get("/admin/validate", response_model=str)
 async def check_admin_validation(
-    admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None
+    admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None,
 ):
     """
     :return: str - The username of the validated admin user.
@@ -45,3 +48,22 @@ async def generate_user_apikey(username: str):
     :return: The generated API key.
     """
     return await generate_api_key(username)
+
+
+@router.get("/admin/sync/check-status/{job_id}")
+async def check_job_status(request: Request, job_id: str):
+    """
+    Check the status of a background job.
+
+    :param job_id: The ID of the job to check.
+    :return: The status of the job.
+    """
+
+    job = await background_service.job_by_id(job_id)
+    if job is None:
+        return fastapi.responses.JSONResponse(
+            {"error": f"Job {job_id} not found"},
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+        )
+    else:
+        return job.processing_status
