@@ -23,6 +23,7 @@ async def get_saf_from_proposal(proposal_id: int):
 
 
 async def get_commissioning_proposals_by_year(year: int):
+    # The PASS ID for commissioning proposals is 300005
     url = f"{base_url}Proposal/GetProposalsByType/{api_key}/NSLS-II/{year}/300005/NULL"
     proposals = await _call_async_webservice(url)
     return proposals

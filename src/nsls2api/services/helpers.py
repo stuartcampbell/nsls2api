@@ -11,8 +11,6 @@ settings = config.get_settings()
 async def _call_async_webservice(url: str, headers: dict = None) -> Response:
     transport = None
 
-    print(dir(settings))
-
     if settings.use_socks_proxy:
         transport = httpx_socks.AsyncProxyTransport.from_url(settings.socks_proxy)
 
