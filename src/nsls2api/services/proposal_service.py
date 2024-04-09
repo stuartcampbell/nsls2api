@@ -1,3 +1,4 @@
+import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -9,6 +10,8 @@ from nsls2api.api.models.proposal_model import (
     ProposalFullDetails,
 )
 from nsls2api.infrastructure.logging import logger
+from nsls2api.models.pass_models import PassProposal
+from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
 from nsls2api.services import beamline_service, pass_service
 
@@ -172,6 +175,13 @@ async def fetch_proposals(
         return detailed_proposals
     else:
         return proposals
+
+
+async def proposal_type_from_pass_type_id(pass_type_id: int) -> Optional[str]:
+    proposal_type = await ProposalType.find_one(
+        ProposalType.pass_id == str(pass_type_id)
+    )
+    return proposal_type.description
 
 
 async def data_session_for_proposal(proposal_id: int) -> Optional[str]:
@@ -378,15 +388,27 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
     return proposal_diagnostics
 
 
-# TODO: This function is not yet complete
-def create_or_update_proposal(proposal_id):
-    # Does the proposal already exist in our system
-    proposal_exists = exists(proposal_id)
+async def worker_synchronize_proposal(proposal_id: int) -> Proposal:
+    start_time = datetime.datetime.now()
 
-    # Let's see what PASS has for this proposal.
-    if proposal_exists:
-        pass_proposal = pass_service.get_proposal(proposal_id)
+    try:
+        pass_proposal: PassProposal = await pass_service.get_proposal(proposal_id)
+    except Exception:
+        error_message = f"Error retrieving proposal {proposal_id} from PASS"
+        logger.error(error_message)
+        raise Exception(error_message)
 
-    proposal = Proposal(proposal_id=pass_proposal)
+    proposal = Proposal(
+        proposal_id=pass_proposal.Proposal_ID,
+        title=pass_proposal.Title,
+        last_updated=datetime.datetime.now(),
+    )
+
+    await proposal.save()
+
+    time_taken = datetime.datetime.now() - start_time
+    logger.info(
+        f"Proposal {proposal_id} synchronized in {time_taken.total_seconds():,.0f} seconds"
+    )
 
     return proposal
