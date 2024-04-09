@@ -14,7 +14,7 @@ from fastapi import requests
 
 BASE_URL = "http://localhost:8080"
 
-global __logged_in_username
+__logged_in_username = None
 
 app = typer.Typer()
 
@@ -42,7 +42,7 @@ def login():
         print("No API token found")
         token = getpass.getpass(prompt="Please enter your API token:")
         if len(token) == 0:
-            globals()[__logged_in_username]: SpecialUsers = SpecialUsers.anonymous
+            __logged_in_username: SpecialUsers = SpecialUsers.anonymous
             print("Logged in as anonymous")
             return
 
@@ -53,7 +53,7 @@ def login():
             headers = {"Authorization": f"{token}"}
             response = client.get(url, headers=headers)
             response.raise_for_status()
-            globals()[__logged_in_username] = response.json()
+            __logged_in_username = response.json()
             # nsls2api.cli.__logged_in_username = response.json()
             # LOGGED_IN_USERNAME = response.json()
     except httpx.RequestError as exc:
