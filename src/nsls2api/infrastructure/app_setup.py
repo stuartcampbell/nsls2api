@@ -24,7 +24,7 @@ async def app_lifespan(_):
     # Start the background workers
 
     # noinspection PyAsyncCall
-    asyncio.create_task(background_service.background_worker())
+    asyncio.create_task(background_service.worker_function())
     
     yield
 
