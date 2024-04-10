@@ -9,8 +9,8 @@ from nsls2api.models.jobs import BackgroundJob, JobActions, JobStatus
 from nsls2api.services import proposal_service
 
 
-async def create_background_job(action: JobActions, proposal_id: int) -> BackgroundJob:
-    job = BackgroundJob(action=action, proposal_id=str(proposal_id))
+async def create_background_job(action: JobActions, proposal_id: Optional[int] = None) -> BackgroundJob:
+    job = BackgroundJob(action=action, proposal_id=str(proposal_id) if proposal_id is not None else None)
     await job.save()
 
     return job
