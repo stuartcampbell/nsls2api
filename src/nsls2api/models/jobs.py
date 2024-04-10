@@ -20,6 +20,7 @@ class JobStatus(StrEnum):
 
 class JobActions(StrEnum):
     synchronize_proposal = "synchronize_proposal"
+    synchronize_proposal_types = "synchronize_proposal_types"
     create_slack_channel = "create_slack_channel"
 
 
