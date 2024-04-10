@@ -1,6 +1,6 @@
 from typing import Annotated
 import fastapi
-from fastapi import Depends, HTTPException, Query
+from fastapi import Depends, HTTPException, Query, Request
 
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
@@ -14,8 +14,9 @@ from nsls2api.api.models.proposal_model import (
 )
 from nsls2api.api.models.proposal_model import UsernamesList
 from nsls2api.infrastructure.security import get_current_user
+from nsls2api.models.jobs import JobActions
 from nsls2api.models.proposals import Proposal
-from nsls2api.services import proposal_service
+from nsls2api.services import background_service, proposal_service
 from nsls2api.api.models.facility_model import FacilityName
 
 
@@ -109,26 +110,24 @@ async def get_proposal(proposal_id: int):
     return response_model
 
 
-# TODO: Add back into schema when implemented.
-@router.post(
-    "/proposal/{proposal_id}",
-    response_model=Proposal,
+@router.get(
+    "/proposal/sync/{proposal_id}",
     dependencies=[Depends(get_current_user)],
-    include_in_schema=False,
+    include_in_schema=True,
 )
-async def create_proposal(proposal_id: int) -> Proposal:
-    try:
-        proposal = await proposal_service.create_proposal(proposal_id)
-        if proposal is None:
-            raise HTTPException(
-                status_code=404, detail=f"Failed to create proposal {proposal_id}."
-            )
-    except LookupError as e:
-        return fastapi.responses.JSONResponse(
-            {"error": e.args[0]},
-            status_code=404,
-        )
-    return proposal
+async def sync_proposal(request: Request, proposal_id: int) -> Proposal:
+    job = await background_service.create_background_job(
+        JobActions.synchronize_proposal, proposal_id
+    )
+    return job
+
+
+@router.get("/proposal/types/sync", include_in_schema=True)
+async def sync_proposal_types():
+    job = await background_service.create_background_job(
+        JobActions.synchronize_proposal_types, 0
+    )
+    return job
 
 
 @router.get("/proposal/{proposal_id}/users", response_model=ProposalUserList)
