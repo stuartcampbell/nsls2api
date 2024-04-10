@@ -8,7 +8,6 @@ from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
 
 
-
 async def facilities_count() -> int:
     """
     Count the number of facilities in the database.
@@ -27,9 +26,26 @@ async def facility_cycles(facility: str) -> Optional[list[str]]:
     :param facility: The facility name (str).
     :return: A list of cycles for the facility (list[Cycle]).
     """
-    cycles = await Cycle.find(Cycle.facility == facility).to_list()
+    # FIXME: This next line is not returning a sorted list of cycles.
+    cycles = (
+        await Cycle.find(Cycle.facility == facility)
+        .sort(+Cycle.year, +Cycle.name)
+        .to_list()
+    )
     cycle_list = [c.name for c in cycles if c.name is not None]
     return cycle_list
+
+
+async def facility_by_pass_id(pass_user_facility_id: str) -> Optional[Facility]:
+    """
+    Facility by PASS ID
+
+    This method retrieves the facility by the PASS ID.
+
+    :param pass_id: The PASS ID (str).
+    :return: The facility (Facility) or None if no facility is found.
+    """
+    return await Facility.find_one(Facility.pass_facility_id == pass_user_facility_id)
 
 
 async def data_roles_by_user(username: str) -> Optional[list[str]]:
@@ -54,10 +70,10 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
 
     if cycle is None:
         return None
-    
+
     return cycle.name
 
-  
+
 async def is_healthy(facility: str) -> bool:
     """
     Database Health Check
@@ -77,7 +93,6 @@ async def is_healthy(facility: str) -> bool:
 
     # TODO: Check that the facility exists in the database.
 
-
     # Check that there is only one current operating cycle for the facility.
     cycles = await Cycle.find(Cycle.is_current_operating_cycle == facility).to_list()
     if len(cycles) > 1:
@@ -88,6 +103,5 @@ async def is_healthy(facility: str) -> bool:
     elif len(cycles) == 0:
         logger.warning(f"There is not an operating cycle for the {facility}.")
         health_status = False
-    
-    return health_status
 
+    return health_status
