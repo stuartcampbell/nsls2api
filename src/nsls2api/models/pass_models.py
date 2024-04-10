@@ -70,22 +70,22 @@ class PassExperimenter(pydantic.BaseModel):
     This class represents PASS's representation of an Experimenter.
     """
 
-    Can_Edit: bool
-    Can_Read: bool
-    CoPI: bool
-    On_Site: bool
-    Remote_Access: bool
-    Mail_In: bool
-    Off_Site: bool
-    Pool_ID: int
-    Proposal_ID: int
-    User_ID: int
-    Account: str
-    BNL_ID: str
-    Email: str
-    First_Name: str
-    Last_Name: str
-    User_Faciity_ID: str
+    Can_Edit: Optional[bool] = None
+    Can_Read: Optional[bool] = None
+    CoPI: Optional[bool] = None
+    On_Site: Optional[bool] = None
+    Remote_Access: Optional[bool] = None
+    Mail_In: Optional[bool] = None
+    Off_Site: Optional[bool] = None
+    Pool_ID: Optional[int] = None
+    Proposal_ID: Optional[int] = None
+    User_ID: Optional[int] = None
+    Account: Optional[str] = None
+    BNL_ID: Optional[str] = None
+    Email: Optional[str] = None
+    First_Name: Optional[str] = None
+    Last_Name: Optional[str] = None
+    User_Faciity_ID: Optional[str] = None
 
 
 class PassResource(pydantic.BaseModel):
@@ -93,10 +93,10 @@ class PassResource(pydantic.BaseModel):
     This class represents PASS's representation of a Resource.
     """
 
-    ID: int
-    Description: str
-    User_Facility_ID: str
-    Short_Name: str
+    ID: Optional[int] = None
+    Description: Optional[str] = None
+    User_Facility_ID: Optional[str] = None
+    Short_Name: Optional[str] = None
 
 
 class PassProposalType(pydantic.BaseModel):
