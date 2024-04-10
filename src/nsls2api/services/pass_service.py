@@ -2,7 +2,7 @@ from pydantic import ValidationError
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.logging import logger
 from nsls2api.services.helpers import _call_async_webservice
-from nsls2api.models.pass_models import PassCycle, PassProposal
+from nsls2api.models.pass_models import PassCycle, PassProposal, PassProposalType
 
 settings = config.get_settings()
 
@@ -10,9 +10,9 @@ api_key = settings.pass_api_key
 base_url = settings.pass_api_url
 
 
-async def get_proposal(proposal_id: int) -> PassProposal :
+async def get_proposal(proposal_id: int) -> PassProposal:
     url = f"{base_url}/Proposal/GetProposal/{api_key}/NSLS-II/{proposal_id}"
-    
+
     try:
         raw_proposal = await _call_async_webservice(url)
         proposal = PassProposal(**raw_proposal)
@@ -26,9 +26,30 @@ async def get_proposal(proposal_id: int) -> PassProposal :
     return proposal
 
 
+async def get_proposal_types() -> PassProposalType:
+    url = f"{base_url}/Proposal/GetProposalTypes/{api_key}/NSLS-II"
+
+    try:
+        raw_proposal_types = await _call_async_webservice(url)
+        proposal_types = []
+        if raw_proposal_types:
+            for proposal_type in raw_proposal_types:
+                proposal_types.append(PassProposalType(**proposal_type))
+    except ValidationError as e:
+        logger.error(
+            f"Error validating data recevied from PASS for proposal types: {e}"
+        )
+        proposal_types = None
+    except Exception as e:
+        logger.error(f"Error retrieving proposal types from PASS: {e}")
+        proposal_types = None
+
+    return proposal_types
+
+
 async def get_saf_from_proposal(proposal_id: int):
     url = f"{base_url}/SAF/GetSAFsByProposal/{api_key}/NSLS-II/{proposal_id}"
-    print(url)
+
     saf = await _call_async_webservice(url)
     return saf
 
