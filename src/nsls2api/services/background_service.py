@@ -103,6 +103,9 @@ async def worker_function():
                 case JobActions.synchronize_proposal:
                     logger.info(f"Processing job {job.id} to synchronize proposal {job.proposal_id}.")
                     await proposal_service.worker_synchronize_proposal(job.proposal_id)
+                case JobActions.synchronize_proposal_types:
+                    logger.info(f"Processing job {job.id} to synchronize proposal types.")
+                    await proposal_service.worker_synchronize_proposal_types()
                 case JobActions.create_slack_channel:
                     logger.info(f"I would be Processing job {job.id} to create Slack channel for proposal {job.proposal_id} if it was written.")
                     #await proposal_service.worker_create_slack_channel(job.proposal_id)
