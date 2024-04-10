@@ -2,8 +2,9 @@ import datetime
 from pathlib import Path
 from typing import Optional
 
+from beanie import UpdateResponse
 from beanie.odm.operators.find.array import ElemMatch
-from beanie.operators import And, In, RegEx, Text
+from beanie.operators import And, In, RegEx, Text, Set
 
 from nsls2api.api.models.proposal_model import (
     ProposalDiagnostics,
@@ -13,7 +14,7 @@ from nsls2api.infrastructure.logging import logger
 from nsls2api.models.pass_models import PassProposal
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
-from nsls2api.services import beamline_service, pass_service
+from nsls2api.services import beamline_service, facility_service, pass_service
 
 
 async def exists(proposal_id: int) -> bool:
@@ -388,6 +389,44 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
     return proposal_diagnostics
 
 
+async def worker_synchronize_proposal_types(facility) -> None:
+    start_time = datetime.datetime.now()
+
+    try:
+        pass_proposal_types: PassProposal = await pass_service.get_proposal_types()
+    except Exception:
+        error_message = "Error retrieving proposal types from PASS"
+        logger.error(error_message)
+        raise Exception(error_message)
+    
+    for pass_proposal_type in pass_proposal_types:
+
+        facility = await facility_service.facility_by_pass_id(pass_proposal_type.User_Facility_ID)
+
+        proposal_type = ProposalType(
+            code=pass_proposal_type.Code,
+            facility_id=facility.facility_id, 
+            pass_id=str(pass_proposal_type.ID),
+            description=pass_proposal_type.Description,
+            pass_description=pass_proposal_type.Description,
+        )
+
+        await ProposalType.find_one(ProposalType.pass_id == str(pass_proposal_type.ID)).upsert(
+            Set({ProposalType.code: pass_proposal_type.Code, 
+                 ProposalType.pass_description: pass_proposal_type.Description,
+                 ProposalType.description: pass_proposal_type.Description,
+                 ProposalType.facility_id: facility.facility_id, 
+                 ProposalType.last_updated: datetime.datetime.now()}),
+                 on_insert=proposal_type, response_type=UpdateResponse.UPDATE_RESULT)
+
+        # await proposal_type.save()
+
+    time_taken = datetime.datetime.now() - start_time
+    logger.info(
+        f"Proposal types synchronized in {time_taken.total_seconds():,.0f} seconds"
+    )
+
+
 async def worker_synchronize_proposal(proposal_id: int) -> Proposal:
     start_time = datetime.datetime.now()
 
@@ -398,13 +437,29 @@ async def worker_synchronize_proposal(proposal_id: int) -> Proposal:
         logger.error(error_message)
         raise Exception(error_message)
 
+    beamline_list = []
+    saf_list = []
+    user_list = []
+
+    for resource in pass_proposal.Resources:
+        beamline = await beamline_service.beamline_by_pass_id(resource.ID)
+        if beamline:
+            beamline_list.append(beamline.name)
+
+
     proposal = Proposal(
-        proposal_id=pass_proposal.Proposal_ID,
+        proposal_id=str(pass_proposal.Proposal_ID),
         title=pass_proposal.Title,
+        data_session=f"pass-{str(pass_proposal.Proposal_ID)}",
+        pass_type_id=str(pass_proposal.Proposal_Type_ID),
+        type=await proposal_type_from_pass_type_id(pass_proposal.Proposal_Type_ID),
+        instruments=beamline_list,
         last_updated=datetime.datetime.now(),
     )
 
-    await proposal.save()
+    logger.info(proposal)
+
+    # await proposal.save()
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
