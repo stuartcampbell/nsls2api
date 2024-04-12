@@ -5,12 +5,14 @@ from typing import Optional
 import bson
 
 from nsls2api.infrastructure.logging import logger
-from nsls2api.models.jobs import BackgroundJob, JobActions, JobStatus
+from nsls2api.models.jobs import BackgroundJob, JobActions, JobStatus, JobSyncParameters
 from nsls2api.services import proposal_service
 
 
-async def create_background_job(action: JobActions, proposal_id: Optional[int] = None) -> BackgroundJob:
-    job = BackgroundJob(action=action, proposal_id=str(proposal_id) if proposal_id is not None else None)
+async def create_background_job(
+    action: JobActions, sync_parameters: JobSyncParameters = None
+) -> BackgroundJob:
+    job = BackgroundJob(action=action, sync_parameters=sync_parameters)
     await job.save()
 
     return job
@@ -101,14 +103,24 @@ async def worker_function():
         try:
             match job.action:
                 case JobActions.synchronize_proposal:
-                    logger.info(f"Processing job {job.id} to synchronize proposal {job.proposal_id}.")
-                    await proposal_service.worker_synchronize_proposal(job.proposal_id)
+                    logger.info(
+                        f"Processing job {job.id} to synchronize proposal {job.sync_parameters.proposal_id}."
+                    )
+                    await proposal_service.worker_synchronize_proposal(
+                        job.sync_parameters.proposal_id
+                    )
                 case JobActions.synchronize_proposal_types:
-                    logger.info(f"Processing job {job.id} to synchronize proposal types.")
-                    await proposal_service.worker_synchronize_proposal_types()
+                    logger.info(
+                        f"Processing job {job.id} to synchronize proposal types for the {job.sync_parameters.facility} facilty."
+                    )
+                    await proposal_service.worker_synchronize_proposal_types(
+                        job.sync_parameters.facility
+                    )
                 case JobActions.create_slack_channel:
-                    logger.info(f"I would be Processing job {job.id} to create Slack channel for proposal {job.proposal_id} if it was written.")
-                    #await proposal_service.worker_create_slack_channel(job.proposal_id)
+                    logger.info(
+                        f"I would be Processing job {job.id} to create Slack channel for proposal {job.sync_parameters.proposal_id} if it was written."
+                    )
+                    # await proposal_service.worker_create_slack_channel(job.proposal_id)
                 case _:
                     raise Exception(f"Unknown job action {job.action}.")
 
