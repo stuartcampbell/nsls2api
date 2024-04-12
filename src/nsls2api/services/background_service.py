@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import traceback
 from typing import Optional
 
 import bson
@@ -49,7 +50,7 @@ async def start_job(job_id: bson.ObjectId) -> Optional[BackgroundJob]:
 
 
 async def complete_job(
-    job_id: bson.ObjectId, processing_status: JobStatus
+    job_id: bson.ObjectId, processing_status: JobStatus, log_message: str = None
 ) -> Optional[BackgroundJob]:
     job = await job_by_id(job_id)
     if not job:
@@ -63,6 +64,7 @@ async def complete_job(
     job.processing_status = processing_status
     job.finished_date = datetime.datetime.now()
     job.is_finished = True
+    job.log_message = log_message
     await job.save()
 
     return job
@@ -128,4 +130,5 @@ async def worker_function():
 
         except Exception as e:
             logger.error(f"Error processing job {job.id} for {job.action}: {e}")
-            await complete_job(job.id, JobStatus.failed)
+            error_message = traceback.format_exc()
+            await complete_job(job.id, JobStatus.failed, error_message)
