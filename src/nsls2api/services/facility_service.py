@@ -48,6 +48,22 @@ async def facility_by_pass_id(pass_user_facility_id: str) -> Optional[Facility]:
     return await Facility.find_one(Facility.pass_facility_id == pass_user_facility_id)
 
 
+async def pass_id_for_facility(facility_name: str) -> Optional[str]:
+    """
+    PASS ID for Facility
+
+    This method retrieves the PASS ID for a given facility.
+
+    :param facility: The facility name (str). e.g. "nsls2, lbms, cfn, etc."
+    :return: The PASS ID (str) or None if no facility is found.
+    """
+    facility = await Facility.find_one(Facility.facility_id == facility_name)
+    if facility is None:
+        return None
+
+    return facility.pass_facility_id
+
+
 async def data_roles_by_user(username: str) -> Optional[list[str]]:
     facilities = await Facility.find(In(Facility.data_admins, [username])).to_list()
     facility_names = [f.facility_id for f in facilities if f.facility_id is not None]
