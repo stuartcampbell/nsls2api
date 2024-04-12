@@ -1,7 +1,9 @@
+from typing import Optional
 from pydantic import ValidationError
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.logging import logger
 from nsls2api.services.helpers import _call_async_webservice
+from nsls2api.services import facility_service
 from nsls2api.models.pass_models import PassCycle, PassProposal, PassProposalType
 
 settings = config.get_settings()
@@ -10,38 +12,42 @@ api_key = settings.pass_api_key
 base_url = settings.pass_api_url
 
 
-async def get_proposal(proposal_id: int) -> PassProposal:
+async def get_proposal(proposal_id: int) -> Optional[PassProposal]:
     url = f"{base_url}/Proposal/GetProposal/{api_key}/NSLS-II/{proposal_id}"
 
     try:
-        raw_proposal = await _call_async_webservice(url)
-        proposal = PassProposal(**raw_proposal)
-    except ValidationError as e:
-        logger.error(f"Error validating data recevied from PASS for proposal: {e}")
+        pass_proposal = await _call_async_webservice(url)
+        proposal = PassProposal(**pass_proposal)
+    except ValidationError:
+        logger.exception("Error validating data recevied from PASS for proposal.")
         proposal = None
-    except Exception as e:
-        logger.error(f"Error retrieving proposal from PASS: {e}")
+    except Exception:
+        logger.exception("Error retrieving proposal from PASS.")
         proposal = None
 
     return proposal
 
 
-async def get_proposal_types() -> PassProposalType:
-    url = f"{base_url}/Proposal/GetProposalTypes/{api_key}/NSLS-II"
+async def get_proposal_types(facility) -> Optional[PassProposalType]:
+    pass_facility = await facility_service.pass_id_for_facility(facility)
+
+    if not pass_facility:
+        logger.error(f"Facility {facility} does not have a PASS ID.")
+        return None
+
+    url = f"{base_url}/Proposal/GetProposalTypes/{api_key}/{pass_facility}"
 
     try:
-        raw_proposal_types = await _call_async_webservice(url)
+        pass_proposal_types_list = await _call_async_webservice(url)
         proposal_types = []
-        if raw_proposal_types:
-            for proposal_type in raw_proposal_types:
+        if pass_proposal_types_list and len(pass_proposal_types_list) > 0:
+            for proposal_type in pass_proposal_types_list:
                 proposal_types.append(PassProposalType(**proposal_type))
-    except ValidationError as e:
-        logger.error(
-            f"Error validating data recevied from PASS for proposal types: {e}"
-        )
+    except ValidationError:
+        logger.exception("Error validating data recevied from PASS for proposal types.")
         proposal_types = None
-    except Exception as e:
-        logger.error(f"Error retrieving proposal types from PASS: {e}")
+    except Exception:
+        logger.exception("Error retrieving proposal types from PASS.")
         proposal_types = None
 
     return proposal_types
