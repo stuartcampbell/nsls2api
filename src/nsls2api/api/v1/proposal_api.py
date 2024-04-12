@@ -14,7 +14,7 @@ from nsls2api.api.models.proposal_model import (
 )
 from nsls2api.api.models.proposal_model import UsernamesList
 from nsls2api.infrastructure.security import get_current_user
-from nsls2api.models.jobs import JobActions
+from nsls2api.models.jobs import JobActions, JobSyncParameters
 from nsls2api.models.proposals import Proposal
 from nsls2api.services import background_service, proposal_service
 from nsls2api.api.models.facility_model import FacilityName
@@ -116,16 +116,18 @@ async def get_proposal(proposal_id: int):
     include_in_schema=True,
 )
 async def sync_proposal(request: Request, proposal_id: int) -> Proposal:
+    sync_params = JobSyncParameters(proposal_id=str(proposal_id))
     job = await background_service.create_background_job(
-        JobActions.synchronize_proposal, proposal_id
+        JobActions.synchronize_proposal, sync_parameters=sync_params
     )
     return job
 
 
-@router.get("/proposal/types/sync", include_in_schema=True)
-async def sync_proposal_types():
+@router.get("/proposal/types/sync/{facility}", include_in_schema=True)
+async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
+    sync_params = JobSyncParameters(facility=facility)
     job = await background_service.create_background_job(
-        JobActions.synchronize_proposal_types, 0
+        JobActions.synchronize_proposal_types, sync_params
     )
     return job
 
