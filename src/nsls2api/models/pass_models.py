@@ -145,3 +145,15 @@ class PassScheduledTimeSFTK(pydantic.BaseModel):
     StopTime: Optional[str] = None
     AddedModifiedByUserID: Optional[int] = None
     DateAddedModified: Optional[str] = None
+
+
+class PassSaf(pydantic.BaseModel):
+    """
+    This class represents PASS's representation of a SAF.
+    """
+
+    SAF_ID: Optional[int] = None
+    Date_Expires: Optional[str] = None
+    Status: Optional[str] = None
+    Experimenters: Optional[list[PassExperimenter]] = None
+    Resources: Optional[list[PassResource]] = None
