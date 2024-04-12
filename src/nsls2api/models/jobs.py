@@ -24,6 +24,15 @@ class JobActions(StrEnum):
     create_slack_channel = "create_slack_channel"
 
 
+class JobSyncParameters(pydantic.BaseModel):
+    proposal_id: Optional[str] = None
+    facility: Optional[str] = None
+    year: Optional[int] = None
+    cycle: Optional[str] = None
+    proposal_type_id: Optional[str] = None
+    beamline: Optional[str] = None
+
+
 class BackgroundJob(beanie.Document):
     created_date: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
@@ -33,7 +42,7 @@ class BackgroundJob(beanie.Document):
     processing_status: str = JobStatus.awaiting
     is_finished: bool = False
     action: str
-    proposal_id: Optional[str] = None
+    sync_parameters: Optional[JobSyncParameters] = None
 
     class Settings:
         name = "jobs"
@@ -45,7 +54,8 @@ class BackgroundJob(beanie.Document):
                 keys=[("processing_status", pymongo.ASCENDING)], name="status_ascend"
             ),
             pymongo.IndexModel(
-                keys=[("proposal_id", pymongo.ASCENDING)], name="proposal_ascend"
+                keys=[("sync_parameters.proposal_id", pymongo.ASCENDING)],
+                name="proposal_ascend",
             ),
             pymongo.IndexModel(
                 keys=[("created_date", pymongo.ASCENDING)],
