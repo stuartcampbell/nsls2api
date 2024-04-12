@@ -12,9 +12,9 @@ from nsls2api.api.models.proposal_model import (
     ProposalFullDetails,
 )
 from nsls2api.infrastructure.logging import logger
-from nsls2api.models.pass_models import PassProposal
+from nsls2api.models.pass_models import PassProposal, PassSaf
 from nsls2api.models.proposal_types import ProposalType
-from nsls2api.models.proposals import Proposal, ProposalIdView, User
+from nsls2api.models.proposals import Proposal, ProposalIdView, SafetyForm, User
 from nsls2api.services import beamline_service, facility_service, pass_service
 
 
@@ -401,10 +401,10 @@ async def worker_synchronize_proposal_types(
         pass_proposal_types: PassProposal = await pass_service.get_proposal_types(
             facility
         )
-    except Exception:
-        error_message = "Error retrieving proposal types from PASS"
-        logger.error(error_message)
-        raise Exception(error_message)
+    except pass_service.PassException as error:
+        error_message = f"Error retrieving proposal types from PASS for {facility} facility."
+        logger.exception(error_message)
+        raise Exception(error_message) from error
 
     for pass_proposal_type in pass_proposal_types:
         facility = await facility_service.facility_by_pass_id(
@@ -444,16 +444,25 @@ async def worker_synchronize_proposal_types(
 async def worker_synchronize_proposal(proposal_id: int) -> Proposal:
     start_time = datetime.datetime.now()
 
+    beamline_list = []
+    user_list = []
+    saf_list = []
+
     try:
         pass_proposal: PassProposal = await pass_service.get_proposal(proposal_id)
-    except Exception:
+    except pass_service.PassException as error:
         error_message = f"Error retrieving proposal {proposal_id} from PASS"
         logger.error(error_message)
-        raise Exception(error_message)
+        raise Exception(error_message) from error
 
-    beamline_list = []
-    saf_list = []
-    user_list = []
+    # Get the SAFs for this proposal
+    pass_saf_list: list[PassSaf] = await pass_service.get_safs(proposal_id)
+    for saf in pass_saf_list:
+        saf_list.append(
+            SafetyForm(
+                saf_id=saf.SAF_ID, status=saf.Status, instruments=saf.Instruments
+            )
+        )
 
     for resource in pass_proposal.Resources:
         beamline = await beamline_service.beamline_by_pass_id(resource.ID)
@@ -469,6 +478,7 @@ async def worker_synchronize_proposal(proposal_id: int) -> Proposal:
             pass_proposal.Proposal_Type_ID
         ),
         instruments=beamline_list,
+        safs=saf_list,
         last_updated=datetime.datetime.now(),
     )
 
