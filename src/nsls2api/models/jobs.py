@@ -43,6 +43,7 @@ class BackgroundJob(beanie.Document):
     is_finished: bool = False
     action: str
     sync_parameters: Optional[JobSyncParameters] = None
+    log_message: Optional[str] = None
 
     class Settings:
         name = "jobs"
