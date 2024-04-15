@@ -18,6 +18,10 @@ class JobStatus(StrEnum):
     success = "success"
 
 
+class JobSyncSource(StrEnum):
+    PASS = "PASS"
+    universal_proposal_system = "universal_proposal_system"
+
 class JobActions(StrEnum):
     synchronize_proposal = "synchronize_proposal"
     synchronize_proposal_types = "synchronize_proposal_types"
@@ -31,6 +35,7 @@ class JobSyncParameters(pydantic.BaseModel):
     cycle: Optional[str] = None
     proposal_type_id: Optional[str] = None
     beamline: Optional[str] = None
+    sync_source: Optional[JobSyncSource] = JobSyncSource.PASS
 
 
 class BackgroundJob(beanie.Document):
