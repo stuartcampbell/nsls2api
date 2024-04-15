@@ -106,16 +106,16 @@ async def worker_function():
             match job.action:
                 case JobActions.synchronize_proposal:
                     logger.info(
-                        f"Processing job {job.id} to synchronize proposal {job.sync_parameters.proposal_id}."
+                        f"Processing job {job.id} to synchronize proposal {job.sync_parameters.proposal_id} (from {job.sync_parameters.sync_source})."
                     )
-                    await proposal_service.worker_synchronize_proposal(
+                    await proposal_service.worker_synchronize_proposal_from_pass(
                         job.sync_parameters.proposal_id
                     )
                 case JobActions.synchronize_proposal_types:
                     logger.info(
-                        f"Processing job {job.id} to synchronize proposal types for the {job.sync_parameters.facility} facilty."
+                        f"Processing job {job.id} to synchronize proposal types for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."
                     )
-                    await proposal_service.worker_synchronize_proposal_types(
+                    await proposal_service.worker_synchronize_proposal_types_from_pass(
                         job.sync_parameters.facility
                     )
                 case JobActions.create_slack_channel:

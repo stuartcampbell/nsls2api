@@ -392,7 +392,7 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
     return proposal_diagnostics
 
 
-async def worker_synchronize_proposal_types(
+async def worker_synchronize_proposal_types_from_pass(
     facility: FacilityName = FacilityName.nsls2,
 ) -> None:
     start_time = datetime.datetime.now()
@@ -441,7 +441,7 @@ async def worker_synchronize_proposal_types(
     )
 
 
-async def worker_synchronize_proposal(proposal_id: int) -> Proposal:
+async def worker_synchronize_proposal_from_pass(proposal_id: int) -> Proposal:
     start_time = datetime.datetime.now()
 
     beamline_list = []
@@ -456,11 +456,18 @@ async def worker_synchronize_proposal(proposal_id: int) -> Proposal:
         raise Exception(error_message) from error
 
     # Get the SAFs for this proposal
-    pass_saf_list: list[PassSaf] = await pass_service.get_safs(proposal_id)
+    pass_saf_list: list[PassSaf] = await pass_service.get_saf_from_proposal(proposal_id)
     for saf in pass_saf_list:
+
+        saf_beamline_list = []
+        for resource in saf.Resources:
+            beamline = await beamline_service.beamline_by_pass_id(resource.ID)
+            if beamline:
+                saf_beamline_list.append(beamline.name)
+
         saf_list.append(
             SafetyForm(
-                saf_id=saf.SAF_ID, status=saf.Status, instruments=saf.Instruments
+                saf_id=str(saf.SAF_ID), status=saf.Status, instruments=saf_beamline_list
             )
         )
 
