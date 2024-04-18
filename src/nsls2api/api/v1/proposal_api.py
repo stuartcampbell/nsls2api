@@ -118,7 +118,7 @@ async def get_proposal(proposal_id: int):
 async def sync_proposal(request: Request, proposal_id: int) -> Proposal:
     sync_params = JobSyncParameters(proposal_id=str(proposal_id))
     job = await background_service.create_background_job(
-        JobActions.synchronize_proposal, sync_parameters=sync_params
+        JobActions.synchronize_proposal, sync_parameters=sync_params,
     )
     return job
 
@@ -127,7 +127,7 @@ async def sync_proposal(request: Request, proposal_id: int) -> Proposal:
 async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
     sync_params = JobSyncParameters(facility=facility)
     job = await background_service.create_background_job(
-        JobActions.synchronize_proposal_types, sync_params
+        JobActions.synchronize_proposal_types, sync_parameters=sync_params,
     )
     return job
 
