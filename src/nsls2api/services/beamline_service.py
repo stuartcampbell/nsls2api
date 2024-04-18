@@ -53,7 +53,7 @@ async def beamline_by_pass_id(pass_id: str) -> Optional[Beamline]:
     :param pass_id: The PASS ID of the beamline to search for.
     :return: The found beamline, if any. Otherwise, returns None.
     """
-    beamline = await Beamline.find_one(Beamline.pass_id == pass_id)
+    beamline = await Beamline.find_one(Beamline.pass_id == str(pass_id))
     return beamline
 
 
