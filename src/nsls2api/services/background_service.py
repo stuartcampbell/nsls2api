@@ -129,6 +129,6 @@ async def worker_function():
             await complete_job(job.id, JobStatus.success)
 
         except Exception as e:
-            logger.error(f"Error processing job {job.id} for {job.action}: {e}")
+            logger.exception(f"Error processing job {job.id} for {job.action}: {e}")
             error_message = traceback.format_exc()
             await complete_job(job.id, JobStatus.failed, error_message)
