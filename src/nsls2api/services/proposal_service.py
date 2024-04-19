@@ -598,9 +598,7 @@ async def worker_update_cycle_information(
 ) -> None:
     start_time = datetime.datetime.now()
 
-    cycles = await Cycle.find(
-        Cycle.facility == facility, Cycle.name == "2024-2"
-    ).to_list()
+    cycles = await Cycle.find(Cycle.facility == facility).to_list()
 
     for cycle in cycles:
         if sync_source == JobSyncSource.PASS:
