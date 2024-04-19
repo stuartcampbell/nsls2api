@@ -230,9 +230,10 @@ async def get_proposal_directories(proposal_id: int) -> ProposalDirectoriesList:
 
 
 @router.get(
-    "/proposal/sync/{proposal_id}",
+    "/sync/proposal/{proposal_id}",
     dependencies=[Depends(get_current_user)],
     include_in_schema=True,
+    tags=["sync"],
 )
 async def sync_proposal(request: Request, proposal_id: int) -> BackgroundJob:
     sync_params = JobSyncParameters(proposal_id=str(proposal_id))
@@ -243,11 +244,20 @@ async def sync_proposal(request: Request, proposal_id: int) -> BackgroundJob:
     return job
 
 
-@router.get("/proposal/types/sync/{facility}", include_in_schema=True)
+@router.get("/sync/proposal/types/{facility}", include_in_schema=True, tags=["sync"])
 async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
     sync_params = JobSyncParameters(facility=facility)
     job = await background_service.create_background_job(
         JobActions.synchronize_proposal_types,
+        sync_parameters=sync_params,
+    )
+    return job
+
+@router.get("/sync/cycles/{facility}", include_in_schema=True, tags=["sync"])
+async def sync_cycles(facility: FacilityName = FacilityName.nsls2):
+    sync_params = JobSyncParameters(facility=facility)
+    job = await background_service.create_background_job(
+        JobActions.synchronize_cycles,
         sync_parameters=sync_params,
     )
     return job
