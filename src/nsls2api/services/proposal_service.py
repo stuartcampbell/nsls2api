@@ -426,7 +426,7 @@ async def worker_synchronize_proposal_types_from_pass(
             pass_description=pass_proposal_type.Description,
         )
 
-        await ProposalType.find_one(
+        response = await ProposalType.find_one(
             ProposalType.pass_id == str(pass_proposal_type.ID)
         ).upsert(
             Set(
@@ -443,6 +443,7 @@ async def worker_synchronize_proposal_types_from_pass(
         )
 
     time_taken = datetime.datetime.now() - start_time
+    logger.info(f"Response: {response}")
     logger.info(
         f"Proposal type information (for {facility}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )
@@ -536,7 +537,7 @@ async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
         last_updated=datetime.datetime.now(),
     )
 
-    proposal_response = await Proposal.find_one(
+    response = await Proposal.find_one(
         Proposal.proposal_id == str(proposal_id)
     ).upsert(
         Set(
@@ -555,9 +556,8 @@ async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
         response_type=UpdateResponse.UPDATE_RESULT,
     )
 
-    logger.info(proposal_response)
-
     time_taken = datetime.datetime.now() - start_time
+    logger.info(f"Response: {response}")
     logger.info(
         f"Proposal {proposal_id} synchronized in {time_taken.total_seconds():,.0f} seconds"
     )
