@@ -14,7 +14,7 @@ from nsls2api.api.models.proposal_model import (
 )
 from nsls2api.api.models.proposal_model import UsernamesList
 from nsls2api.infrastructure.security import get_current_user
-from nsls2api.models.jobs import JobActions, JobSyncParameters
+from nsls2api.models.jobs import BackgroundJob, JobActions, JobSyncParameters
 from nsls2api.models.proposals import Proposal
 from nsls2api.services import background_service, proposal_service
 from nsls2api.api.models.facility_model import FacilityName
@@ -110,28 +110,6 @@ async def get_proposal(proposal_id: int):
     return response_model
 
 
-@router.get(
-    "/proposal/sync/{proposal_id}",
-    dependencies=[Depends(get_current_user)],
-    include_in_schema=True,
-)
-async def sync_proposal(request: Request, proposal_id: int) -> Proposal:
-    sync_params = JobSyncParameters(proposal_id=str(proposal_id))
-    job = await background_service.create_background_job(
-        JobActions.synchronize_proposal, sync_parameters=sync_params,
-    )
-    return job
-
-
-@router.get("/proposal/types/sync/{facility}", include_in_schema=True)
-async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
-    sync_params = JobSyncParameters(facility=facility)
-    job = await background_service.create_background_job(
-        JobActions.synchronize_proposal_types, sync_parameters=sync_params,
-    )
-    return job
-
-
 @router.get("/proposal/{proposal_id}/users", response_model=ProposalUserList)
 async def get_proposals_users(proposal_id: int):
     try:
@@ -145,6 +123,11 @@ async def get_proposals_users(proposal_id: int):
         return fastapi.responses.JSONResponse(
             {"error": e.args[0]},
             status_code=404,
+        )
+    except Exception as e:
+        return fastapi.responses.JSONResponse(
+            {"error": f"An error occurred: {e}"},
+            status_code=500,
         )
 
     response_model = ProposalUserList(
@@ -174,6 +157,11 @@ async def get_proposal_principal_investigator(proposal_id: int):
             {"error": e.args[0]},
             status_code=404,
         )
+    except Exception as e:
+        return fastapi.responses.JSONResponse(
+            {"error": f"An error occurred: {e}"},
+            status_code=500,
+        )
 
     response_model = ProposalUser(
         proposal_id=str(proposal_id), user=principal_investigator[0]
@@ -193,6 +181,11 @@ async def get_proposal_usernames(proposal_id: int):
         return fastapi.responses.JSONResponse(
             {"error": e.args[0]},
             status_code=404,
+        )
+    except Exception as e:
+        return fastapi.responses.JSONResponse(
+            {"error": f"An error occurred: {e}"},
+            status_code=500,
         )
 
     proposal_usernames = await proposal_service.fetch_usernames_from_proposal(
@@ -220,9 +213,41 @@ async def get_proposal_directories(proposal_id: int) -> ProposalDirectoriesList:
             {"error": e.args[0]},
             status_code=404,
         )
+    except Exception as e:
+        return fastapi.responses.JSONResponse(
+            {"error": f"An error occurred: {e}"},
+            status_code=500,
+        )
 
     response_model = ProposalDirectoriesList(
         directories=directories,
         directory_count=len(directories),
     )
     return response_model
+
+
+## Sync Endpoints - Will probably move to a more suitable location.
+
+
+@router.get(
+    "/proposal/sync/{proposal_id}",
+    dependencies=[Depends(get_current_user)],
+    include_in_schema=True,
+)
+async def sync_proposal(request: Request, proposal_id: int) -> BackgroundJob:
+    sync_params = JobSyncParameters(proposal_id=str(proposal_id))
+    job = await background_service.create_background_job(
+        JobActions.synchronize_proposal,
+        sync_parameters=sync_params,
+    )
+    return job
+
+
+@router.get("/proposal/types/sync/{facility}", include_in_schema=True)
+async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
+    sync_params = JobSyncParameters(facility=facility)
+    job = await background_service.create_background_job(
+        JobActions.synchronize_proposal_types,
+        sync_parameters=sync_params,
+    )
+    return job
