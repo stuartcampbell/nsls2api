@@ -157,7 +157,6 @@ async def get_cycles(facility: FacilityName = FacilityName.nsls2) -> Optional[li
 
 
 async def get_proposals_allocated_by_cycle(cycle_name: str, facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassAllocation]]:
-    e.
     pass_facility = await facility_service.pass_id_for_facility(facility)
     if not pass_facility:
         error_message: str = f"Facility {facility} does not have a PASS ID."
