@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import Optional
 
 from beanie import UpdateResponse
+import beanie
 from beanie.odm.operators.find.array import ElemMatch
-from beanie.operators import And, In, RegEx, Text, Set
+from beanie.operators import And, In, RegEx, Text, Set, AddToSet
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
@@ -12,6 +13,8 @@ from nsls2api.api.models.proposal_model import (
     ProposalFullDetails,
 )
 from nsls2api.infrastructure.logging import logger
+from nsls2api.models.cycles import Cycle
+from nsls2api.models.jobs import JobSyncSource
 from nsls2api.models.pass_models import PassProposal, PassSaf
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, SafetyForm, User
@@ -537,9 +540,7 @@ async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
         last_updated=datetime.datetime.now(),
     )
 
-    response = await Proposal.find_one(
-        Proposal.proposal_id == str(proposal_id)
-    ).upsert(
+    response = await Proposal.find_one(Proposal.proposal_id == str(proposal_id)).upsert(
         Set(
             {
                 Proposal.title: pass_proposal.Title,
@@ -560,4 +561,55 @@ async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
     logger.info(f"Response: {response}")
     logger.info(
         f"Proposal {proposal_id} synchronized in {time_taken.total_seconds():,.0f} seconds"
+    )
+
+
+async def update_proposals_with_cycle_information_from_pass(cycle: Cycle) -> None:
+    """
+    Update all proposals with the given cycle information.
+
+    :param cycle: The cycle information to update the proposals with.
+    :type cycle: Cycle
+    """
+
+    allocations = await pass_service.get_proposals_allocated_by_cycle(cycle.name)
+
+    for allocation in allocations:
+        # Add the proposal to the Cycle object
+
+        # logger.info(f"Going to add proposal {proposal_id} to cycle {cycle.name}")
+
+        await cycle.update(AddToSet({Cycle.proposals: str(allocation.Proposal_ID)}))
+        cycle.last_updated = datetime.datetime.now()
+        await cycle.save()
+
+        try:
+            proposal = await proposal_by_id(allocation.Proposal_ID)
+            await proposal.update(AddToSet({Proposal.cycles: cycle.name}))
+            proposal.last_updated = datetime.datetime.now()
+            await proposal.save()
+        except LookupError as error:
+            logger.warning(error)
+
+
+async def worker_update_cycle_information(
+    facility: FacilityName = FacilityName.nsls2,
+    sync_source: JobSyncSource = JobSyncSource.PASS,
+) -> None:
+    start_time = datetime.datetime.now()
+
+    cycles = await Cycle.find(
+        Cycle.facility == facility, Cycle.name == "2024-2"
+    ).to_list()
+
+    for cycle in cycles:
+        if sync_source == JobSyncSource.PASS:
+            logger.info(
+                f"Updating proposals with information for cycle {cycle.name} (from PASS)"
+            )
+            await update_proposals_with_cycle_information_from_pass(cycle)
+
+    time_taken = datetime.datetime.now() - start_time
+    logger.info(
+        f"Proposal/Cycle information (for {facility}) populated in {time_taken.total_seconds():,.2f} seconds"
     )

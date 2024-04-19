@@ -14,7 +14,12 @@ from nsls2api.api.models.proposal_model import (
 )
 from nsls2api.api.models.proposal_model import UsernamesList
 from nsls2api.infrastructure.security import get_current_user
-from nsls2api.models.jobs import BackgroundJob, JobActions, JobSyncParameters
+from nsls2api.models.jobs import (
+    BackgroundJob,
+    JobActions,
+    JobSyncParameters,
+    JobSyncSource,
+)
 from nsls2api.models.proposals import Proposal
 from nsls2api.services import background_service, proposal_service
 from nsls2api.api.models.facility_model import FacilityName
@@ -253,11 +258,22 @@ async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
     )
     return job
 
+
 @router.get("/sync/cycles/{facility}", include_in_schema=True, tags=["sync"])
 async def sync_cycles(facility: FacilityName = FacilityName.nsls2):
     sync_params = JobSyncParameters(facility=facility)
     job = await background_service.create_background_job(
         JobActions.synchronize_cycles,
+        sync_parameters=sync_params,
+    )
+    return job
+
+
+@router.get("/sync/update-cycles/{facility}", include_in_schema=True, tags=["sync"])
+async def sync_update_cycles(facility: FacilityName = FacilityName.nsls2):
+    sync_params = JobSyncParameters(facility=facility, sync_source=JobSyncSource.PASS)
+    job = await background_service.create_background_job(
+        JobActions.update_cycle_information,
         sync_parameters=sync_params,
     )
     return job

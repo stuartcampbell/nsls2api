@@ -5,7 +5,9 @@ from pydantic import ValidationError
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.logging import logger
+from nsls2api.models.cycles import Cycle
 from nsls2api.models.pass_models import (
+    PassAllocation,
     PassCycle,
     PassProposal,
     PassProposalType,
@@ -53,7 +55,7 @@ async def get_proposal(
     return proposal
 
 
-async def get_proposal_types(facility: FacilityName = FacilityName.nsls2) -> Optional[PassProposalType]:
+async def get_proposal_types(facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassProposalType]]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
     if not pass_facility:
@@ -83,7 +85,7 @@ async def get_proposal_types(facility: FacilityName = FacilityName.nsls2) -> Opt
 
 async def get_saf_from_proposal(
     proposal_id: int, facility: FacilityName = FacilityName.nsls2
-):
+) -> Optional[list[PassSaf]]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
     if not pass_facility:
@@ -125,7 +127,7 @@ async def get_pass_resources():
     return resources
 
 
-async def get_cycles(facility: FacilityName = FacilityName.nsls2) -> PassCycle:
+async def get_cycles(facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassCycle]]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
     if not pass_facility:
@@ -154,8 +156,49 @@ async def get_cycles(facility: FacilityName = FacilityName.nsls2) -> PassCycle:
     return cycles
 
 
-async def get_proposals_allocated():
-    url = f"{base_url}/Proposal/GetProposalsAllocated/{api_key}/NSLS-II"
+async def get_proposals_allocated_by_cycle(cycle_name: str, facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassAllocation]]:
+    e.
+    pass_facility = await facility_service.pass_id_for_facility(facility)
+    if not pass_facility:
+        error_message: str = f"Facility {facility} does not have a PASS ID."
+        logger.error(error_message)
+        raise PassException(error_message)
+
+    cycle = await Cycle.find_one(Cycle.name == cycle_name)
+    if not cycle:
+        error_message: str = f"Could not find a cycle with the name {cycle_name}."
+        logger.error(error_message)
+        raise PassException(error_message)
+
+    url = f"{base_url}/Proposal/GetProposalsAllocatedByCycle/{api_key}/{pass_facility}/{cycle.pass_id}/null"
+
+    try:
+        pass_allocated_proposals = await _call_async_webservice(url)
+        allocated_proposals = []
+        if pass_allocated_proposals and len(pass_allocated_proposals) > 0:
+            for allocation in pass_allocated_proposals:
+                allocated_proposals.append(PassAllocation(**allocation))
+    except ValidationError as error:
+        error_message = f"Error validating allocated proposal data recevied from PASS for the {cycle} cycle at {facility} facility."
+        logger.error(error_message)
+        raise PassException(error_message) from error
+    except Exception as error:
+        error_message = "Error retrieving allocated proposal information from PASS."
+        logger.exception(error_message)
+        raise PassException(error_message) from error
+
+    return allocated_proposals
+
+
+async def get_proposals_allocated(facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassAllocation]]:
+    pass_facility = await facility_service.pass_id_for_facility(facility)
+
+    if not pass_facility:
+        error_message: str = f"Facility {facility} does not have a PASS ID."
+        logger.error(error_message)
+        raise PassException(error_message)
+
+    url = f"{base_url}/Proposal/GetProposalsAllocated/{api_key}/{pass_facility}"
     allocated_proposals = await _call_async_webservice(url)
     return allocated_proposals
 
