@@ -53,7 +53,7 @@ async def get_proposal(
     return proposal
 
 
-async def get_proposal_types(facility) -> Optional[PassProposalType]:
+async def get_proposal_types(facility: FacilityName = FacilityName.nsls2) -> Optional[PassProposalType]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
     if not pass_facility:
@@ -75,7 +75,7 @@ async def get_proposal_types(facility) -> Optional[PassProposalType]:
         raise PassException(error_message) from error
     except Exception as error:
         error_message = "Error retrieving proposal types from PASS."
-        logger.error(error_message)
+        logger.exception(error_message)
         raise PassException(error_message) from error
 
     return proposal_types
@@ -125,11 +125,33 @@ async def get_pass_resources():
     return resources
 
 
-async def get_cycles() -> PassCycle:
-    url = f"{base_url}/Proposal/GetCycles/{api_key}/NSLS-II"
-    print(url)
-    cycles = await _call_async_webservice(url)
-    return PassCycle(**cycles)
+async def get_cycles(facility: FacilityName = FacilityName.nsls2) -> PassCycle:
+    pass_facility = await facility_service.pass_id_for_facility(facility)
+
+    if not pass_facility:
+        error_message: str = f"Facility {facility} does not have a PASS ID."
+        logger.error(error_message)
+        raise PassException(error_message)
+    
+    url = f"{base_url}/Proposal/GetCycles/{api_key}/{pass_facility}"
+    logger.info(f"Getting cycles from PASS for {facility} facility.")
+
+    try:
+        pass_cycle_list = await _call_async_webservice(url)
+        cycles = []
+        if pass_cycle_list and len(pass_cycle_list) > 0:
+            for cycle in pass_cycle_list:
+                cycles.append(PassCycle(**cycle))
+    except ValidationError as error:
+        error_message = f"Error validating cycle data recevied from PASS for the {facility} facility."
+        logger.error(error_message)
+        raise PassException(error_message) from error
+    except Exception as error:
+        error_message = "Error retrieving cycle information from PASS."
+        logger.exception(error_message)
+        raise PassException(error_message) from error
+
+    return cycles
 
 
 async def get_proposals_allocated():
