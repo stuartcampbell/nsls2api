@@ -16,6 +16,7 @@ from nsls2api.models.pass_models import PassProposal, PassSaf
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, SafetyForm, User
 from nsls2api.services import beamline_service, facility_service, pass_service
+from nsls2api.services import n2sn_service
 
 
 async def exists(proposal_id: int) -> bool:
@@ -74,6 +75,10 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
     ).to_list()
     data_sessions = [p.data_session for p in proposals if p.data_session is not None]
     return data_sessions
+
+
+def generate_data_session_for_proposal(proposal_id: int) -> str:
+    return f"pass-{str(proposal_id)}"
 
 
 async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
@@ -402,7 +407,9 @@ async def worker_synchronize_proposal_types_from_pass(
             facility
         )
     except pass_service.PassException as error:
-        error_message = f"Error retrieving proposal types from PASS for {facility} facility."
+        error_message = (
+            f"Error retrieving proposal types from PASS for {facility} facility."
+        )
         logger.exception(error_message)
         raise Exception(error_message) from error
 
@@ -437,11 +444,11 @@ async def worker_synchronize_proposal_types_from_pass(
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
-        f"Proposal types synchronized in {time_taken.total_seconds():,.2f} seconds"
+        f"Proposal type information (for {facility}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )
 
 
-async def worker_synchronize_proposal_from_pass(proposal_id: int) -> Proposal:
+async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
     start_time = datetime.datetime.now()
 
     beamline_list = []
@@ -452,13 +459,12 @@ async def worker_synchronize_proposal_from_pass(proposal_id: int) -> Proposal:
         pass_proposal: PassProposal = await pass_service.get_proposal(proposal_id)
     except pass_service.PassException as error:
         error_message = f"Error retrieving proposal {proposal_id} from PASS"
-        logger.error(error_message)
+        logger.exception(error_message)
         raise Exception(error_message) from error
 
     # Get the SAFs for this proposal
     pass_saf_list: list[PassSaf] = await pass_service.get_saf_from_proposal(proposal_id)
     for saf in pass_saf_list:
-
         saf_beamline_list = []
         for resource in saf.Resources:
             beamline = await beamline_service.beamline_by_pass_id(resource.ID)
@@ -471,31 +477,87 @@ async def worker_synchronize_proposal_from_pass(proposal_id: int) -> Proposal:
             )
         )
 
+    # Get the beamlines for this proposal and add them
     for resource in pass_proposal.Resources:
         beamline = await beamline_service.beamline_by_pass_id(resource.ID)
         if beamline:
             beamline_list.append(beamline.name)
 
+    pi_found_in_experimenters = False
+
+    # Get the users for this proposal
+    for user in pass_proposal.Experimenters:
+        user_is_pi = False
+
+        if str(pass_proposal.PI.BNL_ID).casefold() == str(user.BNL_ID).casefold():
+            user_is_pi = True
+            pi_found_in_experimenters = True
+
+        bnl_username = await n2sn_service.get_username_by_id(user.BNL_ID)
+
+        userinfo = User(
+            first_name=user.First_Name,
+            last_name=user.Last_Name,
+            email=user.Email,
+            bnl_id=user.BNL_ID,
+            username=bnl_username,
+            is_pi=user_is_pi,
+        )
+        user_list.append(userinfo)
+
+    # Let's add the PI explictly anyway as PASS sometimes includes the PI in the
+    # Experimenters list and sometimes not.
+    if pass_proposal.PI and not pi_found_in_experimenters:
+        bnl_username = await n2sn_service.get_username_by_id(pass_proposal.PI.BNL_ID)
+        pi_info = User(
+            first_name=pass_proposal.PI.First_Name,
+            last_name=pass_proposal.PI.Last_Name,
+            email=pass_proposal.PI.Email,
+            bnl_id=pass_proposal.PI.BNL_ID,
+            username=bnl_username,
+            is_pi=True,
+        )
+        user_list.append(pi_info)
+
+    data_session = generate_data_session_for_proposal(proposal_id)
+    proposal_type = await proposal_type_description_from_pass_type_id(
+        pass_proposal.Proposal_Type_ID
+    )
+
     proposal = Proposal(
         proposal_id=str(pass_proposal.Proposal_ID),
         title=pass_proposal.Title,
-        data_session=f"pass-{str(pass_proposal.Proposal_ID)}",
+        data_session=data_session,
         pass_type_id=str(pass_proposal.Proposal_Type_ID),
-        type=await proposal_type_description_from_pass_type_id(
-            pass_proposal.Proposal_Type_ID
-        ),
+        type=proposal_type,
         instruments=beamline_list,
         safs=saf_list,
+        users=user_list,
         last_updated=datetime.datetime.now(),
     )
 
-    logger.info(proposal)
+    proposal_response = await Proposal.find_one(
+        Proposal.proposal_id == str(proposal_id)
+    ).upsert(
+        Set(
+            {
+                Proposal.title: pass_proposal.Title,
+                Proposal.data_session: data_session,
+                Proposal.pass_type_id: str(pass_proposal.Proposal_Type_ID),
+                Proposal.type: proposal_type,
+                Proposal.instruments: beamline_list,
+                Proposal.safs: saf_list,
+                Proposal.users: user_list,
+                Proposal.last_updated: datetime.datetime.now(),
+            }
+        ),
+        on_insert=proposal,
+        response_type=UpdateResponse.UPDATE_RESULT,
+    )
 
-    # await proposal.save()
+    logger.info(proposal_response)
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
         f"Proposal {proposal_id} synchronized in {time_taken.total_seconds():,.0f} seconds"
     )
-
-    return proposal
