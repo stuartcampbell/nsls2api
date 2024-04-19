@@ -1,11 +1,17 @@
+import datetime
+from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure.logging import logger
 
 from typing import Optional
 
+from beanie import UpdateResponse
+from beanie.operators import Set
 from beanie.odm.operators.find.comparison import In
 
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
+from nsls2api.models.pass_models import PassCycle
+from nsls2api.services import facility_service, pass_service
 
 
 async def facilities_count() -> int:
@@ -121,3 +127,60 @@ async def is_healthy(facility: str) -> bool:
         health_status = False
 
     return health_status
+
+
+async def worker_synchronize_cycles_from_pass(
+    facility: FacilityName = FacilityName.nsls2,
+) -> None:
+    """
+    This method synchronizes the cycles for a facility from PASS.
+
+    :param facility: The facility name (FacilityName).
+    """
+    start_time = datetime.datetime.now()
+
+    try:
+        pass_cycles: PassCycle = await pass_service.get_cycles(facility)
+    except pass_service.PassException as error:
+        error_message = (
+            f"Error retrieving cycle information from PASS for {facility} facility."
+        )
+        logger.exception(error_message)
+        raise Exception(error_message) from error
+
+    for pass_cycle in pass_cycles:
+        facility = await facility_service.facility_by_pass_id(pass_cycle.User_Facility_ID)
+
+        cycle = Cycle(
+            name=pass_cycle.Name,
+            accepting_proposals=pass_cycle.Active,
+            facility=facility.facility_id,
+            year=str(pass_cycle.Year),
+            start_date=pass_cycle.Start_Date,
+            end_date=pass_cycle.End_Date,
+            pass_description=pass_cycle.Description,
+            pass_id=str(pass_cycle.ID),
+        )
+
+        response = await Cycle.find_one(Cycle.name == pass_cycle.Name).upsert(
+            Set(
+                {
+                    Cycle.accepting_proposals: cycle.accepting_proposals,
+                    Cycle.facility: cycle.facility,
+                    Cycle.pass_description: cycle.pass_description,
+                    Cycle.pass_id: cycle.pass_id,
+                    Cycle.year: cycle.year,
+                    Cycle.start_date: cycle.start_date,
+                    Cycle.end_date: cycle.end_date,
+                    Cycle.last_updated: datetime.datetime.now(),
+                }
+            ),
+            on_insert=cycle,
+            response_type=UpdateResponse.UPDATE_RESULT,
+        )
+
+    time_taken = datetime.datetime.now() - start_time
+    logger.info(f"Response: {response}")
+    logger.info(
+        f"Cycle information (for {facility}) synchronized in {time_taken.total_seconds():,.2f} seconds"
+    )

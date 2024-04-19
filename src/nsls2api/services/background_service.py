@@ -7,7 +7,7 @@ import bson
 
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.jobs import BackgroundJob, JobActions, JobStatus, JobSyncParameters
-from nsls2api.services import proposal_service
+from nsls2api.services import facility_service, proposal_service
 
 
 async def create_background_job(
@@ -104,6 +104,13 @@ async def worker_function():
 
         try:
             match job.action:
+                case JobActions.synchronize_cycles:
+                    logger.info(
+                        f"Processing job {job.id} to synchronize cycles for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."
+                    )
+                    await facility_service.worker_synchronize_cycles_from_pass(
+                        job.sync_parameters.facility
+                    )
                 case JobActions.synchronize_proposal:
                     logger.info(
                         f"Processing job {job.id} to synchronize proposal {job.sync_parameters.proposal_id} (from {job.sync_parameters.sync_source})."
