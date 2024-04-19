@@ -104,6 +104,13 @@ async def worker_function():
 
         try:
             match job.action:
+                case JobActions.update_cycle_information:
+                    logger.info(
+                        f"Processing job {job.id} to update cycle information for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."
+                    )
+                    await proposal_service.worker_update_cycle_information(
+                        job.sync_parameters.facility, job.sync_parameters.sync_source
+                    )
                 case JobActions.synchronize_cycles:
                     logger.info(
                         f"Processing job {job.id} to synchronize cycles for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."
