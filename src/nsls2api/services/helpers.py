@@ -19,7 +19,7 @@ async def _call_async_webservice(url: str, headers: dict = None) -> Response:
     ) as client:
         resp: Response = await client.get(url)
         resp.raise_for_status() 
-        if resp.status_code != 200:
-            raise ValidationError(resp.text, status_code=resp.status_code)
+        # if resp.status_code != 200:
+        #     raise ValidationError(resp.text, status_code=resp.status_code)
     results = resp.json()
     return results
