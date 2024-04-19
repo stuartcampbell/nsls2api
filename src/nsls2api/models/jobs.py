@@ -23,8 +23,10 @@ class JobSyncSource(StrEnum):
     universal_proposal_system = "universal_proposal_system"
 
 class JobActions(StrEnum):
+    synchronize_cycles = "synchronize_cycles"
     synchronize_proposal = "synchronize_proposal"
     synchronize_proposal_types = "synchronize_proposal_types"
+    update_cycle_information = "update_cycle_information"
     create_slack_channel = "create_slack_channel"
 
 
