@@ -43,7 +43,7 @@ async def get_recent_proposals(count: int, beamline: str | None = None):
         )
         for p in proposals
     ]
-    model = RecentProposalsList(count=count, proposals=proposal_models)
+    model = RecentProposalsList(count=len(proposal_models), proposals=proposal_models)
 
     return model
 
