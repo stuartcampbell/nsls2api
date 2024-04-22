@@ -37,7 +37,7 @@ fastapi==0.110.1
     # via -r requirements.in
 gssapi==1.8.3
     # via n2snusertools
-gunicorn==21.2.0
+gunicorn==22.0.0
     # via -r requirements.in
 h11==0.14.0
     # via
