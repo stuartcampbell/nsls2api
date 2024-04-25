@@ -2,10 +2,11 @@ import datetime
 from pathlib import Path
 from typing import Optional
 
-from beanie import UpdateResponse
 import beanie
+from beanie import UpdateResponse
 from beanie.odm.operators.find.array import ElemMatch
-from beanie.operators import And, In, RegEx, Text, Set, AddToSet
+from beanie.operators import AddToSet, And, In, RegEx, Set, Text
+from httpx import HTTPStatusError
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
@@ -18,8 +19,12 @@ from nsls2api.models.jobs import JobSyncSource
 from nsls2api.models.pass_models import PassProposal, PassSaf
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, SafetyForm, User
-from nsls2api.services import beamline_service, facility_service, pass_service
-from nsls2api.services import n2sn_service
+from nsls2api.services import (
+    beamline_service,
+    bnlpeople_service,
+    facility_service,
+    pass_service,
+)
 
 
 async def exists(proposal_id: int) -> bool:
@@ -66,10 +71,17 @@ async def recently_updated(count=5, beamline: str | None = None):
     return updated
 
 
+# async def fetch_proposals_for_cycle(cycle: str) -> list[str]:
+#     proposals = await Proposal.find(In(Proposal.cycles, [cycle])).to_list()
+#     result = [u.proposal_id for u in proposals if u.proposal_id is not None]
+#     return result
+
+
 async def fetch_proposals_for_cycle(cycle: str) -> list[str]:
-    proposals = await Proposal.find(In(Proposal.cycles, [cycle])).to_list()
-    result = [u.proposal_id for u in proposals if u.proposal_id is not None]
-    return result
+    cycle = await Cycle.find_one(Cycle.name == cycle)
+    if cycle is None:
+        raise LookupError(f"Cycle {cycle} not found")
+    return cycle.proposals
 
 
 async def fetch_data_sessions_for_username(username: str) -> list[str]:
@@ -401,17 +413,17 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
 
 
 async def worker_synchronize_proposal_types_from_pass(
-    facility: FacilityName = FacilityName.nsls2,
+    facility_name: FacilityName = FacilityName.nsls2,
 ) -> None:
     start_time = datetime.datetime.now()
 
     try:
         pass_proposal_types: PassProposal = await pass_service.get_proposal_types(
-            facility
+            facility_name
         )
     except pass_service.PassException as error:
         error_message = (
-            f"Error retrieving proposal types from PASS for {facility} facility."
+            f"Error retrieving proposal types from PASS for {facility_name} facility."
         )
         logger.exception(error_message)
         raise Exception(error_message) from error
@@ -446,15 +458,13 @@ async def worker_synchronize_proposal_types_from_pass(
         )
 
     time_taken = datetime.datetime.now() - start_time
-    logger.info(f"Response: {response}")
+    # logger.info(f"Response: {response}")
     logger.info(
-        f"Proposal type information (for {facility}) synchronized in {time_taken.total_seconds():,.2f} seconds"
+        f"Proposal type information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )
 
 
-async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
-    start_time = datetime.datetime.now()
-
+async def synchronize_proposal_from_pass(proposal_id: int) -> None:
     beamline_list = []
     user_list = []
     saf_list = []
@@ -492,12 +502,21 @@ async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
     # Get the users for this proposal
     for user in pass_proposal.Experimenters:
         user_is_pi = False
+        bnl_username = None
 
-        if str(pass_proposal.PI.BNL_ID).casefold() == str(user.BNL_ID).casefold():
-            user_is_pi = True
-            pi_found_in_experimenters = True
-
-        bnl_username = await n2sn_service.get_username_by_id(user.BNL_ID)
+        if pass_proposal.PI is None:
+            logger.warning(f"Proposal {proposal_id} does not have a PI.")
+            continue
+        else:
+            if str(pass_proposal.PI.BNL_ID).casefold() == str(user.BNL_ID).casefold():
+                user_is_pi = True
+                pi_found_in_experimenters = True
+        try:
+            bnl_username = await bnlpeople_service.get_username_by_id(user.BNL_ID)
+        except HTTPStatusError as error:
+            logger.error(f"Could not find BNL username for BNL ID '{user.BNL_ID}'.")
+            logger.error(f"BNL People API returned: {error}")
+            bnl_username = None
 
         userinfo = User(
             first_name=user.First_Name,
@@ -512,7 +531,9 @@ async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
     # Let's add the PI explictly anyway as PASS sometimes includes the PI in the
     # Experimenters list and sometimes not.
     if pass_proposal.PI and not pi_found_in_experimenters:
-        bnl_username = await n2sn_service.get_username_by_id(pass_proposal.PI.BNL_ID)
+        bnl_username = await bnlpeople_service.get_username_by_id(
+            pass_proposal.PI.BNL_ID
+        )
         pi_info = User(
             first_name=pass_proposal.PI.First_Name,
             last_name=pass_proposal.PI.Last_Name,
@@ -556,11 +577,33 @@ async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
         on_insert=proposal,
         response_type=UpdateResponse.UPDATE_RESULT,
     )
+    # logger.info(f"Response: {response}")
+
+
+async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
+    start_time = datetime.datetime.now()
+
+    await synchronize_proposal_from_pass(proposal_id)
 
     time_taken = datetime.datetime.now() - start_time
-    logger.info(f"Response: {response}")
     logger.info(
         f"Proposal {proposal_id} synchronized in {time_taken.total_seconds():,.0f} seconds"
+    )
+
+
+async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str) -> None:
+    start_time = datetime.datetime.now()
+
+    proposals = await fetch_proposals_for_cycle(cycle)
+    logger.info(f"Synchronizing {len(proposals)} proposals for {cycle} cycle.")
+
+    for proposal_id in proposals:
+        logger.info(f"Synchronizing proposal {proposal_id}.")
+        await synchronize_proposal_from_pass(proposal_id)
+
+    time_taken = datetime.datetime.now() - start_time
+    logger.info(
+        f"Proposals for the {cycle} cycle synchronized in {time_taken.total_seconds():,.0f} seconds"
     )
 
 
