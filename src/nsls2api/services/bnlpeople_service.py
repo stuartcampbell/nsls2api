@@ -1,24 +1,20 @@
 from typing import Optional, List
 
 from fastapi import HTTPException
+from httpx import HTTPStatusError
 
-from .helpers import _call_async_webservice
-from ..api.models.person_model import BNLPerson
-from ..models.validation_error import ValidationError
+from nsls2api.infrastructure.logging import logger
+
+from nsls2api.services.helpers import _call_async_webservice_with_client
+from nsls2api.api.models.person_model import BNLPerson
+from nsls2api.models.validation_error import ValidationError
+from nsls2api.infrastructure.app_setup import httpx_client_wrapper
 
 base_url = "https://api.bnl.gov/BNLPeople"
 
 
 async def _call_bnlpeople_webservice(url: str):
-    try:
-        return await _call_async_webservice(url)
-    except ValidationError as error:
-        match error.status_code:
-            case 503:
-                message = f"BNLPeople API is unavailable (BNLPeople Error Message:{error.error_msg})"
-            case _:
-                message = error.error_msg
-        raise HTTPException(status_code=error.status_code, detail=message)
+    return await _call_async_webservice_with_client(url, client=httpx_client_wrapper())
 
 
 async def get_all_people():
@@ -32,17 +28,38 @@ async def get_person_by_username(username: str) -> Optional[BNLPerson]:
     person = await _call_bnlpeople_webservice(url)
     if len(person) == 0 or len(person) > 1:
         raise LookupError(
-            f"BNL People could not find a person with a username of {username}"
+            f"BNL People could not find a person with a username of '{username}'"
         )
     return BNLPerson(**person[0])
 
 
+async def get_username_by_id(lifenumber: str) -> Optional[str]:
+    if lifenumber is None:
+        return None
+
+    url = f"{base_url}/api/BNLPeople?employeeNumber={lifenumber}"
+    person = await _call_bnlpeople_webservice(url)
+    if len(person) == 0 or len(person) > 1:
+        logger.warning(
+            f"BNL People could not find a person with an employee/life number of '{lifenumber}'"
+        )
+        return None
+
+    # Let's check that the response validates
+    bnl_person = BNLPerson(**person[0])
+
+    return bnl_person.ActiveDirectoryName
+
+
 async def get_person_by_id(lifenumber: str) -> Optional[BNLPerson]:
+    if lifenumber is None:
+        return None
+
     url = f"{base_url}/api/BNLPeople?employeeNumber={lifenumber}"
     person = await _call_bnlpeople_webservice(url)
     if len(person) == 0 or len(person) > 1:
         raise LookupError(
-            f"BNL People could not find a person with an employee/life number of {lifenumber}"
+            f"BNL People could not find a person with an employee/life number of '{lifenumber}'"
         )
     return BNLPerson(**person[0])
 
@@ -52,7 +69,7 @@ async def get_person_by_email(email: str) -> Optional[BNLPerson]:
     person = await _call_bnlpeople_webservice(url)
     if len(person) == 0 or len(person) > 1:
         raise LookupError(
-            f"BNL People could not find a person with an email of {email}"
+            f"BNL People could not find a person with an email of '{email}'"
         )
     return BNLPerson(**person[0])
 
@@ -64,7 +81,7 @@ async def get_people_by_department(
     people = await _call_bnlpeople_webservice(url)
     if len(people) == 0:
         raise LookupError(
-            f"BNL People could not find a person with the department code of {department_code}"
+            f"BNL People could not find a person with the department code of '{department_code}'"
         )
     people_in_department = [BNLPerson(**p) for p in people]
     return people_in_department
