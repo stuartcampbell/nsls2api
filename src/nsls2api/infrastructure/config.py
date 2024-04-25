@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     use_socks_proxy: bool = False
     socks_proxy: str
 
+    # Slack settings
+    slack_bot_token: str
+    slack_signing_secret: str
+
     model_config = SettingsConfigDict(
         env_file=str(Path(__file__).parent.parent / ".env")
     )

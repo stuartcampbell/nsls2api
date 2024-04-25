@@ -14,6 +14,7 @@ pydantic
 pydantic-settings
 python-multipart
 rich
+slack_bolt
 textual
 typer
 uuid
