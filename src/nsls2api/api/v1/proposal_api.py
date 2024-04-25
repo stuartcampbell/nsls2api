@@ -259,6 +259,21 @@ async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
     return job
 
 
+@router.get(
+    "/sync/proposals/cycle/{cycle}",
+    dependencies=[Depends(get_current_user)],
+    include_in_schema=True,
+    tags=["sync"],
+)
+async def sync_proposals_for_cycle(request: Request, cycle: str) -> BackgroundJob:
+    sync_params = JobSyncParameters(cycle=cycle)
+    job = await background_service.create_background_job(
+        JobActions.synchronize_proposals_for_cycle,
+        sync_parameters=sync_params,
+    )
+    return job
+
+
 @router.get("/sync/cycles/{facility}", include_in_schema=True, tags=["sync"])
 async def sync_cycles(facility: FacilityName = FacilityName.nsls2):
     sync_params = JobSyncParameters(facility=facility)
