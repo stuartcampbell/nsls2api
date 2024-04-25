@@ -130,7 +130,7 @@ async def is_healthy(facility: str) -> bool:
 
 
 async def worker_synchronize_cycles_from_pass(
-    facility: FacilityName = FacilityName.nsls2,
+    facility_name: FacilityName = FacilityName.nsls2,
 ) -> None:
     """
     This method synchronizes the cycles for a facility from PASS.
@@ -140,16 +140,16 @@ async def worker_synchronize_cycles_from_pass(
     start_time = datetime.datetime.now()
 
     try:
-        pass_cycles: PassCycle = await pass_service.get_cycles(facility)
+        pass_cycles: PassCycle = await pass_service.get_cycles(facility_name)
     except pass_service.PassException as error:
-        error_message = (
-            f"Error retrieving cycle information from PASS for {facility} facility."
-        )
+        error_message = f"Error retrieving cycle information from PASS for {facility_name} facility."
         logger.exception(error_message)
         raise Exception(error_message) from error
 
     for pass_cycle in pass_cycles:
-        facility = await facility_service.facility_by_pass_id(pass_cycle.User_Facility_ID)
+        facility = await facility_service.facility_by_pass_id(
+            pass_cycle.User_Facility_ID
+        )
 
         cycle = Cycle(
             name=pass_cycle.Name,
@@ -182,5 +182,5 @@ async def worker_synchronize_cycles_from_pass(
     time_taken = datetime.datetime.now() - start_time
     logger.info(f"Response: {response}")
     logger.info(
-        f"Cycle information (for {facility}) synchronized in {time_taken.total_seconds():,.2f} seconds"
+        f"Cycle information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )
