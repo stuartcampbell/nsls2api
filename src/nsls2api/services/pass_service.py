@@ -1,10 +1,12 @@
 from typing import Optional
 
+from fastapi import HTTPException
 from pydantic import ValidationError
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.logging import logger
+from nsls2api.infrastructure.app_setup import httpx_client_wrapper
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.pass_models import (
     PassAllocation,
@@ -14,7 +16,7 @@ from nsls2api.models.pass_models import (
     PassSaf,
 )
 from nsls2api.services import facility_service
-from nsls2api.services.helpers import _call_async_webservice
+from nsls2api.services.helpers import _call_async_webservice_with_client
 
 settings = config.get_settings()
 
@@ -24,6 +26,10 @@ base_url = settings.pass_api_url
 
 class PassException(Exception):
     pass
+
+
+async def _call_pass_webservice(url: str):
+    return await _call_async_webservice_with_client(url, client=httpx_client_wrapper())
 
 
 async def get_proposal(
@@ -39,7 +45,7 @@ async def get_proposal(
     url = f"{base_url}/Proposal/GetProposal/{api_key}/{pass_facility}/{proposal_id}"
 
     try:
-        pass_proposal = await _call_async_webservice(url)
+        pass_proposal = await _call_pass_webservice(url)
         proposal = PassProposal(**pass_proposal)
     except ValidationError as error:
         error_message = (
@@ -55,7 +61,9 @@ async def get_proposal(
     return proposal
 
 
-async def get_proposal_types(facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassProposalType]]:
+async def get_proposal_types(
+    facility: FacilityName = FacilityName.nsls2,
+) -> Optional[list[PassProposalType]]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
     if not pass_facility:
@@ -66,7 +74,7 @@ async def get_proposal_types(facility: FacilityName = FacilityName.nsls2) -> Opt
     url = f"{base_url}/Proposal/GetProposalTypes/{api_key}/{pass_facility}"
 
     try:
-        pass_proposal_types_list = await _call_async_webservice(url)
+        pass_proposal_types_list = await _call_pass_webservice(url)
         proposal_types = []
         if pass_proposal_types_list and len(pass_proposal_types_list) > 0:
             for proposal_type in pass_proposal_types_list:
@@ -95,7 +103,7 @@ async def get_saf_from_proposal(
 
     url = f"{base_url}/SAF/GetSAFsByProposal/{api_key}/{pass_facility}/{proposal_id}"
     try:
-        pass_saf_list = await _call_async_webservice(url)
+        pass_saf_list = await _call_pass_webservice(url)
         saf_list = []
         if pass_saf_list and len(pass_saf_list) > 0:
             for saf in pass_saf_list:
@@ -117,29 +125,31 @@ async def get_saf_from_proposal(
 async def get_commissioning_proposals_by_year(year: int):
     # The PASS ID for commissioning proposals is 300005
     url = f"{base_url}Proposal/GetProposalsByType/{api_key}/NSLS-II/{year}/300005/NULL"
-    proposals = await _call_async_webservice(url)
+    proposals = await _call_pass_webservice(url)
     return proposals
 
 
 async def get_pass_resources():
     url = f"{base_url}/Resource/GetResources/{api_key}/NSLS-II"
-    resources = await _call_async_webservice(url)
+    resources = await _call_pass_webservice(url)
     return resources
 
 
-async def get_cycles(facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassCycle]]:
+async def get_cycles(
+    facility: FacilityName = FacilityName.nsls2,
+) -> Optional[list[PassCycle]]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
     if not pass_facility:
         error_message: str = f"Facility {facility} does not have a PASS ID."
         logger.error(error_message)
         raise PassException(error_message)
-    
+
     url = f"{base_url}/Proposal/GetCycles/{api_key}/{pass_facility}"
     logger.info(f"Getting cycles from PASS for {facility} facility.")
 
     try:
-        pass_cycle_list = await _call_async_webservice(url)
+        pass_cycle_list = await _call_pass_webservice(url)
         cycles = []
         if pass_cycle_list and len(pass_cycle_list) > 0:
             for cycle in pass_cycle_list:
@@ -156,7 +166,9 @@ async def get_cycles(facility: FacilityName = FacilityName.nsls2) -> Optional[li
     return cycles
 
 
-async def get_proposals_allocated_by_cycle(cycle_name: str, facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassAllocation]]:
+async def get_proposals_allocated_by_cycle(
+    cycle_name: str, facility: FacilityName = FacilityName.nsls2
+) -> Optional[list[PassAllocation]]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
     if not pass_facility:
         error_message: str = f"Facility {facility} does not have a PASS ID."
@@ -172,7 +184,7 @@ async def get_proposals_allocated_by_cycle(cycle_name: str, facility: FacilityNa
     url = f"{base_url}/Proposal/GetProposalsAllocatedByCycle/{api_key}/{pass_facility}/{cycle.pass_id}/null"
 
     try:
-        pass_allocated_proposals = await _call_async_webservice(url)
+        pass_allocated_proposals = await _call_pass_webservice(url)
         allocated_proposals = []
         if pass_allocated_proposals and len(pass_allocated_proposals) > 0:
             for allocation in pass_allocated_proposals:
@@ -189,7 +201,9 @@ async def get_proposals_allocated_by_cycle(cycle_name: str, facility: FacilityNa
     return allocated_proposals
 
 
-async def get_proposals_allocated(facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassAllocation]]:
+async def get_proposals_allocated(
+    facility: FacilityName = FacilityName.nsls2,
+) -> Optional[list[PassAllocation]]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
     if not pass_facility:
@@ -198,12 +212,12 @@ async def get_proposals_allocated(facility: FacilityName = FacilityName.nsls2) -
         raise PassException(error_message)
 
     url = f"{base_url}/Proposal/GetProposalsAllocated/{api_key}/{pass_facility}"
-    allocated_proposals = await _call_async_webservice(url)
+    allocated_proposals = await _call_pass_webservice(url)
     return allocated_proposals
 
 
 async def get_proposals_by_person(bnl_id: str):
     url = f"{base_url}/Proposal/GetProposalsByPerson/{api_key}/NSLS-II/null/null/{bnl_id}/null"
     print(url)
-    proposals = await _call_async_webservice(url)
+    proposals = await _call_pass_webservice(url)
     return proposals
