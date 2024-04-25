@@ -1,11 +1,15 @@
 import asyncio
 from contextlib import asynccontextmanager
 
+import httpx
+
 from nsls2api.infrastructure import mongodb_setup
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.services import background_service
+from nsls2api.services.helpers import HTTPXClientWrapper
 
 settings = get_settings()
+httpx_client_wrapper = HTTPXClientWrapper()
 
 development_mode = True
 
@@ -20,6 +24,8 @@ async def app_lifespan(_):
     else:
         await mongodb_setup.init_connection(settings.mongodb_dsn.unicode_string())
 
+    # Create a shared httpx client
+    httpx_client_wrapper.start()
 
     # Start the background workers
 
@@ -28,4 +34,5 @@ async def app_lifespan(_):
     
     yield
 
-    # Nothing to clean up. 
+    # Cleanup httpx client
+    await httpx_client_wrapper.stop()
