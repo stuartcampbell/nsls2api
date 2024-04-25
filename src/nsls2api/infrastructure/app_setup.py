@@ -17,8 +17,10 @@ async def app_lifespan(_):
     if development_mode:
         # Default to local mongodb with default port
         # and no authentication for development.
-        # TODO: Refactor to use a different database for development.
-        await mongodb_setup.init_connection(settings.mongodb_dsn.unicode_string())
+        development_dsn = mongodb_setup.create_connection_string(
+            host="localhost", port=27017, db_name="nsls2core-development"
+        )
+        await mongodb_setup.init_connection(development_dsn.unicode_string())
     else:
         await mongodb_setup.init_connection(settings.mongodb_dsn.unicode_string())
 
