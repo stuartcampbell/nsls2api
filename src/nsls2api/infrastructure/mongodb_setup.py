@@ -1,7 +1,6 @@
 import beanie
 import motor.motor_asyncio
 from pydantic import MongoDsn
-from rich.pretty import pprint
 
 from nsls2api import models
 from nsls2api.infrastructure.logging import logger
