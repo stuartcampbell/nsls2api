@@ -1,11 +1,15 @@
 from typing import Optional
 import pydantic
 
+from pydantic import ConfigDict
+
 
 class PassPerson(pydantic.BaseModel):
     """
     This class represents PASS's representation of a Person (e.g. PI or Creator).
     """
+
+    model_config = ConfigDict(str_strip_whitespace=True)
 
     Can_Edit: Optional[bool] = None
     Can_Read: Optional[bool] = None
@@ -70,6 +74,8 @@ class PassExperimenter(pydantic.BaseModel):
     This class represents PASS's representation of an Experimenter.
     """
 
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     Can_Edit: Optional[bool] = None
     Can_Read: Optional[bool] = None
     CoPI: Optional[bool] = None
@@ -126,8 +132,8 @@ class PassProposal(pydantic.BaseModel):
     User_Facility_ID: Optional[str] = None
     Creator: Optional[PassPerson] = None
     PI: Optional[PassPerson] = None
-    Experimenters: Optional[list[PassExperimenter]] = None
-    Resources: Optional[list[PassResource]] = None
+    Experimenters: Optional[list[PassExperimenter]] = []
+    Resources: Optional[list[PassResource]] = []
 
 
 class PassScheduledTimeSFTK(pydantic.BaseModel):
@@ -155,5 +161,5 @@ class PassSaf(pydantic.BaseModel):
     SAF_ID: Optional[int] = None
     Date_Expires: Optional[str] = None
     Status: Optional[str] = None
-    Experimenters: Optional[list[PassExperimenter]] = None
-    Resources: Optional[list[PassResource]] = None
+    Experimenters: Optional[list[PassExperimenter]] = []
+    Resources: Optional[list[PassResource]] = []
