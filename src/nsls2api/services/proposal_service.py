@@ -2,7 +2,6 @@ import datetime
 from pathlib import Path
 from typing import Optional
 
-import beanie
 from beanie import UpdateResponse
 from beanie.odm.operators.find.array import ElemMatch
 from beanie.operators import AddToSet, And, In, RegEx, Set, Text
