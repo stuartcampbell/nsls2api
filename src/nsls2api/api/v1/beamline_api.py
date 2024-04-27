@@ -159,17 +159,6 @@ async def get_beamline_operator_username(name: str):
     return operator_user
 
 
-@router.get("/beamline/{name}/services/", response_model=list[BeamlineService])
-async def get_beamline_services(name: str):
-    beamline_services = await beamline_service.all_services(name)
-    if beamline_services is None:
-        raise HTTPException(
-            status_code=404, detail=f"Beamline named {name} could not be found"
-        )
-    return beamline_services
-
-
-# TODO: Add back into schema when we fully decide on the data model for the beamline services.
 @router.get(
     "/beamline/{name}/services",
     response_model=list[BeamlineService],
