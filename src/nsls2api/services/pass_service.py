@@ -1,6 +1,5 @@
 from typing import Optional
 
-from fastapi import HTTPException
 from pydantic import ValidationError
 
 from nsls2api.api.models.facility_model import FacilityName
