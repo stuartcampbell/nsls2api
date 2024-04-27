@@ -6,7 +6,10 @@ from nsls2api.api.models.proposal_model import (
 )
 
 from nsls2api.infrastructure.logging import logger
-from nsls2api.infrastructure.security import get_api_key, validate_admin_role
+from nsls2api.infrastructure.security import (
+    get_current_user,
+    validate_admin_role,
+)
 from nsls2api.models.beamlines import Beamline, BeamlineService, DetectorList
 from nsls2api.services import beamline_service
 
@@ -23,23 +26,8 @@ async def details(name: str):
     return beamline
 
 
-# TODO: Add back into schema when we fully decide on the data model for the beamline services.
-@router.get(
-    "/beamline/{name}/services",
-    response_model=list[BeamlineService],
-    include_in_schema=False,
-)
-async def get_beamline_services(name: str):
-    beamline_services = await beamline_service.all_services(name)
-    if beamline_services is None:
-        raise HTTPException(
-            status_code=404, detail=f"Beamline named {name} could not be found"
-        )
-    return beamline_services
-
-
 @router.get("/beamline/{name}/service-accounts")
-async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_api_key)):
+async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_current_user)):
     service_accounts = await beamline_service.service_accounts(name)
     if service_accounts is None:
         raise HTTPException(
@@ -172,6 +160,21 @@ async def get_beamline_operator_username(name: str):
 
 
 @router.get("/beamline/{name}/services/", response_model=list[BeamlineService])
+async def get_beamline_services(name: str):
+    beamline_services = await beamline_service.all_services(name)
+    if beamline_services is None:
+        raise HTTPException(
+            status_code=404, detail=f"Beamline named {name} could not be found"
+        )
+    return beamline_services
+
+
+# TODO: Add back into schema when we fully decide on the data model for the beamline services.
+@router.get(
+    "/beamline/{name}/services",
+    response_model=list[BeamlineService],
+    include_in_schema=True,
+)
 async def get_beamline_services(name: str):
     beamline_services = await beamline_service.all_services(name)
     if beamline_services is None:
