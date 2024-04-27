@@ -1,6 +1,6 @@
 from typing import Annotated
 import fastapi
-from fastapi import Depends, HTTPException, Query, Request
+from fastapi import Depends, Query, Request
 
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
@@ -20,7 +20,6 @@ from nsls2api.models.jobs import (
     JobSyncParameters,
     JobSyncSource,
 )
-from nsls2api.models.proposals import Proposal
 from nsls2api.services import background_service, proposal_service
 from nsls2api.api.models.facility_model import FacilityName
 
