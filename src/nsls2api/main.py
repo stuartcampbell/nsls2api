@@ -14,7 +14,7 @@ from nsls2api.api.v1 import facility_api as facility_api_v1
 from nsls2api.api.v1 import proposal_api as proposal_api_v1
 from nsls2api.api.v1 import stats_api as stats_api_v1
 from nsls2api.api.v1 import user_api as user_api_v1
-from nsls2api.infrastructure import app_setup, mongodb_setup
+from nsls2api.infrastructure import app_setup
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.logging import logger
 from nsls2api.middleware import ProcessTimeMiddleware
@@ -30,8 +30,8 @@ project_root_absolute = project_root.resolve()
 static_root_absolute = current_file_dir_absolute / "static"
 
 
-development_mode = True
-app_setup.development_mode = development_mode
+local_development_mode = True
+app_setup.local_development_mode = local_development_mode
 
 
 middleware = [Middleware(ProcessTimeMiddleware)]
