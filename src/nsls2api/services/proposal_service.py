@@ -204,7 +204,12 @@ async def proposal_type_description_from_pass_type_id(
     proposal_type = await ProposalType.find_one(
         ProposalType.pass_id == str(pass_type_id)
     )
-    return proposal_type.description
+    if proposal_type is None:
+        error_message = f"PASS Proposal type {pass_type_id} not found.  Check that the proposal types have been synchronized."
+        logger.error(error_message)
+        raise LookupError(error_message)
+    else:
+        return proposal_type.description
 
 
 async def data_session_for_proposal(proposal_id: int) -> Optional[str]:
@@ -544,6 +549,7 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
         user_list.append(pi_info)
 
     data_session = generate_data_session_for_proposal(proposal_id)
+
     proposal_type = await proposal_type_description_from_pass_type_id(
         pass_proposal.Proposal_Type_ID
     )
