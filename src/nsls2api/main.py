@@ -30,7 +30,7 @@ project_root_absolute = project_root.resolve()
 static_root_absolute = current_file_dir_absolute / "static"
 
 
-local_development_mode = True
+local_development_mode = False
 app_setup.local_development_mode = local_development_mode
 
 
