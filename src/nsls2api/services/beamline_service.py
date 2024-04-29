@@ -46,6 +46,17 @@ async def beamline_by_name(name: str) -> Optional[Beamline]:
     return beamline
 
 
+async def beamline_by_pass_id(pass_id: str) -> Optional[Beamline]:
+    """
+    Find and return a beamline by its PASS ID.
+
+    :param pass_id: The PASS ID of the beamline to search for.
+    :return: The found beamline, if any. Otherwise, returns None.
+    """
+    beamline = await Beamline.find_one(Beamline.pass_id == str(pass_id))
+    return beamline
+
+
 async def all_services(name: str) -> Optional[ServicesOnly]:
     beamline_services = await Beamline.find_one(Beamline.name == name.upper()).project(
         ServicesOnly

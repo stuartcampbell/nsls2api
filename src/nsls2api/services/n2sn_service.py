@@ -71,7 +71,16 @@ async def get_user_by_id(bnl_id: str) -> ActiveDirectoryUser:
         ca_certs_file=settings.bnlroot_ca_certs_file,
     ) as ad:
         user_details = ad.get_user_by_id(bnl_id)
+    if len(user_details) == 0 or len(user_details) > 1:
+        return None
     return ActiveDirectoryUser(**user_details[0])
+
+
+async def get_username_by_id(bnl_id: str) -> Optional[str]:
+    ad_user: ActiveDirectoryUser = await get_user_by_id(bnl_id)
+    if ad_user is None:
+        return None
+    return ad_user.sAMAccountName
 
 
 async def get_users_in_group(group: str):

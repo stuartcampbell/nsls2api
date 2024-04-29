@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 import pydantic
 
-class FacilityName(Enum):
+class FacilityName(StrEnum):
     nsls2 = "nsls2"
     lbms = "lbms"
     cfn = "cfn"

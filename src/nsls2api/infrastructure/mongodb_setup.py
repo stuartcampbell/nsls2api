@@ -1,13 +1,26 @@
 import beanie
 import motor.motor_asyncio
 from pydantic import MongoDsn
-from rich.pretty import pprint
 
 from nsls2api import models
+from nsls2api.infrastructure.logging import logger
+
+
+def create_connection_string(
+    host: str, port: int, db_name: str, username: str = None, password: str = None
+) -> MongoDsn:
+    return MongoDsn.build(
+        scheme="mongodb",
+        host=host,
+        port=port,
+        path=f"{db_name}",
+        username=username,
+        password=password,
+    )
 
 
 async def init_connection(mongodb_dsn: MongoDsn):
-    pprint(f"Attempting to connect to {str(mongodb_dsn)}")
+    logger.info(f"Attempting to connect to {str(mongodb_dsn)}")
 
     client = motor.motor_asyncio.AsyncIOMotorClient(
         mongodb_dsn, uuidRepresentation="standard"
@@ -17,4 +30,4 @@ async def init_connection(mongodb_dsn: MongoDsn):
         document_models=models.all_models,
     )
 
-    pprint(f"Connected to {client.get_default_database().name} on localhost.")
+    logger.info(f"Connected to {client.get_default_database().name}")

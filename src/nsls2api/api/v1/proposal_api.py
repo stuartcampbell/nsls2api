@@ -1,6 +1,6 @@
 from typing import Annotated
 import fastapi
-from fastapi import Depends, HTTPException, Query
+from fastapi import Depends, Query, Request
 
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
@@ -14,8 +14,13 @@ from nsls2api.api.models.proposal_model import (
 )
 from nsls2api.api.models.proposal_model import UsernamesList
 from nsls2api.infrastructure.security import get_current_user
-from nsls2api.models.proposals import Proposal
-from nsls2api.services import proposal_service
+from nsls2api.models.jobs import (
+    BackgroundJob,
+    JobActions,
+    JobSyncParameters,
+    JobSyncSource,
+)
+from nsls2api.services import background_service, proposal_service
 from nsls2api.api.models.facility_model import FacilityName
 
 
@@ -37,7 +42,7 @@ async def get_recent_proposals(count: int, beamline: str | None = None):
         )
         for p in proposals
     ]
-    model = RecentProposalsList(count=count, proposals=proposal_models)
+    model = RecentProposalsList(count=len(proposal_models), proposals=proposal_models)
 
     return model
 
@@ -109,28 +114,6 @@ async def get_proposal(proposal_id: int):
     return response_model
 
 
-# TODO: Add back into schema when implemented.
-@router.post(
-    "/proposal/{proposal_id}",
-    response_model=Proposal,
-    dependencies=[Depends(get_current_user)],
-    include_in_schema=False,
-)
-async def create_proposal(proposal_id: int) -> Proposal:
-    try:
-        proposal = await proposal_service.create_proposal(proposal_id)
-        if proposal is None:
-            raise HTTPException(
-                status_code=404, detail=f"Failed to create proposal {proposal_id}."
-            )
-    except LookupError as e:
-        return fastapi.responses.JSONResponse(
-            {"error": e.args[0]},
-            status_code=404,
-        )
-    return proposal
-
-
 @router.get("/proposal/{proposal_id}/users", response_model=ProposalUserList)
 async def get_proposals_users(proposal_id: int):
     try:
@@ -144,6 +127,11 @@ async def get_proposals_users(proposal_id: int):
         return fastapi.responses.JSONResponse(
             {"error": e.args[0]},
             status_code=404,
+        )
+    except Exception as e:
+        return fastapi.responses.JSONResponse(
+            {"error": f"An error occurred: {e}"},
+            status_code=500,
         )
 
     response_model = ProposalUserList(
@@ -173,6 +161,11 @@ async def get_proposal_principal_investigator(proposal_id: int):
             {"error": e.args[0]},
             status_code=404,
         )
+    except Exception as e:
+        return fastapi.responses.JSONResponse(
+            {"error": f"An error occurred: {e}"},
+            status_code=500,
+        )
 
     response_model = ProposalUser(
         proposal_id=str(proposal_id), user=principal_investigator[0]
@@ -192,6 +185,11 @@ async def get_proposal_usernames(proposal_id: int):
         return fastapi.responses.JSONResponse(
             {"error": e.args[0]},
             status_code=404,
+        )
+    except Exception as e:
+        return fastapi.responses.JSONResponse(
+            {"error": f"An error occurred: {e}"},
+            status_code=500,
         )
 
     proposal_usernames = await proposal_service.fetch_usernames_from_proposal(
@@ -219,9 +217,77 @@ async def get_proposal_directories(proposal_id: int) -> ProposalDirectoriesList:
             {"error": e.args[0]},
             status_code=404,
         )
+    except Exception as e:
+        return fastapi.responses.JSONResponse(
+            {"error": f"An error occurred: {e}"},
+            status_code=500,
+        )
 
     response_model = ProposalDirectoriesList(
         directories=directories,
         directory_count=len(directories),
     )
     return response_model
+
+
+## Sync Endpoints - Will probably move to a more suitable location.
+
+
+@router.get(
+    "/sync/proposal/{proposal_id}",
+    dependencies=[Depends(get_current_user)],
+    include_in_schema=True,
+    tags=["sync"],
+)
+async def sync_proposal(request: Request, proposal_id: int) -> BackgroundJob:
+    sync_params = JobSyncParameters(proposal_id=str(proposal_id))
+    job = await background_service.create_background_job(
+        JobActions.synchronize_proposal,
+        sync_parameters=sync_params,
+    )
+    return job
+
+
+@router.get("/sync/proposal/types/{facility}", include_in_schema=True, tags=["sync"])
+async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
+    sync_params = JobSyncParameters(facility=facility)
+    job = await background_service.create_background_job(
+        JobActions.synchronize_proposal_types,
+        sync_parameters=sync_params,
+    )
+    return job
+
+
+@router.get(
+    "/sync/proposals/cycle/{cycle}",
+    dependencies=[Depends(get_current_user)],
+    include_in_schema=True,
+    tags=["sync"],
+)
+async def sync_proposals_for_cycle(request: Request, cycle: str) -> BackgroundJob:
+    sync_params = JobSyncParameters(cycle=cycle)
+    job = await background_service.create_background_job(
+        JobActions.synchronize_proposals_for_cycle,
+        sync_parameters=sync_params,
+    )
+    return job
+
+
+@router.get("/sync/cycles/{facility}", include_in_schema=True, tags=["sync"])
+async def sync_cycles(facility: FacilityName = FacilityName.nsls2):
+    sync_params = JobSyncParameters(facility=facility)
+    job = await background_service.create_background_job(
+        JobActions.synchronize_cycles,
+        sync_parameters=sync_params,
+    )
+    return job
+
+
+@router.get("/sync/update-cycles/{facility}", include_in_schema=True, tags=["sync"])
+async def sync_update_cycles(facility: FacilityName = FacilityName.nsls2):
+    sync_params = JobSyncParameters(facility=facility, sync_source=JobSyncSource.PASS)
+    job = await background_service.create_background_job(
+        JobActions.update_cycle_information,
+        sync_parameters=sync_params,
+    )
+    return job

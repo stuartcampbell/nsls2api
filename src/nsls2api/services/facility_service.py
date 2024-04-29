@@ -1,12 +1,17 @@
+import datetime
+from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure.logging import logger
 
 from typing import Optional
 
+from beanie import UpdateResponse
+from beanie.operators import Set
 from beanie.odm.operators.find.comparison import In
 
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
-
+from nsls2api.models.pass_models import PassCycle
+from nsls2api.services import facility_service, pass_service
 
 
 async def facilities_count() -> int:
@@ -27,9 +32,42 @@ async def facility_cycles(facility: str) -> Optional[list[str]]:
     :param facility: The facility name (str).
     :return: A list of cycles for the facility (list[Cycle]).
     """
-    cycles = await Cycle.find(Cycle.facility == facility).to_list()
+    # FIXME: This next line is not returning a sorted list of cycles.
+    cycles = (
+        await Cycle.find(Cycle.facility == facility)
+        .sort(+Cycle.year, +Cycle.name)
+        .to_list()
+    )
     cycle_list = [c.name for c in cycles if c.name is not None]
     return cycle_list
+
+
+async def facility_by_pass_id(pass_user_facility_id: str) -> Optional[Facility]:
+    """
+    Facility by PASS ID
+
+    This method retrieves the facility by the PASS ID.
+
+    :param pass_id: The PASS ID (str).
+    :return: The facility (Facility) or None if no facility is found.
+    """
+    return await Facility.find_one(Facility.pass_facility_id == pass_user_facility_id)
+
+
+async def pass_id_for_facility(facility_name: str) -> Optional[str]:
+    """
+    PASS ID for Facility
+
+    This method retrieves the PASS ID for a given facility.
+
+    :param facility: The facility name (str). e.g. "nsls2, lbms, cfn, etc."
+    :return: The PASS ID (str) or None if no facility is found.
+    """
+    facility = await Facility.find_one(Facility.facility_id == facility_name)
+    if facility is None:
+        return None
+
+    return facility.pass_facility_id
 
 
 async def data_roles_by_user(username: str) -> Optional[list[str]]:
@@ -54,10 +92,10 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
 
     if cycle is None:
         return None
-    
+
     return cycle.name
 
-  
+
 async def is_healthy(facility: str) -> bool:
     """
     Database Health Check
@@ -77,7 +115,6 @@ async def is_healthy(facility: str) -> bool:
 
     # TODO: Check that the facility exists in the database.
 
-
     # Check that there is only one current operating cycle for the facility.
     cycles = await Cycle.find(Cycle.is_current_operating_cycle == facility).to_list()
     if len(cycles) > 1:
@@ -88,6 +125,64 @@ async def is_healthy(facility: str) -> bool:
     elif len(cycles) == 0:
         logger.warning(f"There is not an operating cycle for the {facility}.")
         health_status = False
-    
+
     return health_status
 
+
+async def worker_synchronize_cycles_from_pass(
+    facility_name: FacilityName = FacilityName.nsls2,
+) -> None:
+    """
+    This method synchronizes the cycles for a facility from PASS.
+
+    :param facility: The facility name (FacilityName).
+    """
+    start_time = datetime.datetime.now()
+
+    try:
+        pass_cycles: PassCycle = await pass_service.get_cycles(facility_name)
+    except pass_service.PassException as error:
+        error_message = f"Error retrieving cycle information from PASS for {facility_name} facility."
+        logger.exception(error_message)
+        raise Exception(error_message) from error
+
+    for pass_cycle in pass_cycles:
+        facility = await facility_service.facility_by_pass_id(
+            pass_cycle.User_Facility_ID
+        )
+
+        logger.info(f"Processing cycle: {pass_cycle.Name} for {facility.name}.")
+
+        cycle = Cycle(
+            name=pass_cycle.Name,
+            accepting_proposals=pass_cycle.Active,
+            facility=facility.facility_id,
+            year=str(pass_cycle.Year),
+            start_date=pass_cycle.Start_Date,
+            end_date=pass_cycle.End_Date,
+            pass_description=pass_cycle.Description,
+            pass_id=str(pass_cycle.ID),
+        )
+
+        response = await Cycle.find_one(Cycle.name == pass_cycle.Name).upsert(
+            Set(
+                {
+                    Cycle.accepting_proposals: cycle.accepting_proposals,
+                    Cycle.facility: cycle.facility,
+                    Cycle.pass_description: cycle.pass_description,
+                    Cycle.pass_id: cycle.pass_id,
+                    Cycle.year: cycle.year,
+                    Cycle.start_date: cycle.start_date,
+                    Cycle.end_date: cycle.end_date,
+                    Cycle.last_updated: datetime.datetime.now(),
+                }
+            ),
+            on_insert=cycle,
+            response_type=UpdateResponse.UPDATE_RESULT,
+        )
+
+    time_taken = datetime.datetime.now() - start_time
+    logger.info(f"Response: {response}")
+    logger.info(
+        f"Cycle information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
+    )
