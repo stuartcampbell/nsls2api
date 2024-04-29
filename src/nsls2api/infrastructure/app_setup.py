@@ -9,12 +9,12 @@ from nsls2api.services.helpers import HTTPXClientWrapper
 settings = get_settings()
 httpx_client_wrapper = HTTPXClientWrapper()
 
-development_mode = True
+local_development_mode = False
 
 
 @asynccontextmanager
 async def app_lifespan(_):
-    if development_mode:
+    if local_development_mode:
         # Default to local mongodb with default port
         # and no authentication for development.
         development_dsn = mongodb_setup.create_connection_string(
