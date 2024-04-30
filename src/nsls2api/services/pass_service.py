@@ -193,7 +193,7 @@ async def get_proposals_allocated_by_cycle(
         logger.error(error_message)
         raise PassException(error_message) from error
     except Exception as error:
-        error_message = "Error retrieving allocated proposal information from PASS."
+        error_message = f"Error retrieving allocated proposal information from PASS for the {cycle} cycle at {facility} facility."
         logger.exception(error_message)
         raise PassException(error_message) from error
 
