@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 import fastapi
 from fastapi import Depends, Query, Request
 
@@ -284,8 +284,11 @@ async def sync_cycles(facility: FacilityName = FacilityName.nsls2):
 
 
 @router.get("/sync/update-cycles/{facility}", include_in_schema=True, tags=["sync"])
-async def sync_update_cycles(facility: FacilityName = FacilityName.nsls2):
-    sync_params = JobSyncParameters(facility=facility, sync_source=JobSyncSource.PASS)
+async def sync_update_cycles(request : Request, facility: FacilityName = FacilityName.nsls2, cycle : Optional[str] = None):
+
+    sync_params = JobSyncParameters(facility=facility, cycle=cycle, sync_source=JobSyncSource.PASS)
+
+    
     job = await background_service.create_background_job(
         JobActions.update_cycle_information,
         sync_parameters=sync_params,
