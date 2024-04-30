@@ -642,18 +642,26 @@ async def update_proposals_with_cycle_information_from_pass(cycle: Cycle) -> Non
 
 async def worker_update_cycle_information(
     facility: FacilityName = FacilityName.nsls2,
+    cycle: Optional[str] = None,
     sync_source: JobSyncSource = JobSyncSource.PASS,
 ) -> None:
     start_time = datetime.datetime.now()
 
-    cycles = await Cycle.find(Cycle.facility == facility).to_list()
+    #TODO: Add test that cycle and facility combination is valid
 
-    for cycle in cycles:
+
+    if cycle:
+        # If we've specified a cycle then only sync that one
+        cycles = await Cycle.find(Cycle.name == str(cycle), Cycle.facility == facility).to_list()
+    else:
+        cycles = await Cycle.find(Cycle.facility == facility).to_list()
+
+    for individual_cycle in cycles:
         if sync_source == JobSyncSource.PASS:
             logger.info(
-                f"Updating proposals with information for cycle {cycle.name} (from PASS)"
+                f"Updating proposals with information for cycle {individual_cycle.name} (from PASS)"
             )
-            await update_proposals_with_cycle_information_from_pass(cycle)
+            await update_proposals_with_cycle_information_from_pass(individual_cycle)
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
