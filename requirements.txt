@@ -41,7 +41,8 @@ fasteners==0.17.3
     # via httpx-cache
 gssapi==1.8.3
     # via n2snusertools
-gunicorn==21.2.0
+gunicorn==22.0.0
+    # via -r requirements.in
 h11==0.14.0
     # via
     #   httpcore
