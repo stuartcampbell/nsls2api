@@ -462,7 +462,7 @@ async def worker_synchronize_proposal_types_from_pass(
         )
 
     time_taken = datetime.datetime.now() - start_time
-    # logger.info(f"Response: {response}")
+    logger.debug(f"Response: {response}")
     logger.info(
         f"Proposal type information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )
@@ -549,17 +549,13 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
         user_list.append(pi_info)
 
     data_session = generate_data_session_for_proposal(proposal_id)
-
-    proposal_type = await proposal_type_description_from_pass_type_id(
-        pass_proposal.Proposal_Type_ID
-    )
-
+        
     proposal = Proposal(
         proposal_id=str(pass_proposal.Proposal_ID),
         title=pass_proposal.Title,
         data_session=data_session,
         pass_type_id=str(pass_proposal.Proposal_Type_ID),
-        type=proposal_type,
+        type=pass_proposal.Proposal_Type_Description,
         instruments=beamline_list,
         safs=saf_list,
         users=user_list,
@@ -572,7 +568,7 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
                 Proposal.title: pass_proposal.Title,
                 Proposal.data_session: data_session,
                 Proposal.pass_type_id: str(pass_proposal.Proposal_Type_ID),
-                Proposal.type: proposal_type,
+                Proposal.type: pass_proposal.Proposal_Type_Description,
                 Proposal.instruments: beamline_list,
                 Proposal.safs: saf_list,
                 Proposal.users: user_list,
@@ -582,7 +578,7 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
         on_insert=proposal,
         response_type=UpdateResponse.UPDATE_RESULT,
     )
-    # logger.info(f"Response: {response}")
+    logger.debug(f"Response: {response}")
 
 
 async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
