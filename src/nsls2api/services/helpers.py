@@ -1,6 +1,5 @@
 from functools import lru_cache
 import httpx
-import httpx_cache
 import httpx_socks
 from httpx import Response
 
@@ -16,7 +15,7 @@ class HTTPXClientWrapper:
     def start(self):
         timeouts = httpx.Timeout(None, connect=30.0)  # 30s timeout on connect, no other timeouts.
         limits = httpx.Limits(max_keepalive_connections=5, max_connections=10)
-        self.async_client = httpx_cache.AsyncClient(limits=limits, timeout=timeouts)
+        self.async_client = httpx.AsyncClient(limits=limits, timeout=timeouts)
         logger.info(f"HTTPXClientWrapper started. {id(self.async_client)}")
 
     async def stop(self):
