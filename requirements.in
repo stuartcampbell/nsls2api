@@ -5,6 +5,7 @@ beanie
 fastapi
 gunicorn
 httpx
+httpx-cache
 httpx-socks[asyncio]
 jinja2
 jinja-partials
