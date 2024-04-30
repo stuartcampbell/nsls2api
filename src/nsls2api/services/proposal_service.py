@@ -462,7 +462,7 @@ async def worker_synchronize_proposal_types_from_pass(
         )
 
     time_taken = datetime.datetime.now() - start_time
-    # logger.info(f"Response: {response}")
+    logger.debug(f"Response: {response}")
     logger.info(
         f"Proposal type information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )
@@ -578,7 +578,7 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
         on_insert=proposal,
         response_type=UpdateResponse.UPDATE_RESULT,
     )
-    # logger.info(f"Response: {response}")
+    logger.debug(f"Response: {response}")
 
 
 async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
