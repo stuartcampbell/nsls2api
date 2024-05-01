@@ -89,7 +89,7 @@ async def worker_function():
     while True:
         jobs = await pending_jobs()
         if len(jobs) == 0:
-            logger.info("No new jobs to process.")
+            logger.debug("No new jobs to process.")
             await asyncio.sleep(1)
             continue
 
