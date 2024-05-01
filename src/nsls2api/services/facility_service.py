@@ -5,7 +5,7 @@ from nsls2api.infrastructure.logging import logger
 from typing import Optional
 
 from beanie import UpdateResponse
-from beanie.operators import Set
+from beanie.operators import AddToSet, Set
 from beanie.odm.operators.find.comparison import In
 
 from nsls2api.models.cycles import Cycle
@@ -164,7 +164,7 @@ async def worker_synchronize_cycles_from_pass(
             pass_id=str(pass_cycle.ID),
         )
 
-        response = await Cycle.find_one(Cycle.name == pass_cycle.Name).upsert(
+        updated_cycle = await Cycle.find_one(Cycle.name == pass_cycle.Name).upsert(
             Set(
                 {
                     Cycle.accepting_proposals: cycle.accepting_proposals,
@@ -178,11 +178,19 @@ async def worker_synchronize_cycles_from_pass(
                 }
             ),
             on_insert=cycle,
-            response_type=UpdateResponse.UPDATE_RESULT,
+            response_type=UpdateResponse.NEW_DOCUMENT,
         )
 
+        # Now let's update the list of proposals for this cycle
+        proposals_list = await pass_service.get_proposals_allocated_by_cycle(cycle.name)
+        for proposal in proposals_list:
+            await updated_cycle.update(
+                AddToSet({Cycle.proposals: str(proposal.Proposal_ID)})
+            )
+            updated_cycle.last_updated = datetime.datetime.now()
+            await updated_cycle.save()
+
     time_taken = datetime.datetime.now() - start_time
-    logger.info(f"Response: {response}")
     logger.info(
         f"Cycle information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )
