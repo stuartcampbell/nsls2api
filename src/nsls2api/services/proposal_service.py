@@ -608,11 +608,12 @@ async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str) -> None:
     )
 
 
-async def update_proposals_with_cycle_information_from_pass(cycle: Cycle) -> None:
-    """
-    Update all proposals with the given cycle information.
 
-    :param cycle: The cycle information to update the proposals with.
+async def update_proposal_to_cycle_mapping_from_pass(cycle: Cycle) -> None:
+    """
+    Update the cycle <-> proposals mapping for the given cycle.
+
+    :param cycle: The cycle to process proposals for.
     :type cycle: Cycle
     """
 
@@ -620,13 +621,11 @@ async def update_proposals_with_cycle_information_from_pass(cycle: Cycle) -> Non
 
     for allocation in allocations:
         # Add the proposal to the Cycle object
-
-        # logger.info(f"Going to add proposal {proposal_id} to cycle {cycle.name}")
-
         await cycle.update(AddToSet({Cycle.proposals: str(allocation.Proposal_ID)}))
         cycle.last_updated = datetime.datetime.now()
         await cycle.save()
 
+        # Add the cycle to the Proposal object
         try:
             proposal = await proposal_by_id(allocation.Proposal_ID)
             await proposal.update(AddToSet({Proposal.cycles: cycle.name}))
@@ -636,7 +635,7 @@ async def update_proposals_with_cycle_information_from_pass(cycle: Cycle) -> Non
             logger.warning(error)
 
 
-async def worker_update_cycle_information(
+async def worker_update_proposal_to_cycle_mapping(
     facility: FacilityName = FacilityName.nsls2,
     cycle: Optional[str] = None,
     sync_source: JobSyncSource = JobSyncSource.PASS,
@@ -644,7 +643,6 @@ async def worker_update_cycle_information(
     start_time = datetime.datetime.now()
 
     #TODO: Add test that cycle and facility combination is valid
-
 
     if cycle:
         # If we've specified a cycle then only sync that one
@@ -657,7 +655,7 @@ async def worker_update_cycle_information(
             logger.info(
                 f"Updating proposals with information for cycle {individual_cycle.name} (from PASS)"
             )
-            await update_proposals_with_cycle_information_from_pass(individual_cycle)
+            await update_proposal_to_cycle_mapping_from_pass(individual_cycle)
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
