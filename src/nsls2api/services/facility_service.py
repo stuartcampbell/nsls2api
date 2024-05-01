@@ -151,7 +151,7 @@ async def worker_synchronize_cycles_from_pass(
             pass_cycle.User_Facility_ID
         )
 
-        logger.info(f"Processing cycle: {pass_cycle.Name} for {facility.name}.")
+        logger.info(f"Synchronizing cycle: {pass_cycle.Name} for {facility.name}.")
 
         cycle = Cycle(
             name=pass_cycle.Name,
