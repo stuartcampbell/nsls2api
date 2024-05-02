@@ -96,6 +96,27 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
     return cycle.name
 
 
+async def cycle_year(
+    cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
+) -> Optional[str]:
+    """
+    Cycle Year
+
+    This method retrieves the year for a given cycle.
+
+    :param cycle_name: The cycle name (str).
+    :param facility_name: The facility name (FacilityName).
+    :return: The year (str) or None if no year is found.
+    """
+    cycle = await Cycle.find_one(
+        Cycle.name == cycle_name, Cycle.facility == facility_name
+    )
+    if cycle is None:
+        return None
+
+    return cycle.year
+
+
 async def is_healthy(facility: str) -> bool:
     """
     Database Health Check

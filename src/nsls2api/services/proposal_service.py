@@ -76,10 +76,10 @@ async def recently_updated(count=5, beamline: str | None = None):
 #     return result
 
 
-async def fetch_proposals_for_cycle(cycle: str) -> list[str]:
-    cycle = await Cycle.find_one(Cycle.name == cycle)
+async def fetch_proposals_for_cycle(cycle_name: str) -> list[str]:
+    cycle = await Cycle.find_one(Cycle.name == cycle_name)
     if cycle is None:
-        raise LookupError(f"Cycle {cycle} not found")
+        raise LookupError(f"Cycle {cycle} not found in local database.")
     return cycle.proposals
 
 
@@ -549,7 +549,7 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
         user_list.append(pi_info)
 
     data_session = generate_data_session_for_proposal(proposal_id)
-        
+
     proposal = Proposal(
         proposal_id=str(pass_proposal.Proposal_ID),
         title=pass_proposal.Title,
@@ -581,6 +581,30 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
     logger.debug(f"Response: {response}")
 
 
+async def update_proposals_with_cycle(cycle_name: str) -> None:
+    """
+    Update the cycle <-> proposals mapping for the given cycle.
+
+    :param cycle_name: The name of the cycle to process proposals for.
+    :type cycle_name: str
+    """
+
+    proposal_list = await fetch_proposals_for_cycle(cycle_name)
+
+    logger.info(f"Found {len(proposal_list)} proposals for cycle {cycle_name}.")
+
+    for proposal_id in proposal_list:
+        # Add the cycle to the Proposal object
+
+        try:
+            proposal = await proposal_by_id(int(proposal_id))
+            await proposal.update(AddToSet({Proposal.cycles: cycle_name}))
+            proposal.last_updated = datetime.datetime.now()
+            await proposal.save()
+        except LookupError as error:
+            logger.warning(error)
+
+
 async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
     start_time = datetime.datetime.now()
 
@@ -595,6 +619,8 @@ async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
 async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str) -> None:
     start_time = datetime.datetime.now()
 
+    cycle_year = await facility_service.cycle_year(cycle)
+
     proposals = await fetch_proposals_for_cycle(cycle)
     logger.info(f"Synchronizing {len(proposals)} proposals for {cycle} cycle.")
 
@@ -602,37 +628,23 @@ async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str) -> None:
         logger.info(f"Synchronizing proposal {proposal_id}.")
         await synchronize_proposal_from_pass(proposal_id)
 
+    commissioning_proposals: list[
+        PassProposal
+    ] = await pass_service.get_commissioning_proposals_by_year(cycle_year)
+    logger.info(
+        f"Synchronizing {len(proposals)} commissioning proposals for the year {cycle_year}."
+    )
+    for proposal in commissioning_proposals:
+        logger.info(f"Synchronizing commissioning proposal {proposal.Proposal_ID}.")
+        await synchronize_proposal_from_pass(proposal.Proposal_ID)
+
+    # Now update the cycle information for each proposal
+    await update_proposals_with_cycle(cycle)
+
     time_taken = datetime.datetime.now() - start_time
     logger.info(
         f"Proposals for the {cycle} cycle synchronized in {time_taken.total_seconds():,.0f} seconds"
     )
-
-
-
-async def update_proposal_to_cycle_mapping_from_pass(cycle: Cycle) -> None:
-    """
-    Update the cycle <-> proposals mapping for the given cycle.
-
-    :param cycle: The cycle to process proposals for.
-    :type cycle: Cycle
-    """
-
-    allocations = await pass_service.get_proposals_allocated_by_cycle(cycle.name)
-
-    for allocation in allocations:
-        # Add the proposal to the Cycle object
-        await cycle.update(AddToSet({Cycle.proposals: str(allocation.Proposal_ID)}))
-        cycle.last_updated = datetime.datetime.now()
-        await cycle.save()
-
-        # Add the cycle to the Proposal object
-        try:
-            proposal = await proposal_by_id(allocation.Proposal_ID)
-            await proposal.update(AddToSet({Proposal.cycles: cycle.name}))
-            proposal.last_updated = datetime.datetime.now()
-            await proposal.save()
-        except LookupError as error:
-            logger.warning(error)
 
 
 async def worker_update_proposal_to_cycle_mapping(
@@ -642,11 +654,13 @@ async def worker_update_proposal_to_cycle_mapping(
 ) -> None:
     start_time = datetime.datetime.now()
 
-    #TODO: Add test that cycle and facility combination is valid
+    # TODO: Add test that cycle and facility combination is valid
 
     if cycle:
         # If we've specified a cycle then only sync that one
-        cycles = await Cycle.find(Cycle.name == str(cycle), Cycle.facility == facility).to_list()
+        cycles = await Cycle.find(
+            Cycle.name == str(cycle), Cycle.facility == facility
+        ).to_list()
     else:
         cycles = await Cycle.find(Cycle.facility == facility).to_list()
 
@@ -655,7 +669,7 @@ async def worker_update_proposal_to_cycle_mapping(
             logger.info(
                 f"Updating proposals with information for cycle {individual_cycle.name} (from PASS)"
             )
-            await update_proposal_to_cycle_mapping_from_pass(individual_cycle)
+            await update_proposals_with_cycle(individual_cycle)
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
