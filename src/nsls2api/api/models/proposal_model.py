@@ -139,4 +139,5 @@ class ProposalDiagnostics(pydantic.BaseModel):
     data_session: Optional[str]
     beamlines: Optional[list[str]]
     cycles: Optional[list[str]]
+    safs: Optional[list[str]]
     updated: datetime.datetime
