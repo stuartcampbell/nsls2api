@@ -244,6 +244,16 @@ async def fetch_usernames_from_proposal(
     return usernames
 
 
+async def safs_from_proposal(proposal_id: str) -> Optional[list[str]]:
+    proposal = await proposal_by_id(proposal_id)
+
+    safs = [s.saf_id for s in proposal.safs if s.saf_id is not None]
+
+    # data_sessions = [p.data_session for p in proposals if p.data_session is not None]
+
+    return safs
+
+
 async def pi_from_proposal(proposal_id: int) -> Optional[list[User]]:
     proposal = await proposal_by_id(proposal_id)
 
@@ -401,6 +411,7 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
         data_session=proposal.data_session,
         beamlines=proposal.instruments,
         cycles=proposal.cycles,
+        safs=await safs_from_proposal(proposal.proposal_id),
         updated=proposal.last_updated,
     )
 
