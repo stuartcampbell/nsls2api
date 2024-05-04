@@ -10,11 +10,10 @@ import configparser
 from configparser import NoOptionError, NoSectionError
 from nsls2api.infrastructure.security import SpecialUsers
 
-from fastapi import requests
 
 BASE_URL = "http://localhost:8080"
 
-global __logged_in_username
+__logged_in_username = None
 
 app = typer.Typer()
 
@@ -28,7 +27,9 @@ def config_from_file() -> Optional[str]:
     try:
         config.read(config_filepath)
         api_client_token = config.get("api", "token")
-    except (NoSectionError, NoOptionError) as error:
+    except (NoSectionError, NoOptionError):
+        # If there is no config we are just going to login as Anonymous
+        # so no need to raise an error.
         return None
 
     return api_client_token
@@ -42,7 +43,7 @@ def login():
         print("No API token found")
         token = getpass.getpass(prompt="Please enter your API token:")
         if len(token) == 0:
-            globals()[__logged_in_username]: SpecialUsers = SpecialUsers.anonymous
+            __logged_in_username: SpecialUsers = SpecialUsers.anonymous
             print("Logged in as anonymous")
             return
 
@@ -53,14 +54,12 @@ def login():
             headers = {"Authorization": f"{token}"}
             response = client.get(url, headers=headers)
             response.raise_for_status()
-            globals()[__logged_in_username] = response.json()
-            # nsls2api.cli.__logged_in_username = response.json()
-            # LOGGED_IN_USERNAME = response.json()
+            __logged_in_username = response.json()
     except httpx.RequestError as exc:
         print(f"An error occurred while trying to login {exc}")
         raise
 
-    print("Logging in...")
+    print(f"Logged in as {__logged_in_username}")
 
 
 @app.command()
@@ -71,5 +70,5 @@ def logout():
 @app.command()
 def status():
     print(
-        f"You might be logged in as {__logged_in_username} or {LOGGED_IN_USERNAME}, or you might not be - {rich.emoji.Emoji('person_shrugging')}"
+        f"You might be logged in as {__logged_in_username}, or you might not be - {rich.emoji.Emoji('person_shrugging')}"
     )

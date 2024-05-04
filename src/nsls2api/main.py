@@ -11,10 +11,11 @@ from starlette.staticfiles import StaticFiles
 from nsls2api.api.v1 import admin_api as admin_api_v1
 from nsls2api.api.v1 import beamline_api as beamline_api_v1
 from nsls2api.api.v1 import facility_api as facility_api_v1
+from nsls2api.api.v1 import jobs_api as jobs_api_v1
 from nsls2api.api.v1 import proposal_api as proposal_api_v1
 from nsls2api.api.v1 import stats_api as stats_api_v1
 from nsls2api.api.v1 import user_api as user_api_v1
-from nsls2api.infrastructure import mongodb_setup
+from nsls2api.infrastructure import app_setup
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.logging import logger
 from nsls2api.middleware import ProcessTimeMiddleware
@@ -29,11 +30,18 @@ project_root = current_file_dir.parent
 project_root_absolute = project_root.resolve()
 static_root_absolute = current_file_dir_absolute / "static"
 
+
+local_development_mode = False
+app_setup.local_development_mode = local_development_mode
+
+
 middleware = [Middleware(ProcessTimeMiddleware)]
 
 app = fastapi.FastAPI(
-    title="NSLS-II API", middleware=middleware
+    title="NSLS-II API", middleware=middleware, lifespan=app_setup.app_lifespan
 )
+
+
 app.add_middleware(CorrelationIdMiddleware)
 
 app.add_middleware(
@@ -52,6 +60,7 @@ def configure_routing():
     app.include_router(facility_api_v1.router, prefix="/v1", tags=["facility"])
     app.include_router(user_api_v1.router, prefix="/v1", tags=["user"])
     app.include_router(admin_api_v1.router, prefix="/v1", tags=["admin"])
+    app.include_router(jobs_api_v1.router, prefix="/v1", tags=["jobs"])
 
     # Just log the current working directory - useful is some of the static files are not found.
     logger.info(f"Current working directory: {os.getcwd()}")
@@ -65,11 +74,6 @@ def configure_routing():
         StaticFiles(directory=static_root_absolute / "assets"),
         name="assets",
     )
-
-
-@app.on_event("startup")
-async def configure_db():
-    await mongodb_setup.init_connection(settings.mongodb_dsn.unicode_string())
 
 
 def main():

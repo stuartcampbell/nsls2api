@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import fastapi
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.security import (
@@ -9,9 +9,12 @@ from nsls2api.infrastructure.security import (
     generate_api_key,
 )
 from nsls2api.models.apikeys import ApiUser
+from nsls2api.services import background_service
 
 # router = fastapi.APIRouter()
-router = fastapi.APIRouter(dependencies=[Depends(validate_admin_role)], include_in_schema=False, tags=["admin"])
+router = fastapi.APIRouter(
+    dependencies=[Depends(validate_admin_role)], include_in_schema=True, tags=["admin"]
+)
 
 
 @router.get("/admin/settings")  # , include_in_schema=False)
@@ -21,7 +24,7 @@ async def info(settings: Annotated[config.Settings, Depends(config.get_settings)
 
 @router.get("/admin/validate", response_model=str)
 async def check_admin_validation(
-    admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None
+    admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None,
 ):
     """
     :return: str - The username of the validated admin user.
@@ -45,3 +48,5 @@ async def generate_user_apikey(username: str):
     :return: The generated API key.
     """
     return await generate_api_key(username)
+
+

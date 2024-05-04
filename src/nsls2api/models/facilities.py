@@ -9,8 +9,8 @@ class Facility(beanie.Document):
     name: str
     facility_id: str
     fullname: str
-    pass_facility_id: Optional[str]
-    data_admins: Optional[list[str]]
+    pass_facility_id: Optional[str] = None
+    data_admins: Optional[list[str]] = []
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )

@@ -13,24 +13,24 @@ class SafetyForm(pydantic.BaseModel):
 
 
 class User(pydantic.BaseModel):
-    first_name: str
-    last_name: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     email: str
-    bnl_id: Optional[str]
-    username: Optional[str]
+    bnl_id: Optional[str] = None
+    username: Optional[str] = None
     is_pi: bool = False
 
 
 class Proposal(beanie.Document):
     proposal_id: str
     data_session: str
-    title: Optional[str]
-    type: Optional[str]
+    title: Optional[str] = None
+    type: Optional[str] = None
     pass_type_id: Optional[str]
-    instruments: Optional[list[str]]
-    cycles: Optional[list[str]]
-    users: list[User]
-    safs: Optional[list[SafetyForm]]
+    instruments: Optional[list[str]] = []
+    cycles: Optional[list[str]] = []
+    users: Optional[list[User]] = []
+    safs: Optional[list[SafetyForm]] = []
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
