@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import fastapi
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException
 
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.security import (
@@ -9,7 +9,7 @@ from nsls2api.infrastructure.security import (
     generate_api_key,
 )
 from nsls2api.models.apikeys import ApiUser
-from nsls2api.services import background_service
+from nsls2api.services import proposal_service, slack_service
 
 # router = fastapi.APIRouter()
 router = fastapi.APIRouter(
@@ -24,7 +24,7 @@ async def info(settings: Annotated[config.Settings, Depends(config.get_settings)
 
 @router.get("/admin/validate", response_model=str)
 async def check_admin_validation(
-    admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None,
+        admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None,
 ):
     """
     :return: str - The username of the validated admin user.
@@ -50,3 +50,27 @@ async def generate_user_apikey(username: str):
     return await generate_api_key(username)
 
 
+@router.post("/admin/slack/create-proposal-channel/{proposal_id")
+async def create_slack_channel(proposal_id: str):
+    proposal = proposal_service.proposal_by_id(int(proposal_id))
+
+    if proposal is None:
+        return fastapi.responses.JSONResponse(
+            {"error": f"Proposal {proposal_id} not found"}, status_code=404
+        )
+
+    channel_name = proposal_service.slack_channel_name_for_proposal(proposal_id)
+
+    if channel_name is None:
+        return fastapi.responses.JSONResponse(
+            {"error": f"Slack channel name cannot be found for proposal {proposal_id}"},
+            status_code=404, )
+
+    status = slack_service.create_channel(channel_name, True,
+                                          description=f"Discussion related to proposal {proposal_id}")
+
+    if status is None:
+        return fastapi.responses.JSONResponse({"error": f"Slack channel creation failed"}, status_code=500)
+
+    # Store the created slack channel ID
+    proposal.slack_channel_id = channel_name
