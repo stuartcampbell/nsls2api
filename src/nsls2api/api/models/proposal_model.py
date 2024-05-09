@@ -22,6 +22,12 @@ class CommissioningProposalsList(pydantic.BaseModel):
     commissioning_proposals: list[str]
 
 
+class CycleProposalList(pydantic.BaseModel):
+    cycle: str
+    count: int
+    proposals: list[str]
+
+
 class RecentProposal(pydantic.BaseModel):
     proposal_id: str
     title: str
@@ -37,6 +43,7 @@ class RecentProposalsList(pydantic.BaseModel):
 class ProposalSummary(pydantic.BaseModel):
     proposal_id: str
     title: str
+
 
 class SingleProposal(pydantic.BaseModel):
     proposal: Proposal
@@ -121,15 +128,16 @@ class ProposalFullDetailsList(pydantic.BaseModel):
     count: int
     page_size: int | None = None
     page: int | None = None
-    
+
+
 class ProposalDiagnostics(pydantic.BaseModel):
     proposal_id: str
     proposal_type: Optional[str]
     pi: Optional[User]
     users: Optional[list[User]]
-    title: str 
+    title: str
     data_session: Optional[str]
     beamlines: Optional[list[str]]
     cycles: Optional[list[str]]
+    safs: Optional[list[str]]
     updated: datetime.datetime
-
