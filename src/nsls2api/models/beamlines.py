@@ -128,11 +128,12 @@ class Beamline(beanie.Document):
     pass_id: Optional[str]
     nsls2_redhat_satellite_location_name: Optional[str]
     service_accounts: ServiceAccounts | None = None
-    endstations: Optional[list[EndStation]]
-    data_admins: Optional[list[str]]
+    endstations: Optional[list[EndStation]] = []
+    slack_channel_admins: Optional[list[str]] = []
+    data_admins: Optional[list[str]] = None
     custom_data_admin_group: Optional[str] = None
-    github_org: Optional[str]
-    ups_id: Optional[str]
+    github_org: Optional[str] = None
+    ups_id: Optional[str] = None
     data_root: Optional[str] = None
     services: Optional[list[BeamlineService]] = []
     detectors: Optional[list[Detector]] = []
