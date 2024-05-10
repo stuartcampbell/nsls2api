@@ -4,6 +4,7 @@ import fastapi
 from fastapi import Depends, HTTPException
 
 from nsls2api.infrastructure import config
+from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import (
     validate_admin_role,
     generate_api_key,
@@ -50,9 +51,9 @@ async def generate_user_apikey(username: str):
     return await generate_api_key(username)
 
 
-@router.post("/admin/slack/create-proposal-channel/{proposal_id")
+@router.post("/admin/slack/create-proposal-channel/{proposal_id}")
 async def create_slack_channel(proposal_id: str):
-    proposal = proposal_service.proposal_by_id(int(proposal_id))
+    proposal = await proposal_service.proposal_by_id(int(proposal_id))
 
     if proposal is None:
         return fastapi.responses.JSONResponse(
@@ -66,11 +67,14 @@ async def create_slack_channel(proposal_id: str):
             {"error": f"Slack channel name cannot be found for proposal {proposal_id}"},
             status_code=404, )
 
-    status = slack_service.create_channel(channel_name, True,
+    channel_id = await slack_service.create_channel(channel_name, True,
                                           description=f"Discussion related to proposal {proposal_id}")
 
-    if status is None:
-        return fastapi.responses.JSONResponse({"error": f"Slack channel creation failed"}, status_code=500)
+    if channel_id is None:
+        return fastapi.responses.JSONResponse({"error": f"Slack channel creation failed for proposal {proposal_id}"}, status_code=500)
+
+    logger.info(f"Created slack channel '{channel_name}' for proposal {proposal_id}.")
 
     # Store the created slack channel ID
-    proposal.slack_channel_id = channel_name
+    proposal.slack_channel_id = channel_id
+    await proposal.save()
