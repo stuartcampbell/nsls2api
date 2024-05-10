@@ -70,7 +70,6 @@ class IOCServiceAccountView(pydantic.BaseModel):
     class Settings:
         projection = {"username": "$service_accounts.ioc"}
 
-
 class BlueskyServiceAccountView(pydantic.BaseModel):
     username: str
 
@@ -111,6 +110,12 @@ class DataRootDirectoryView(pydantic.BaseModel):
 
     class Settings:
         projection = {"data_root": "$custom_root_directory"}
+
+class SlackChannelManagersView(pydantic.BaseModel):
+    slack_channel_managers: list[str] | None = []
+
+    class Settings:
+        projection = {"slack_channel_managers" : "$slack_channel_managers"}
 
 
 class EndStation(pydantic.BaseModel):

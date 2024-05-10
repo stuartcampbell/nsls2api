@@ -15,6 +15,7 @@ from nsls2api.models.beamlines import (
     ServicesOnly,
     ServiceAccounts,
     ServiceAccountsView,
+    SlackChannelManagersView,
     WorkflowServiceAccountView,
     IOCServiceAccountView,
     EpicsServicesServiceAccountView,
@@ -345,3 +346,13 @@ async def uses_synchweb(name: str) -> bool:
         return True
     else:
         return False
+
+
+async def slack_channel_managers(beamline_name: str) -> list[str]:
+    beamline = await Beamline.find_one(Beamline.name == beamline_name.upper()).project(
+        SlackChannelManagersView
+    )
+    if beamline is None:
+        return None
+
+    return beamline.slack_channel_managers
