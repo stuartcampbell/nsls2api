@@ -1,6 +1,6 @@
-from typing import Annotated, Optional
+from typing import Annotated
 import fastapi
-from fastapi import Depends, Query, Request
+from fastapi import Depends, Query
 
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
@@ -223,4 +223,3 @@ async def get_proposal_directories(proposal_id: int) -> ProposalDirectoriesList:
         directory_count=len(directories),
     )
     return response_model
-
