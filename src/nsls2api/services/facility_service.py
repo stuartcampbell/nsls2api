@@ -1,17 +1,12 @@
-import datetime
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure.logging import logger
 
 from typing import Optional
 
-from beanie import UpdateResponse
-from beanie.operators import AddToSet, Set
 from beanie.odm.operators.find.comparison import In
 
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
-from nsls2api.models.pass_models import PassCycle
-from nsls2api.services import facility_service, pass_service
 
 
 async def facilities_count() -> int:
@@ -96,6 +91,27 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
     return cycle.name
 
 
+async def cycle_year(
+    cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
+) -> Optional[str]:
+    """
+    Cycle Year
+
+    This method retrieves the year for a given cycle.
+
+    :param cycle_name: The cycle name (str).
+    :param facility_name: The facility name (FacilityName).
+    :return: The year (str) or None if no year is found.
+    """
+    cycle = await Cycle.find_one(
+        Cycle.name == cycle_name, Cycle.facility == facility_name
+    )
+    if cycle is None:
+        return None
+
+    return cycle.year
+
+
 async def is_healthy(facility: str) -> bool:
     """
     Database Health Check
@@ -127,70 +143,3 @@ async def is_healthy(facility: str) -> bool:
         health_status = False
 
     return health_status
-
-
-async def worker_synchronize_cycles_from_pass(
-    facility_name: FacilityName = FacilityName.nsls2,
-) -> None:
-    """
-    This method synchronizes the cycles for a facility from PASS.
-
-    :param facility: The facility name (FacilityName).
-    """
-    start_time = datetime.datetime.now()
-
-    try:
-        pass_cycles: PassCycle = await pass_service.get_cycles(facility_name)
-    except pass_service.PassException as error:
-        error_message = f"Error retrieving cycle information from PASS for {facility_name} facility."
-        logger.exception(error_message)
-        raise Exception(error_message) from error
-
-    for pass_cycle in pass_cycles:
-        facility = await facility_service.facility_by_pass_id(
-            pass_cycle.User_Facility_ID
-        )
-
-        logger.info(f"Synchronizing cycle: {pass_cycle.Name} for {facility.name}.")
-
-        cycle = Cycle(
-            name=pass_cycle.Name,
-            accepting_proposals=pass_cycle.Active,
-            facility=facility.facility_id,
-            year=str(pass_cycle.Year),
-            start_date=pass_cycle.Start_Date,
-            end_date=pass_cycle.End_Date,
-            pass_description=pass_cycle.Description,
-            pass_id=str(pass_cycle.ID),
-        )
-
-        updated_cycle = await Cycle.find_one(Cycle.name == pass_cycle.Name).upsert(
-            Set(
-                {
-                    Cycle.accepting_proposals: cycle.accepting_proposals,
-                    Cycle.facility: cycle.facility,
-                    Cycle.pass_description: cycle.pass_description,
-                    Cycle.pass_id: cycle.pass_id,
-                    Cycle.year: cycle.year,
-                    Cycle.start_date: cycle.start_date,
-                    Cycle.end_date: cycle.end_date,
-                    Cycle.last_updated: datetime.datetime.now(),
-                }
-            ),
-            on_insert=cycle,
-            response_type=UpdateResponse.NEW_DOCUMENT,
-        )
-
-        # Now let's update the list of proposals for this cycle
-        proposals_list = await pass_service.get_proposals_allocated_by_cycle(cycle.name)
-        for proposal in proposals_list:
-            await updated_cycle.update(
-                AddToSet({Cycle.proposals: str(proposal.Proposal_ID)})
-            )
-            updated_cycle.last_updated = datetime.datetime.now()
-            await updated_cycle.save()
-
-    time_taken = datetime.datetime.now() - start_time
-    logger.info(
-        f"Cycle information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
-    )
