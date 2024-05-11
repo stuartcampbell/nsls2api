@@ -24,6 +24,7 @@ from nsls2api.models.beamlines import (
     DataRootDirectoryView,
     LsdcServiceAccountView,
 )
+from nsls2api.services import slack_service
 
 
 async def beamline_count() -> int:
@@ -349,10 +350,28 @@ async def uses_synchweb(name: str) -> bool:
 
 
 async def slack_channel_managers(beamline_name: str) -> list[str]:
+    """
+    Retrieves the Slack user IDs of the channel managers for a given beamline.
+
+    Args:
+        beamline_name (str): The name of the beamline.
+
+    Returns:
+        list[str]: A list of Slack user IDs of the channel managers.
+
+    """
     beamline = await Beamline.find_one(Beamline.name == beamline_name.upper()).project(
         SlackChannelManagersView
     )
     if beamline is None:
         return None
 
-    return beamline.slack_channel_managers
+    slack_ids = []
+    for user in beamline.slack_channel_managers:
+        # Staff have to have a BNL email account
+        email = f"{user}@bnl.gov"
+        user_id = slack_service.lookup_userid_by_email(email=email)
+        if user_id:
+            slack_ids.append(user_id)
+
+    return slack_ids
