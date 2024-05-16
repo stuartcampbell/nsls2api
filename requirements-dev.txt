@@ -10,6 +10,8 @@ anyio==4.3.0
     # via asyncer
 asttokens==2.4.1
     # via stack-data
+async-timeout==4.0.3
+    # via aiohttp
 asyncer==0.0.7
 attrs==23.2.0
     # via aiohttp
@@ -37,9 +39,14 @@ decorator==5.1.1
     # via ipython
 dnspython==2.6.1
     # via pymongo
+exceptiongroup==1.2.1
+    # via
+    #   anyio
+    #   ipython
+    #   pytest
 executing==2.0.1
     # via stack-data
-faker==25.0.1
+faker==25.1.0
 flask==3.0.3
     # via
     #   flask-cors
@@ -137,7 +144,7 @@ pygments==2.18.0
     # via
     #   ipython
     #   rich
-pymongo==4.7.1
+pymongo==4.7.2
     # via bunnet
 pytest==8.2.0
 python-dateutil==2.9.0.post0
@@ -150,7 +157,7 @@ rich==13.7.1
     # via textual
 roundrobin==0.0.4
     # via locust
-ruff==0.4.3
+ruff==0.4.4
 setuptools==69.5.1
     # via
     #   zope-event
@@ -168,12 +175,21 @@ textual==0.58.1
 textual-dev==1.5.1
 toml==0.10.2
     # via bunnet
+tomli==2.0.1
+    # via
+    #   black
+    #   locust
+    #   pytest
 traitlets==5.14.3
     # via
     #   ipython
     #   matplotlib-inline
 typing-extensions==4.11.0
     # via
+    #   anyio
+    #   black
+    #   bunnet
+    #   ipython
     #   pydantic
     #   pydantic-core
     #   textual
