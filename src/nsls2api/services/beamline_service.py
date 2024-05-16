@@ -201,10 +201,17 @@ async def proposal_directory_skeleton(name: str):
 
     service_usernames = await service_accounts(name)
 
-    users_acl.append({f"{service_usernames.ioc}": "rw"})
+    if service_usernames.ioc is not None:
+        users_acl.append({f"{service_usernames.ioc}": "rw"})
+    
     users_acl.append({"softioc": "rw"})
-    users_acl.append({f"{service_usernames.bluesky}": "rw"})
-    users_acl.append({f"{service_usernames.workflow}": "r"})
+    
+    if service_usernames.bluesky is not None:
+        users_acl.append({f"{service_usernames.bluesky}": "rw"})
+
+    if service_usernames.workflow is not None:
+        users_acl.append({f"{service_usernames.workflow}": "r"})
+    
     users_acl.append({"nsls2data": "r"})
 
     groups_acl.append({f"{await custom_data_admin_group(name)}": "r"})
