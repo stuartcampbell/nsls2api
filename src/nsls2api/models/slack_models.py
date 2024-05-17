@@ -14,8 +14,8 @@ class SlackUser(pydantic.BaseModel):
 
 
 class SlackChannelCreationResponseModel(pydantic.BaseModel):
-    channel_id: str | None = None
-    channel_name: str | None = None
+    channel_id: str
+    channel_name: str
     beamline_slack_managers: list[str] | None = []
     user_ids: list[str] | None = []
     message: str | None = None
