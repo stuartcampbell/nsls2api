@@ -65,7 +65,7 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
 
     if channel_name is None:
         return fastapi.responses.JSONResponse(
-            {"error": f"Slack channel name cannot be found for proposal {proposal_id}"},
+            {"error": f"Slack channel name cannot be generated for proposal {proposal_id}"},
             status_code=404,
         )
 
