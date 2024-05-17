@@ -70,6 +70,7 @@ class IOCServiceAccountView(pydantic.BaseModel):
     class Settings:
         projection = {"username": "$service_accounts.ioc"}
 
+
 class BlueskyServiceAccountView(pydantic.BaseModel):
     username: str
 
@@ -111,11 +112,12 @@ class DataRootDirectoryView(pydantic.BaseModel):
     class Settings:
         projection = {"data_root": "$custom_root_directory"}
 
+
 class SlackChannelManagersView(pydantic.BaseModel):
     slack_channel_managers: list[str] | None = []
 
     class Settings:
-        projection = {"slack_channel_managers" : "$slack_channel_managers"}
+        projection = {"slack_channel_managers": "$slack_channel_managers"}
 
 
 class EndStation(pydantic.BaseModel):
@@ -134,7 +136,7 @@ class Beamline(beanie.Document):
     nsls2_redhat_satellite_location_name: Optional[str]
     service_accounts: ServiceAccounts | None = None
     endstations: Optional[list[EndStation]] = []
-    slack_channel_admins: Optional[list[str]] = []
+    slack_channel_managers: Optional[list[str]] = []
     data_admins: Optional[list[str]] = None
     custom_data_admin_group: Optional[str] = None
     github_org: Optional[str] = None
