@@ -137,7 +137,7 @@ class Beamline(beanie.Document):
     service_accounts: ServiceAccounts | None = None
     endstations: Optional[list[EndStation]] = []
     slack_channel_managers: Optional[list[str]] = []
-    data_admins: Optional[list[str]] = None
+    data_admins: Optional[list[str]] = []
     custom_data_admin_group: Optional[str] = None
     github_org: Optional[str] = None
     ups_id: Optional[str] = None
