@@ -32,8 +32,8 @@ def get_bot_details() -> SlackBot:
 
 def get_channel_members(channel_id: str) -> list[str]:
     """
-    Retrieves the members of a Slack channel.  
-    It assumes that the bot is already a member of the 
+    Retrieves the members of a Slack channel.
+    It assumes that the bot is already a member of the
     channel (if it is a private channel)
 
     Args:
@@ -88,16 +88,32 @@ def add_bot_to_channel(channel_id: str):
             raise Exception(error) from error
 
 
+async def is_channel_private(channel_id: str) -> bool:
+    """
+    Checks if a Slack channel is private.
+
+    Args:
+        channel_id (str): The ID of the channel to check.
+
+    Returns:
+        bool: True if the channel is private, False otherwise.
+    """
+    response = await app.client.conversations_info(channel=channel_id)
+    return response.data["channel"]["is_private"]
+
+
 async def create_channel(
-    name: str, is_private: bool = True, description: str = None
+    name: str,
+    is_private: bool = True,
 ) -> str | None:
     """
-    Creates a new Slack channel with the given name, privacy settings, and description.
+    Creates a new Slack channel with the given name and privacy settings.  If the channel 
+    already exists, it will convert the channel to the desired privacy setting and invite 
+    the necessary bot user to the channel.
 
     Args:
         name (str): The name of the channel to be created.
         is_private (bool, optional): Whether the channel should be private. Defaults to True.
-        description (str, optional): The description of the channel. Defaults to None.
 
     Returns:
         str | None: The ID of the created channel if successful, None otherwise.
@@ -109,13 +125,41 @@ async def create_channel(
 
     if channel_id:
         logger.info(f"Found existing channel called {name}.")
+        if is_private:
+            if await is_channel_private(channel_id):
+                logger.info("Channel is already private.")
+            else:
+                try:
+                    logger.info(f"Trying to convert channel {name} to private.")
+                    response = super_client.admin_conversations_convertToPrivate(
+                        channel_id=channel_id
+                    )
+                    logger.info(
+                        f"Response from converting channel to private: {response}"
+                    )
+                except SlackApiError as e:
+                    logger.exception(f"Error converting channel to private: {e}")
+                    return None
+        else:
+            if await is_channel_private(channel_id):
+                try:
+                    logger.info(f"Trying to convert channel {name} to public.")
+                    response = super_client.admin_conversations_convertToPublic(
+                        channel_id=channel_id
+                    )
+                    logger.info(
+                        f"Response from converting channel to public: {response}"
+                    )
+                except SlackApiError as e:
+                    logger.exception(f"Error converting channel to public: {e}")
+                    return None
+
     else:
         try:
             logger.info(f"Trying to create channel called '{name}'.")
             response = super_client.admin_conversations_create(
                 name=name,
                 is_private=is_private,
-                description=description,
                 team_id=settings.nsls2_workspace_team_id,
             )
             logger.info(f"Response from creating slack channel: {response}")
@@ -147,6 +191,7 @@ def channel_id_from_name(name: str) -> str | None:
         if channel["name"] == name:
             return channel["id"]
 
+
 def rename_channel(name: str, new_name: str) -> str | None:
     """
     Renames a Slack channel.
@@ -157,7 +202,7 @@ def rename_channel(name: str, new_name: str) -> str | None:
 
     Returns:
         str | None: The ID of the renamed channel, or None if the channel was not found.
-    
+
     Raises:
         Exception: If the channel with the given name is not found.
         Exception: If the channel renaming fails.
@@ -201,23 +246,24 @@ def lookup_username_by_email(email: str) -> str | None:
     if response.data["ok"] is True:
         return response.data["user"]["name"]
 
+
 def add_users_to_channel(channel_id: str, user_ids: list[str]):
     try:
         userlist = ",".join(user_ids)
-        app.client.conversations_invite(
-            channel=channel_id, users=userlist
-        )
+        app.client.conversations_invite(channel=channel_id, users=userlist)
     except SlackApiError as error:
         if error.response["error"] == "failed_for_some_users":
             channel_members = get_channel_members(channel_id)
             if "failed_user_ids" in error.response:
                 for failed_user_id in error.response["failed_user_ids"]:
                     if failed_user_id in channel_members:
-                        logger.info(f"{failed_user_id} is already in channel {channel_id}.")
+                        logger.info(
+                            f"{failed_user_id} is already in channel {channel_id}."
+                        )
                     else:
-                        logger.error(f"Failed to add user {failed_user_id} to channel {channel_id}." )                         
+                        logger.error(
+                            f"Failed to add user {failed_user_id} to channel {channel_id}."
+                        )
         else:
             logger.exception(error)
             raise Exception(error) from error
-        
-    

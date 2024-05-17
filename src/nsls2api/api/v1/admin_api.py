@@ -70,7 +70,8 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
         )
 
     channel_id = await slack_service.create_channel(
-        channel_name, True, description=f"Discussion related to proposal {proposal_id}"
+        channel_name,
+        is_private=True,
     )
 
     if channel_id is None:
@@ -89,7 +90,9 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
     slack_managers_added = []
     for beamline in proposal.instruments:
         slack_managers = await beamline_service.slack_channel_managers(beamline)
-        logger.info(f"Adding Slack channel managers for {beamline} beamline [{slack_managers}].")
+        logger.info(
+            f"Adding Slack channel managers for {beamline} beamline [{slack_managers}]."
+        )
         if len(slack_managers) > 0:
             slack_service.add_users_to_channel(
                 channel_id=channel_id, user_ids=slack_managers
@@ -105,7 +108,9 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
             if user_slack_id is None:
                 logger.info(f"User {user.username} does not have a slack_id")
             else:
-                logger.info(f"Adding user {user.username} ({user_slack_id}) to slack channel...")
+                logger.info(
+                    f"Adding user {user.username} ({user_slack_id}) to slack channel..."
+                )
                 proposal_user_ids.append(user_slack_id)
 
     logger.info(
