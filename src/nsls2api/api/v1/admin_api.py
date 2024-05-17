@@ -13,7 +13,7 @@ from nsls2api.services import background_service
 
 # router = fastapi.APIRouter()
 router = fastapi.APIRouter(
-    dependencies=[Depends(validate_admin_role)], include_in_schema=True, tags=["admin"]
+    dependencies=[Depends(validate_admin_role)], include_in_schema=False, tags=["admin"]
 )
 
 
