@@ -58,6 +58,11 @@ class Settings(BaseSettings):
     slack_signing_secret: str | None = None
     nsls2_workspace_team_id: str | None = None
 
+    # Universal Proposal System
+    universal_proposal_system_api_url: HttpUrl = "https://ups.servicenowservices.com/api"
+    universal_proposal_system_api_user: str 
+    universal_proposal_system_api_password : str
+
     model_config = SettingsConfigDict(
         env_file=str(Path(__file__).parent.parent / ".env"), extra='ignore',
     )
