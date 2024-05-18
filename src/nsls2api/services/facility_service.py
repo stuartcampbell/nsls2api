@@ -70,14 +70,14 @@ async def ups_id_for_facility(facility_name: str) -> Optional[str]:
 
     This method retrieves the UPS ID for a given facility.
 
-    :param facility: The facility name (str). e.g. "nsls2, lbms, cfn, etc."
+    :param facility: The facility name (str). e.g. "nsls2, aps, lbms, lcls, cfn, etc."
     :return: The UPS ID (str) or None if no facility is found.
     """
     facility = await Facility.find_one(Facility.facility_id == facility_name)
     if facility is None:
         return None
 
-    return facility.universal_proposal_system_facility_id
+    return facility.universal_proposal_system_facility_sysid
 
 
 async def data_roles_by_user(username: str) -> Optional[list[str]]:
