@@ -59,7 +59,7 @@ class Settings(BaseSettings):
     nsls2_workspace_team_id: str
 
     model_config = SettingsConfigDict(
-        env_file=str(Path(__file__).parent.parent / ".env")
+        env_file=str(Path(__file__).parent.parent / ".env"), extra='ignore', validate_default=False,
     )
 
 
