@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     socks_proxy: str
 
     model_config = SettingsConfigDict(
-        env_file=str(Path(__file__).parent.parent / ".env")
+        env_file=str(Path(__file__).parent.parent / ".env"), extra='ignore', validate_default=False,
     )
 
 
