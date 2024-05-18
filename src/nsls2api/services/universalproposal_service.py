@@ -55,3 +55,11 @@ async def get_facility_details(facility: UpsFacilityName = UpsFacilityName.nsls2
 
     return ups_facility_info["result"]
 
+
+async def get_all_facility_details():
+    
+    url = f"{base_url}/now/table/cmn_location?sysparm_display_value=all"
+
+    ups_facility_info = await _call_ups_servicenow_webservice(url)
+
+    return ups_facility_info["result"]
