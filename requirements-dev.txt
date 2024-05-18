@@ -155,6 +155,8 @@ requests==2.31.0
     # via locust
 rich==13.7.1
     # via textual
+roundrobin==0.0.4
+    # via locust
 ruff==0.4.4
 setuptools==69.5.1
     # via

@@ -35,6 +35,14 @@ async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_current
         )
     return service_accounts
 
+@router.get("/beamline/{name}/slack-channel-managers")
+async def get_beamline_slack_channel_managers(name: str, api_key: APIKey = Depends(get_current_user)):
+    slack_channel_managers = await beamline_service.slack_channel_managers(name)
+    if slack_channel_managers is None:
+        raise HTTPException(
+            status_code=404, detail=f"Beamline named {name} could not be found"
+        )
+    return slack_channel_managers
 
 @router.get(
     "/beamline/{name}/detectors", response_model=DetectorList, include_in_schema=True
