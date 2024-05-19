@@ -11,7 +11,12 @@ async def get_ups_proposal_types(facility: UpsFacilityName):
 
     return proposal_types
 
-@router.get("/ups/facility_info/{facility_name}")
-async def get_ups_facility_info(facility_name: UpsFacilityName):
-    facility_info = await universalproposal_service.get_facility_details(facility=facility_name)
+@router.get("/ups/facility_info/")
+async def get_ups_facility_info(facility_name: UpsFacilityName = None):
+
+    if facility_name is None:
+        facility_info = await universalproposal_service.get_all_facility_details()
+    else:
+        facility_info = await universalproposal_service.get_facility_details(facility=facility_name)
+    
     return facility_info
