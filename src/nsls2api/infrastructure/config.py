@@ -53,15 +53,15 @@ class Settings(BaseSettings):
     socks_proxy: str
 
     # Slack settings
-    slack_bot_token: str | None = None
-    superadmin_slack_user_token: str | None = None
-    slack_signing_secret: str | None = None
-    nsls2_workspace_team_id: str | None = None
+    slack_bot_token: str | None = ""
+    superadmin_slack_user_token: str | None = ""
+    slack_signing_secret: str | None = ""
+    nsls2_workspace_team_id: str | None = ""
 
     # Universal Proposal System
     universal_proposal_system_api_url: HttpUrl = "https://ups.servicenowservices.com/api"
-    universal_proposal_system_api_user: str 
-    universal_proposal_system_api_password : str
+    universal_proposal_system_api_user: str | None = ""
+    universal_proposal_system_api_password : str | None = ""
 
     model_config = SettingsConfigDict(
         env_file=str(Path(__file__).parent.parent / ".env"), extra='ignore',
