@@ -1,9 +1,14 @@
+import datetime
 from pathlib import Path
+from faker import Faker
+from faker.providers import person, python, date_time
+import random
 from typing import Optional
 
 from beanie.odm.operators.find.array import ElemMatch
 from beanie.operators import And, In, RegEx, Text
 
+from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
     ProposalDiagnostics,
     ProposalFullDetails,
@@ -14,6 +19,7 @@ from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
 from nsls2api.services import (
     beamline_service,
+    facility_service,
 )
 
 
@@ -85,9 +91,11 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
 def generate_data_session_for_proposal(proposal_id: int) -> str:
     return f"pass-{str(proposal_id)}"
 
+
 def slack_channel_name_for_proposal(proposal_id: str) -> str:
-    #TODO: Actually make this configurable and more sensible
+    # TODO: Actually make this configurable and more sensible
     return f"test-sic-{str(proposal_id)}"
+
 
 async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
     """
@@ -419,3 +427,89 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
     )
 
     return proposal_diagnostics
+
+
+async def generate_fake_proposal_id() -> int:
+    proposal_id_already_exists = True
+
+    while proposal_id_already_exists:
+        fake_proposal_id = random.randint(900000, 999999)
+        proposal_id_already_exists = await exists(fake_proposal_id)
+
+    return fake_proposal_id
+
+
+async def generate_fake_test_proposal(
+    facility_name: FacilityName = FacilityName.nsls2, include_real_people=False
+) -> Optional[Proposal]:
+    """
+    Generates a fake test proposal.
+
+    Args:
+        facility_name (FacilityName, optional): The name of the facility. Defaults to using the NSLS-II facility.
+        include_real_people (bool, optional): Whether to include real people in the proposal. Defaults to False.
+
+    Returns:
+        Optional[Proposal]: The generated fake test proposal, or None if an error occurred.
+    """
+    MAX_USERS_PER_PROPOSAL: int = 9
+
+    number_of_users = random.randint(1, MAX_USERS_PER_PROPOSAL)
+    pi_number = random.randint(0, number_of_users - 1)
+    user_list = []
+
+    fake = Faker()
+    fake.add_provider(person)
+    fake.add_provider(python)
+    fake.add_provider(date_time)
+
+    for i in range(number_of_users):
+        if i == pi_number:
+            is_pi = True
+        else:
+            is_pi = False
+
+        if fake.pybool(truth_probability=80) or is_pi:
+            user_bnl_id = fake.pystr_format(string_format="??##?").upper()
+            # Now only a subset of people with BNL IDs will actually have usernames
+            if fake.pybool(truth_probability=80) or is_pi:
+                username = fake.user_name()
+            else:
+                username = None
+        else:
+            user_bnl_id = None
+            username = None
+
+        user = User(
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            email=fake.email(),
+            bnl_id=user_bnl_id,
+            username=username,
+            is_pi=is_pi,
+        )
+        user_list.append(user)
+
+    fake_proposal_id = await generate_fake_proposal_id()
+    fake_title = fake.sentence()
+
+    fake_cycle = await facility_service.current_operating_cycle(facility_name)
+    if fake_cycle is None:
+        # If there is no current operating cycle, then just make one up
+        fake_cycle = f"{fake.year()}-{fake.pyint(min_value=1, max_value=3)}"
+
+    proposal = Proposal(
+        proposal_id=str(fake_proposal_id),
+        title=fake_title,
+        type="Fake Test Proposal",
+        users=user_list,
+        pass_type_id="666666",
+        data_session=generate_data_session_for_proposal(fake_proposal_id),
+        instruments=["TST"],
+        cycles=[fake_cycle],
+        last_updated=datetime.datetime.now(),
+    )
+
+    await Proposal.insert_one(proposal)
+
+    return proposal
