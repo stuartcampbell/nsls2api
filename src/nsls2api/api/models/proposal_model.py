@@ -9,11 +9,12 @@ from nsls2api.api.models.beamline_model import AssetDirectoryGranularity
 
 class UsernamesList(pydantic.BaseModel):
     usernames: list[str]
+    groupname: str
     proposal_id: Optional[str]
     count: int
 
     model_config = {
-        "json_schema_extra": {"examples": [{"usernames": ["rdeckard", "rbatty"]}]}
+        "json_schema_extra": {"examples": [{"groupname": "pass-314159", "usernames": ["rdeckard", "rbatty"]}]}
     }
 
 
