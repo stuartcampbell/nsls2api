@@ -214,7 +214,7 @@ async def proposal_directory_skeleton(name: str):
     if service_usernames.workflow is not None:
         users_acl.append({f"{service_usernames.workflow}": "r"})
     
-    users_acl.append({"nsls2data": "r"})
+    users_acl.append({"nsls2data": "rw"})
 
     groups_acl.append({f"{await custom_data_admin_group(name)}": "r"})
     groups_acl.append({"n2sn-right-dataadmin": "r"})
