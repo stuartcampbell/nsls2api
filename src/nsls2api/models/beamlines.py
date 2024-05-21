@@ -113,6 +113,13 @@ class DataRootDirectoryView(pydantic.BaseModel):
         projection = {"data_root": "$custom_root_directory"}
 
 
+class SlackChannelManagersView(pydantic.BaseModel):
+    slack_channel_managers: list[str] | None = []
+
+    class Settings:
+        projection = {"slack_channel_managers": "$slack_channel_managers"}
+
+
 class EndStation(pydantic.BaseModel):
     name: str
     service_accounts: Optional[ServiceAccounts] = None
@@ -128,11 +135,12 @@ class Beamline(beanie.Document):
     pass_id: Optional[str]
     nsls2_redhat_satellite_location_name: Optional[str]
     service_accounts: ServiceAccounts | None = None
-    endstations: Optional[list[EndStation]]
-    data_admins: Optional[list[str]]
+    endstations: Optional[list[EndStation]] = []
+    slack_channel_managers: Optional[list[str]] = []
+    data_admins: Optional[list[str]] = []
     custom_data_admin_group: Optional[str] = None
-    github_org: Optional[str]
-    ups_id: Optional[str]
+    github_org: Optional[str] = None
+    ups_id: Optional[str] = None
     data_root: Optional[str] = None
     services: Optional[list[BeamlineService]] = []
     detectors: Optional[list[Detector]] = []

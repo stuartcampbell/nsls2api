@@ -1,6 +1,6 @@
-from typing import Annotated, Optional
+from typing import Annotated
 import fastapi
-from fastapi import Depends, Query, Request
+from fastapi import Depends, Query
 
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
@@ -190,8 +190,12 @@ async def get_proposal_usernames(proposal_id: int):
     proposal_usernames = await proposal_service.fetch_usernames_from_proposal(
         proposal_id
     )
+
+    proposal_groupname = proposal_service.generate_data_session_for_proposal(proposal_id)
+
     response_model = UsernamesList(
         usernames=proposal_usernames,
+        groupname=proposal_groupname,
         proposal_id=str(proposal_id),
         count=len(proposal_usernames),
     )
@@ -223,4 +227,3 @@ async def get_proposal_directories(proposal_id: int) -> ProposalDirectoriesList:
         directory_count=len(directories),
     )
     return response_model
-

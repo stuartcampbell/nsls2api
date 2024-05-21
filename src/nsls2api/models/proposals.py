@@ -31,6 +31,7 @@ class Proposal(beanie.Document):
     cycles: Optional[list[str]] = []
     users: Optional[list[User]] = []
     safs: Optional[list[SafetyForm]] = []
+    slack_channel_id: Optional[str] = None
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
