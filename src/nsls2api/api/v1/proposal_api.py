@@ -191,7 +191,7 @@ async def get_proposal_usernames(proposal_id: int):
         proposal_id
     )
 
-    proposal_groupname = await proposal_service.generate_data_session_for_proposal(proposal_id)
+    proposal_groupname = proposal_service.generate_data_session_for_proposal(proposal_id)
 
     response_model = UsernamesList(
         usernames=proposal_usernames,
