@@ -1,8 +1,9 @@
-from typing import Annotated
+from typing import Annotated, Optional
 
 import fastapi
 from fastapi import Depends, HTTPException
 
+from nsls2api.api.models.proposal_model import SingleProposal
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import (
@@ -52,6 +53,27 @@ async def generate_user_apikey(username: str):
     return await generate_api_key(username)
 
 
+@router.post("/admin/proposal/generate-test")
+async def generate_fake_proposal(
+    use_real_people: bool = False,
+) -> Optional[SingleProposal]:
+    if use_real_people:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Creating proposals using real people is not implemented yet",
+        )
+
+    proposal = await proposal_service.generate_fake_test_proposal()
+
+    if proposal is None:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate a fake test proposal",
+        )
+
+    return SingleProposal(proposal=proposal)
+
+
 @router.post("/admin/slack/create-proposal-channel/{proposal_id}")
 async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponseModel:
     proposal = await proposal_service.proposal_by_id(int(proposal_id))
@@ -65,7 +87,9 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
 
     if channel_name is None:
         return fastapi.responses.JSONResponse(
-            {"error": f"Slack channel name cannot be generated for proposal {proposal_id}"},
+            {
+                "error": f"Slack channel name cannot be generated for proposal {proposal_id}"
+            },
             status_code=404,
         )
 
