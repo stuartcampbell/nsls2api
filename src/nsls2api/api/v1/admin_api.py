@@ -16,11 +16,11 @@ from nsls2api.services import beamline_service, proposal_service, slack_service
 
 # router = fastapi.APIRouter()
 router = fastapi.APIRouter(
-    dependencies=[Depends(validate_admin_role)], include_in_schema=False, tags=["admin"]
+    dependencies=[Depends(validate_admin_role)], include_in_schema=True, tags=["admin"]
 )
 
 
-@router.get("/admin/settings")  # , include_in_schema=False)
+@router.get("/admin/settings")
 async def info(settings: Annotated[config.Settings, Depends(config.get_settings)]):
     return settings
 
