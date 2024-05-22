@@ -11,6 +11,9 @@ class ProposalType(beanie.Document):
     description: Optional[str] = None
     pass_id: Optional[str] = None
     pass_description: Optional[str] = None
+    ups_id: Optional[str] = None
+    ups_description: Optional[str] = None
+    ups_type: Optional[str] = None
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
