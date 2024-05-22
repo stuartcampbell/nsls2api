@@ -40,6 +40,22 @@ async def get_api_key(
             return api_key
     return None
 
+async def invalidate_api_key(token: str):
+    """
+    Invalidates an API key by setting the `valid` attribute to `False`.
+
+    :param token: The API key token to invalidate.
+    :return: None
+    """
+    try:
+        key: ApiKey = await lookup_api_key(token)
+        key.valid = False
+        await key.update(link_rule=WriteRules.WRITE)
+    except LookupError as lookup_err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find the API key to invalidate",
+        )
 
 async def generate_api_key(username: str):
     try:
@@ -60,6 +76,8 @@ async def generate_api_key(username: str):
 
         prefix_length = len(API_KEY_PREFIX)
 
+        existing_keys = await ApiKey.find(ApiKey.user == user)
+
         new_key = ApiKey(
             user=user,
             username=username,
@@ -74,6 +92,9 @@ async def generate_api_key(username: str):
         await new_key.save(link_rule=WriteRules.WRITE)
 
         # Now that we have saved a new key for this user, we should invalidate any other keys
+        for key in existing_keys:
+            key.valid = False
+            await key.update(link_rule=WriteRules.WRITE)
 
         return {"key:": secret_key}
 
