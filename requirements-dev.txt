@@ -147,6 +147,8 @@ pymongo==4.7.2
     # via bunnet
 pytest==8.2.0
     # via -r requirements-dev.in
+    # via pytest-asyncio
+pytest-asyncio==0.23.7
 python-dateutil==2.9.0.post0
     # via faker
 pyzmq==26.0.3

@@ -5,5 +5,6 @@ faker
 ipython
 locust
 pytest
+pytest-asyncio
 ruff
 textual-dev
