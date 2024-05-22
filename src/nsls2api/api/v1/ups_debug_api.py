@@ -20,3 +20,9 @@ async def get_ups_facility_info(facility_name: UpsFacilityName = None):
         facility_info = await universalproposal_service.get_facility_details(facility=facility_name)
     
     return facility_info
+
+
+@router.get("/ups/proposal/{proposal_id}")
+async def get_ups_proposal(proposal_id: str):
+    proposal = await universalproposal_service.get_proposal(proposal_id=proposal_id)
+    return proposal

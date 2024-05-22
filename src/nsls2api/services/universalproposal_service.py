@@ -63,3 +63,12 @@ async def get_all_facility_details():
     ups_facility_info = await _call_ups_servicenow_webservice(url)
 
     return ups_facility_info["result"]
+
+
+async def get_proposal(proposal_id: str):
+    
+    url = f"{base_url}/now/table/sn_customerservice_proposal_record?sysparm_query=u_proposal_number%3D{proposal_id}&sysparm_display_value=all"
+
+    ups_proposal = await _call_ups_servicenow_webservice(url)
+
+    return ups_proposal["result"]
