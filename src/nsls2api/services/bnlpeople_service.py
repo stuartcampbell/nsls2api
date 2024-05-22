@@ -44,7 +44,11 @@ async def get_username_by_id(lifenumber: str) -> Optional[str]:
     # Let's check that the response validates
     bnl_person = BNLPerson(**person[0])
 
-    return bnl_person.ActiveDirectoryName
+    # Guard against the BNLPeople API giving us an empty string.
+    if len(bnl_person.ActiveDirectoryName) > 0:
+        return bnl_person.ActiveDirectoryName
+    else:
+        return None
 
 
 async def get_person_by_id(lifenumber: str) -> Optional[BNLPerson]:
