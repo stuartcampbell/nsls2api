@@ -1,13 +1,13 @@
 import fastapi
 
 from nsls2api.api.models.facility_model import UpsFacilityName
-from nsls2api.models.universalproposal_models import UpsProposalType
+from nsls2api.models.universalproposal_models import UpsProposalRecord, UpsProposalType
 from nsls2api.services import universalproposal_service
 
 router = fastapi.APIRouter()
 
 @router.get("/ups/raw/proposal_types")
-async def get_raw_ups_proposal_types(facility: UpsFacilityName):
+async def get_ups_raw_proposal_types(facility: UpsFacilityName):
     proposal_types = await universalproposal_service.get_raw_proposal_types(facility=facility)
 
     return proposal_types
@@ -31,7 +31,11 @@ async def get_ups_facility_info(facility_name: UpsFacilityName = None):
 
 
 @router.get("/ups/raw/proposal/{proposal_id}")
-async def get_ups_proposal(proposal_id: str):
+async def get_ups_raw_proposal(proposal_id: str):
     proposal = await universalproposal_service.get_raw_proposal(proposal_id=proposal_id)
     return proposal
 
+@router.get("/ups/proposal/{proposal_id}")
+async def get_ups_proposal(proposal_id: str) -> UpsProposalRecord:
+    proposal = await universalproposal_service.get_proposal(proposal_id=proposal_id)
+    return proposal
