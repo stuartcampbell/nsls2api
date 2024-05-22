@@ -1,15 +1,23 @@
 import fastapi
 
 from nsls2api.api.models.facility_model import UpsFacilityName
+from nsls2api.models.universalproposal_models import UpsProposalType
 from nsls2api.services import universalproposal_service
 
 router = fastapi.APIRouter()
 
 @router.get("/ups/raw/proposal_types")
-async def get_ups_proposal_types(facility: UpsFacilityName):
+async def get_raw_ups_proposal_types(facility: UpsFacilityName):
+    proposal_types = await universalproposal_service.get_raw_proposal_types(facility=facility)
+
+    return proposal_types
+
+@router.get("/ups/proposal_types")
+async def get_ups_proposal_types(facility: UpsFacilityName) -> list[UpsProposalType]:
     proposal_types = await universalproposal_service.get_proposal_types(facility=facility)
 
     return proposal_types
+
 
 @router.get("/ups/raw/facility_info/")
 async def get_ups_facility_info(facility_name: UpsFacilityName = None):
