@@ -228,6 +228,7 @@ async def proposal_directory_skeleton(name: str):
         "users": users_acl,
         "groups": groups_acl,
         "beamline": name.upper(),
+        "directory_most_granular_level": AssetDirectoryGranularity.flat,
     }
     directory_list.append(asset_directory)
 
