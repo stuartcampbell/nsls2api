@@ -1,4 +1,4 @@
-from functools import lru_cache
+import click
 import httpx
 import httpx_socks
 from httpx import Response
@@ -16,10 +16,10 @@ class HTTPXClientWrapper:
         timeouts = httpx.Timeout(None, connect=30.0)  # 30s timeout on connect, no other timeouts.
         limits = httpx.Limits(max_keepalive_connections=5, max_connections=10)
         self.async_client = httpx.AsyncClient(limits=limits, timeout=timeouts)
-        logger.info(f"HTTPXClientWrapper started. {id(self.async_client)}")
+        logger.info(f"HTTPXClientWrapper [{click.style(str(id(self.async_client)), fg='cyan')}] started.")
 
     async def stop(self):
-        logger.info(f"HTTPXClientWrapper stopped. {id(self.async_client)}")
+        logger.info(f"HTTPXClientWrapper [{click.style(str(id(self.async_client)), fg='cyan')}] stopped.")
         await self.async_client.aclose()
 
     def __call__(self):
