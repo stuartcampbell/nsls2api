@@ -1,4 +1,5 @@
 import beanie
+import click
 import motor.motor_asyncio
 from pydantic import MongoDsn
 
@@ -20,7 +21,7 @@ def create_connection_string(
 
 
 async def init_connection(mongodb_dsn: MongoDsn):
-    logger.info(f"Attempting to connect to {str(mongodb_dsn)}")
+    logger.info(f"Attempting to connect to {click.style(str(mongodb_dsn), fg='green')}")
 
     client = motor.motor_asyncio.AsyncIOMotorClient(
         mongodb_dsn, uuidRepresentation="standard"
@@ -30,4 +31,4 @@ async def init_connection(mongodb_dsn: MongoDsn):
         document_models=models.all_models,
     )
 
-    logger.info(f"Connected to {client.get_default_database().name}")
+    logger.info(f"Connected to {click.style(client.get_default_database().name, fg='green')} database.")
