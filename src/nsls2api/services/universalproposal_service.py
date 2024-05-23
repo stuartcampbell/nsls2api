@@ -120,11 +120,27 @@ async def get_proposal_types(
 
 
 async def get_proposal(proposal_id: str) -> Optional[UpsProposalRecord]:
-    url = f"{base_url}/now/table/sn_customerservice_proposal_record?sysparm_query=u_proposal_number%3D{proposal_id}&sysparm_display_value=all"
+
+    proposal_query = proposal_id.strip()
+    # TODO: Maybe do a regex check here to make sure the proposal_query is in the correct format.
+
+    servicenow_table_name = "sn_customerservice_proposal_record"
+    url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query=u_proposal_number%3D{proposal_query}&sysparm_display_value=all"
 
     try:
         ups_proposal_response = await _call_ups_servicenow_webservice(url)
-        ups_proposal = ups_proposal_response["result"]
+
+        # Did we get anything back ?
+        if not ups_proposal_response["result"] or len(ups_proposal_response["result"]) == 0:
+            return None
+        
+        # We aren't going to handle multiple proposals, so just throw an error if we get more than one.
+        if len(ups_proposal_response["result"]) > 1:
+            error_message = f"UPS returned more than one proposal for proposal {proposal_id}."
+            logger.error(error_message)
+            raise UniversalProposalSystemException(error_message)
+
+        ups_proposal = ups_proposal_response["result"][0]
         proposal = UpsProposalRecord(**ups_proposal)
     except ValidationError as error:
         error_message = (
@@ -133,7 +149,7 @@ async def get_proposal(proposal_id: str) -> Optional[UpsProposalRecord]:
         logger.error(error_message)
         raise UniversalProposalSystemException(error_message) from error
     except Exception as error:
-        error_message = f"Error retrieving proposal {proposal_id} from UPS."
+        error_message = f"Error retrieving proposal {proposal_id} from UPS. {error}"
         logger.exception(error_message)
         raise UniversalProposalSystemException(error_message) from error
 
