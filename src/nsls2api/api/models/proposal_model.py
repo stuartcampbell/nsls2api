@@ -4,7 +4,7 @@ from typing import Optional
 import pydantic
 
 from nsls2api.models.proposals import Proposal, User
-from nsls2api.models.beamline import AssetDirectoryGranularity
+from nsls2api.models.beamlines import AssetDirectoryGranularity
 
 
 class UsernamesList(pydantic.BaseModel):

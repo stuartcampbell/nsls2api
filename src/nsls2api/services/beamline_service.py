@@ -5,7 +5,7 @@ from typing import Optional
 from beanie.odm.operators.find.comparison import In
 from beanie.odm.operators.find.array import ElemMatch
 
-from nsls2api.models.beamline import AssetDirectoryGranularity
+from nsls2api.models.beamlines import AssetDirectoryGranularity
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.beamlines import (
     Beamline,
