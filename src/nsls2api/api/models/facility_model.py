@@ -6,6 +6,11 @@ class FacilityName(StrEnum):
     lbms = "lbms"
     cfn = "cfn"
 
+class UpsFacilityName(StrEnum):
+    nsls2 = "nsls2"
+    aps = "aps"
+    lcls = "lcls"
+
 class FacilityCyclesResponseModel(pydantic.BaseModel):
     facility: str
     cycles: list[str]

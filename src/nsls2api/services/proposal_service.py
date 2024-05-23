@@ -85,9 +85,11 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
 def generate_data_session_for_proposal(proposal_id: int) -> str:
     return f"pass-{str(proposal_id)}"
 
+
 def slack_channel_name_for_proposal(proposal_id: str) -> str:
-    #TODO: Actually make this configurable and more sensible
+    # TODO: Actually make this configurable and more sensible
     return f"test-sic-{str(proposal_id)}"
+
 
 async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
     """
