@@ -5,7 +5,7 @@ from typing import Optional
 from beanie.odm.operators.find.comparison import In
 from beanie.odm.operators.find.array import ElemMatch
 
-from nsls2api.api.models.beamline_model import AssetDirectoryGranularity
+from nsls2api.models.beamline import AssetDirectoryGranularity
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.beamlines import (
     Beamline,
@@ -146,7 +146,7 @@ async def operator_username(name: str) -> str:
 
     if operator_account is None:
         raise LookupError(
-            f"Could not find a the operattor account for the {name} beamline."
+            f"Could not find a the operator account for the {name} beamline."
         )
 
     return operator_account.username
@@ -241,7 +241,7 @@ async def proposal_directory_skeleton(name: str):
                 "users": users_acl,
                 "groups": groups_acl,
                 "beamline": name.upper(),
-                "directory_most_granular_level": AssetDirectoryGranularity.day,
+                "directory_most_granular_level": detector.granularity,
             }
             directory_list.append(directory)
 
