@@ -4,7 +4,7 @@ from typing import Optional
 import pydantic
 
 from nsls2api.models.proposals import Proposal, User
-from nsls2api.api.models.beamline_model import AssetDirectoryGranularity
+from nsls2api.models.beamlines import AssetDirectoryGranularity
 
 
 class UsernamesList(pydantic.BaseModel):
@@ -69,7 +69,7 @@ class ProposalDirectories(pydantic.BaseModel):
     cycle: str | None = None
     users: list[dict[str, str]]
     groups: list[dict[str, str]]
-    directory_most_granular_level: AssetDirectoryGranularity | None = None
+    directory_most_granular_level: AssetDirectoryGranularity | None = AssetDirectoryGranularity.day
 
     model_config = {
         "json_schema_extra": {
