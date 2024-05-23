@@ -11,21 +11,22 @@ class AssetDirectoryGranularity(StrEnum):
     """
     Represents the granularity options for asset directory YYYY/MM/DD/HH tree structure.
     The value specifies the most granular level to create directories for.  If no date
-    structure is wanted then the value "flat" is used. 
+    structure is wanted then the value "flat" is used.
     """
+
     flat = "flat"
     year = "year"
     month = "month"
     day = "day"
     hour = "hour"
 
+
 class Detector(pydantic.BaseModel):
     name: str
-    directory_name: str | None = None
+    directory_name: str
     granularity: AssetDirectoryGranularity | None = AssetDirectoryGranularity.day
     description: str | None = None
     manufacturer: str | None = None
-    
 
 
 class DetectorView(pydantic.BaseModel):
