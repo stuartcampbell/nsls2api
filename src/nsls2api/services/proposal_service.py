@@ -20,6 +20,7 @@ from nsls2api.models.proposals import Proposal, ProposalIdView, User
 from nsls2api.services import (
     beamline_service,
     facility_service,
+    bnlpeople_service
 )
 
 
@@ -440,7 +441,7 @@ async def generate_fake_proposal_id() -> int:
 
 
 async def generate_fake_test_proposal(
-    facility_name: FacilityName = FacilityName.nsls2, include_real_people=False
+    facility_name: FacilityName = FacilityName.nsls2, include_real_people=False, add_specific_user=None
 ) -> Optional[Proposal]:
     """
     Generates a fake test proposal.
@@ -448,7 +449,7 @@ async def generate_fake_test_proposal(
     Args:
         facility_name (FacilityName, optional): The name of the facility. Defaults to using the NSLS-II facility.
         include_real_people (bool, optional): Whether to include real people in the proposal. Defaults to False.
-
+        add_specific_user (Optional[str], optional): If specified, the username of a specific user to add to the proposal, propagated by the BNL AD. Defaults to None.
     Returns:
         Optional[Proposal]: The generated fake test proposal, or None if an error occurred.
     """
@@ -463,6 +464,7 @@ async def generate_fake_test_proposal(
     fake.add_provider(python)
     fake.add_provider(date_time)
 
+    # Fake Users
     for i in range(number_of_users):
         if i == pi_number:
             is_pi = True
@@ -489,6 +491,16 @@ async def generate_fake_test_proposal(
             is_pi=is_pi,
         )
         user_list.append(user)
+
+    # Real User(s)
+    if isinstance(add_specific_user, str):
+        try:
+            user = await bnlpeople_service.get_person_by_username(add_specific_user)
+            print(user)
+            # user_list.append(user)
+        except LookupError:
+            logger.error(f"Could not find user {add_specific_user} in BNLPeople.")
+            return None
 
     fake_proposal_id = await generate_fake_proposal_id()
     fake_title = fake.sentence()
