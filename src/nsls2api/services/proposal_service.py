@@ -488,16 +488,25 @@ async def generate_fake_test_proposal(
             email=fake.email(),
             bnl_id=user_bnl_id,
             username=username,
-            is_pi=is_pi,
+            is_pi=is_pi
         )
         user_list.append(user)
 
     # Real User(s)
     if isinstance(add_specific_user, str):
         try:
-            user = await bnlpeople_service.get_person_by_username(add_specific_user)
-            print(user)
-            # user_list.append(user)
+            person = await bnlpeople_service.get_person_by_username(add_specific_user)
+            print(person)
+            if person:
+                user = User(
+                    first_name=person.FirstName,
+                    last_name=person.LastName,
+                    email=person.BNLEmail,
+                    bnl_id=person.EmployeeNumber,
+                    username=add_specific_user,
+                    is_pi=random.choice([True, False])
+                )
+                user_list.append(user)
         except LookupError:
             logger.error(f"Could not find user {add_specific_user} in BNLPeople.")
             return None
