@@ -10,7 +10,7 @@ from nsls2api.infrastructure.security import (
     get_current_user,
     validate_admin_role,
 )
-from nsls2api.models.beamlines import Beamline, BeamlineService, DetectorList
+from nsls2api.models.beamlines import Beamline, BeamlineService, Detector, DetectorList
 from nsls2api.services import beamline_service
 
 router = fastapi.APIRouter()
@@ -58,6 +58,28 @@ async def get_beamline_detectors(name: str) -> DetectorList:
     response_model = DetectorList(detectors=detectors, count=len(detectors))
     return response_model
 
+@router.put(
+    "/beamline/{name}/detector/",
+    include_in_schema=True,
+    response_model=Detector,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def add_detector(name: str, detector: Detector):
+    logger.info(f"Adding detector {detector.name} to beamline {name}")
+
+    new_detector = await beamline_service.add_detector(
+        beamline_name=name,
+        detector_name=detector.name,
+        directory_name=detector.directory_name,
+    )
+
+    if new_detector is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Detector {detector.name} already exists in beamline {name}",
+    )
+
+    return new_detector
 
 @router.get(
     "/beamline/{name}/proposal-directory-skeleton",
