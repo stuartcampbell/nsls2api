@@ -7,7 +7,19 @@ from httpx import HTTPStatusError
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.models.pass_models import PassCycle
-from nsls2api.services import beamline_service, bnlpeople_service, facility_service, pass_service, proposal_service
+from nsls2api.models.universalproposal_models import (
+    UpsCycle,
+    UpsProposalRecord,
+    UpsProposalType,
+)
+from nsls2api.services import (
+    beamline_service,
+    bnlpeople_service,
+    facility_service,
+    pass_service,
+    proposal_service,
+    universalproposal_service,
+)
 
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -15,6 +27,7 @@ from nsls2api.models.jobs import JobSyncSource
 from nsls2api.models.pass_models import PassProposal, PassSaf
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, SafetyForm, User
+from nsls2api.utils import string_to_bool
 
 
 async def worker_synchronize_cycles_from_pass(
@@ -216,7 +229,7 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
         )
         user_list.append(pi_info)
 
-    data_session = proposal_service.generate_data_session_for_proposal(proposal_id)
+    data_session = proposal_service.generate_data_session_for_proposal(str(proposal_id))
 
     proposal = Proposal(
         proposal_id=str(pass_proposal.Proposal_ID),
@@ -343,3 +356,198 @@ async def worker_update_proposal_to_cycle_mapping(
     logger.info(
         f"Proposal/Cycle information (for {facility}) populated in {time_taken.total_seconds():,.2f} seconds"
     )
+
+
+async def worker_synchronize_cycles_from_ups(
+    facility_name: FacilityName = FacilityName.nsls2,
+) -> None:
+    """
+    This method synchronizes the cycles for a facility from UPS.
+
+    :param facility: The facility name (FacilityName).
+    """
+    start_time = datetime.datetime.now()
+
+    try:
+        ups_cycles: list[UpsCycle] = await universalproposal_service.get_cycles(
+            facility_name
+        )
+    except universalproposal_service.UniversalProposalSystemException as error:
+        error_message = (
+            f"Error retrieving cycle information from UPS for {facility_name} facility."
+        )
+        logger.exception(error_message)
+        raise Exception(error_message) from error
+
+    for ups_cycle in ups_cycles:
+        facility = await facility_service.facility_by_ups_id(ups_cycle.u_facility.value)
+
+        logger.info(
+            f"Synchronizing cycle from UPS: {ups_cycle.u_title.display_value} for {facility.name}."
+        )
+
+        # To get the year (as it's not a UPS field - just take the year part of the title "2024-1" -> "2024")
+        cycle_year = ups_cycle.u_title.display_value[:4]
+
+        cycle = Cycle(
+            name=ups_cycle.u_title.display_value,
+            accepting_proposals=string_to_bool(ups_cycle.u_active.value),
+            facility=facility.facility_id,
+            year=cycle_year,
+            start_date=ups_cycle.u_start_date.value,
+            end_date=ups_cycle.u_end_date.value,
+            universal_proposal_system_id=ups_cycle.sys_id.value,
+            universal_proposal_system_name=ups_cycle.u_name.value,
+        )
+
+        updated_cycle = await Cycle.find_one(
+            Cycle.name == ups_cycle.u_title.display_value
+        ).upsert(
+            Set(
+                {
+                    Cycle.accepting_proposals: cycle.accepting_proposals,
+                    Cycle.facility: cycle.facility,
+                    Cycle.universal_proposal_system_id: cycle.universal_proposal_system_id,
+                    Cycle.universal_proposal_system_name: cycle.universal_proposal_system_name,
+                    Cycle.year: cycle.year,
+                    Cycle.start_date: cycle.start_date,
+                    Cycle.end_date: cycle.end_date,
+                    Cycle.last_updated: datetime.datetime.now(),
+                }
+            ),
+            on_insert=cycle,
+            response_type=UpdateResponse.NEW_DOCUMENT,
+        )
+
+        # Now let's update the list of proposals for this cycle
+        # proposals_list = await pass_service.get_proposals_allocated_by_cycle(cycle.name)
+        # for proposal in proposals_list:
+        #     await updated_cycle.update(
+        #         AddToSet({Cycle.proposals: str(proposal.Proposal_ID)})
+        #     )
+        #     updated_cycle.last_updated = datetime.datetime.now()
+        #     await updated_cycle.save()
+
+    time_taken = datetime.datetime.now() - start_time
+    logger.info(
+        f"Cycle information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
+    )
+
+
+async def worker_synchronize_proposal_types_from_ups(
+    facility_name: FacilityName = FacilityName.nsls2,
+) -> None:
+    """
+    Synchronizes proposal types from UPS for a given facility.
+
+    Args:
+        facility_name (FacilityName, optional): The name of the facility. Defaults to FacilityName.nsls2.
+
+    Raises:
+        Exception: If there is an error retrieving proposal types from UPS.
+
+    Returns:
+        None
+    """
+    start_time = datetime.datetime.now()
+
+    try:
+        ups_proposal_types: UpsProposalType = (
+            await universalproposal_service.get_proposal_types(facility_name)
+        )
+    except universalproposal_service.UpsException as error:
+        error_message = (
+            f"Error retrieving proposal types from UPS for {facility_name} facility."
+        )
+        logger.exception(error_message)
+        raise Exception(error_message) from error
+
+    for ups_proposal_type in ups_proposal_types:
+        facility = await facility_service.facility_by_ups_id(
+            ups_proposal_type.u_facility.value
+        )
+
+        proposal_type = await proposal_service.convert_ups_proposal_type(
+            ups_proposal_type
+        )
+
+        response = await ProposalType.find_one(
+            ProposalType.ups_id == str(ups_proposal_type.sys_id.value)
+        ).upsert(
+            Set(
+                {
+                    ProposalType.code: None,
+                    ProposalType.ups_description: ups_proposal_type.u_name.value,
+                    ProposalType.ups_type: ups_proposal_type.u_type.value,
+                    ProposalType.description: ups_proposal_type.u_name.value,
+                    ProposalType.active: string_to_bool(
+                        ups_proposal_type.u_active.value
+                    ),
+                    ProposalType.facility_id: facility.facility_id,
+                    ProposalType.last_updated: datetime.datetime.now(),
+                }
+            ),
+            on_insert=proposal_type,
+            response_type=UpdateResponse.UPDATE_RESULT,
+        )
+
+    time_taken = datetime.datetime.now() - start_time
+    logger.debug(f"Response: {response}")
+    logger.info(
+        f"Proposal type information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
+    )
+
+
+async def synchronize_all_proposals_from_ups(
+    facility_name: FacilityName = FacilityName.nsls2,
+) -> None:
+    beamline_list = []
+    user_list = []
+    saf_list = []
+
+    try:
+        ups_proposals: list[
+            UpsProposalRecord
+        ] = await universalproposal_service.get_all_proposals_for_facility(
+            facility=facility_name
+        )
+    except universalproposal_service.UniversalProposalSystemException as error:
+        error_message = f"Error retrieving proposals for {facility_name} from UPS"
+        logger.exception(error_message)
+        raise Exception(error_message) from error
+
+    for ups_proposal in ups_proposals:
+        data_session = proposal_service.generate_data_session_for_proposal(
+            ups_proposal.u_proposal_number.display_value, prefix="ups"
+        )
+
+        proposal = Proposal(
+            proposal_id=ups_proposal.u_proposal_number.display_value,
+            title=ups_proposal.u_title.display_value,
+            data_session=data_session,
+            pass_type_id=None,
+            type=ups_proposal.u_proposal_type.display_value,
+            instruments=beamline_list,
+            safs=saf_list,
+            users=user_list,
+            last_updated=datetime.datetime.now(),
+        )
+
+    response = await Proposal.find_one(
+        Proposal.proposal_id == ups_proposal.u_proposal_number.display_value
+    ).upsert(
+        Set(
+            {
+                Proposal.title: proposal.title,
+                Proposal.data_session: data_session,
+                Proposal.type: proposal.type,
+                Proposal.instruments: beamline_list,
+                Proposal.safs: saf_list,
+                Proposal.users: user_list,
+                Proposal.last_updated: datetime.datetime.now(),
+            }
+        ),
+        on_insert=proposal,
+        response_type=UpdateResponse.UPDATE_RESULT,
+    )
+    logger.debug(f"Response: {response}")
