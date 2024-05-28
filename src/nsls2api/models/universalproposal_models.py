@@ -7,13 +7,35 @@ class ServiceNowValue(pydantic.BaseModel):
     display_value: str
 
 class ServiceNowValueWithLink(ServiceNowValue):
-    link: str
+    link: str | None = None
+
+class UpsCycle(pydantic.BaseModel):
+    """
+    Representation of the sn_customerservice_run_cycle table.
+    """
+    sys_created_on: ServiceNowValue
+    sys_id: ServiceNowValue
+    sys_mod_count: ServiceNowValue
+    sys_tags: ServiceNowValue
+    sys_updated_on: ServiceNowValue
+    u_active: ServiceNowValue
+    u_end_date: ServiceNowValue
+    u_facility: ServiceNowValueWithLink
+    u_name: ServiceNowValue
+    u_number: ServiceNowValue
+    u_start_date: ServiceNowValue
+    u_title: ServiceNowValue
 
 class UpsProposalType(pydantic.BaseModel):
+    sys_created_on: ServiceNowValue
     sys_id: ServiceNowValue
+    sys_mod_count: ServiceNowValue
+    sys_tags: ServiceNowValue
+    sys_updated_on: ServiceNowValue
     u_name: ServiceNowValue
     u_active: ServiceNowValue
-    u_facility: ServiceNowValue
+    u_facility: ServiceNowValueWithLink
+    u_proposal_review_required: ServiceNowValue
     u_type: ServiceNowValue
 
 
@@ -30,9 +52,9 @@ class UpsProposalRecord(pydantic.BaseModel):
     u_co_proposers: ServiceNowValue
     u_contributor_users: ServiceNowValue
     u_display_name: ServiceNowValue
-    u_etr_created: ServiceNowValue
-    u_etr_questions_completed: ServiceNowValue
-    u_etr_reviews_completed: ServiceNowValue
+    u_etr_created: ServiceNowValue | None = None
+    u_etr_questions_completed: ServiceNowValue | None = None
+    u_etr_reviews_completed: ServiceNowValue | None = None
     u_expiration_date: ServiceNowValue
     u_expired: ServiceNowValue
     u_keywords: ServiceNowValue
@@ -46,7 +68,7 @@ class UpsProposalRecord(pydantic.BaseModel):
     u_proposal_id: ServiceNowValue
     u_proposal_number: ServiceNowValue
     u_proposal_questions_complete: ServiceNowValue
-    u_proposal_submitter: ServiceNowValueWithLink
+    u_proposal_submitter: ServiceNowValue
     u_proposal_type: ServiceNowValueWithLink
     u_proprietary: ServiceNowValue
     u_review_status: ServiceNowValue
