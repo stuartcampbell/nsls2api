@@ -64,6 +64,18 @@ async def pass_id_for_facility(facility_name: str) -> Optional[str]:
 
     return facility.pass_facility_id
 
+async def facility_by_ups_id(ups_user_facility_id: str) -> Optional[Facility]:
+    """
+    Facility by Universal Proposal System ID
+
+    This method retrieves the facility by the Universal Proposal System ID.
+
+    :param pass_id: The Universal Proposal System ID (str).
+    :return: The facility (Facility) or None if no facility is found.
+    """
+    return await Facility.find_one(Facility.universal_proposal_system_facility_sysid == ups_user_facility_id)
+
+
 async def ups_id_for_facility(facility_name: str) -> Optional[str]:
     """
     Universal Proposal System ID (sys_id) for Facility
