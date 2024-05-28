@@ -12,9 +12,12 @@ from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
+from nsls2api.models.universalproposal_models import UpsProposalType
 from nsls2api.services import (
     beamline_service,
+    facility_service,
 )
+from nsls2api.utils import string_to_bool
 
 
 async def exists(proposal_id: int) -> bool:
@@ -82,8 +85,8 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
     return data_sessions
 
 
-def generate_data_session_for_proposal(proposal_id: int) -> str:
-    return f"pass-{str(proposal_id)}"
+def generate_data_session_for_proposal(proposal_id: str, prefix="pass") -> str:
+    return f"{prefix}-{str(proposal_id)}"
 
 
 def slack_channel_name_for_proposal(proposal_id: str) -> str:
@@ -421,3 +424,23 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
     )
 
     return proposal_diagnostics
+
+
+async def convert_ups_proposal_type(ups_proposal_type: UpsProposalType) -> ProposalType:
+    
+    facility = await facility_service.facility_by_ups_id(ups_proposal_type.u_facility.value)
+    if facility is None:
+        error_message = f"Facility {ups_proposal_type.u_facility.display_value} not found.  Check that the facilities have been synchronized."
+        logger.error(error_message)
+        raise LookupError(error_message)
+    
+    return ProposalType(
+        code=None,
+        facility_id=facility.facility_id,
+        description=ups_proposal_type.u_name.display_value,
+        pass_id=None, pass_description=None,
+        ups_id=ups_proposal_type.sys_id.value,
+        ups_description=ups_proposal_type.u_name.display_value,
+        ups_type=ups_proposal_type.u_type.value,
+        active=string_to_bool(ups_proposal_type.u_active.value),
+    )
