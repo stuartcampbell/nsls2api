@@ -58,6 +58,16 @@ async def beamline_by_pass_id(pass_id: str) -> Optional[Beamline]:
     beamline = await Beamline.find_one(Beamline.pass_id == str(pass_id))
     return beamline
 
+async def beamline_by_ups_id(ups_id: str) -> Optional[Beamline]:
+    """
+    Find and return a beamline by its Universal Proposal System (UPS) sys_id.
+
+    :param pass_id: The UPS sys_id of the beamline to search for.
+    :return: The found beamline, if any. Otherwise, returns None.
+    """
+    beamline = await Beamline.find_one(Beamline.universal_proposal_system_id == str(ups_id))
+    return beamline
+
 
 async def all_services(name: str) -> Optional[ServicesOnly]:
     beamline_services = await Beamline.find_one(Beamline.name == name.upper()).project(

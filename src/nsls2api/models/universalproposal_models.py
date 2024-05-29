@@ -120,3 +120,45 @@ class UpsRunCycleProposalMapping(pydantic.BaseModel):
     u_available_end: ServiceNowValue
     u_proposal: ServiceNowValueWithLink
     u_run_cycle: ServiceNowValueWithLink
+
+class UpsExperimentTimeRequest(pydantic.BaseModel):
+    sys_created_on: ServiceNowValue
+    sys_id: ServiceNowValue
+    sys_mod_count: ServiceNowValue
+    sys_tags: ServiceNowValue
+    sys_updated_on: ServiceNowValue
+    u_beamline_one: ServiceNowValueWithLink
+    u_beamline_one_instrument: ServiceNowValueWithLink
+    u_beamline_one_techique: ServiceNowValueWithLink
+    u_beamline_two: ServiceNowValueWithLink
+    u_beamline_two_instrument: ServiceNowValueWithLink
+    u_beamline_two_technique: ServiceNowValueWithLink
+    u_allocated_on: ServiceNowValue
+    u_status: ServiceNowValue
+    u_number: ServiceNowValue
+    u_submission_date: ServiceNowValue
+    u_title: ServiceNowValue
+    u_proposal: ServiceNowValueWithLink
+    u_run_cycle: ServiceNowValueWithLink
+
+class UpsBeamline(pydantic.BaseModel):
+    sys_created_on: ServiceNowValue
+    sys_id: ServiceNowValue
+    sys_mod_count: ServiceNowValue
+    sys_tags: ServiceNowValue
+    sys_class_name: ServiceNowValue
+    sys_updated_on: ServiceNowValue
+    u_beamline_long_name: ServiceNowValue
+    u_shift_types: ServiceNowValue
+    u_order: ServiceNowValue
+    u_techniques: ServiceNowValue
+    u_beamline_group: ServiceNowValueWithLink
+    u_instruments: ServiceNowValue
+    u_proposal_review_panel: ServiceNowValue
+    u_keywords: ServiceNowValue
+    u_description: ServiceNowValue
+    u_active: ServiceNowValue
+    u_facility: ServiceNowValueWithLink
+    u_beamline: ServiceNowValue
+    u_status: ServiceNowValue
+    
