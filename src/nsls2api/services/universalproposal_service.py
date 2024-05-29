@@ -5,6 +5,7 @@ from nsls2api.api.models.facility_model import FacilityName, UpsFacilityName
 from nsls2api.models.proposals import User
 from nsls2api.models.universalproposal_models import (
     UpsCycle,
+    UpsExperimentTimeRequest,
     UpsProposalType,
     UpsProposalRecord,
     UpsRunCycleProposalMapping,
@@ -13,7 +14,7 @@ from nsls2api.models.universalproposal_models import (
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.logging import logger
 
-from nsls2api.services import bnlpeople_service, facility_service
+from nsls2api.services import beamline_service, bnlpeople_service, facility_service, proposal_service
 from nsls2api.services.helpers import _call_async_webservice_with_client
 from nsls2api.infrastructure.app_setup import httpx_client_wrapper
 
@@ -127,11 +128,18 @@ async def get_proposal_types(
 
 
 async def get_proposal(proposal_id: str) -> Optional[UpsProposalRecord]:
-    proposal_query = proposal_id.strip()
+
+    if not proposal_id:
+        return None
+
+
     # TODO: Maybe do a regex check here to make sure the proposal_query is in the correct format.
 
     servicenow_table_name = "sn_customerservice_proposal_record"
-    url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query=u_proposal_number%3D{proposal_query}&sysparm_display_value=all"
+    query = f"u_proposal_number={proposal_id.strip()}"
+    url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query={query}&sysparm_display_value=all"
+
+    logger.info(url)
 
     try:
         ups_proposal_response = await _call_ups_servicenow_webservice(url)
@@ -218,6 +226,65 @@ async def get_all_proposals_for_facility(
 
     return facility_proposal_list
 
+async def get_etr_for_proposal(proposal_id: str) -> Optional[str]:
+
+    proposal = await proposal_service.proposal_by_id(proposal_id)
+
+    servicenow_table_name = "sn_customerservice_experiment_time_request"
+    query=f"u_proposal={proposal.universal_proposal_system_id}"
+    url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query={query}&sysparm_display_value=all"
+
+    etr_list = []
+
+    try:
+        ups_etr_list_response = await _call_ups_servicenow_webservice(url)
+        ups_etr_list = ups_etr_list_response["result"]
+
+        logger.info(f"Found {len(ups_etr_list)} ETRs for proposal {proposal_id}.")
+
+        if ups_etr_list and len(ups_etr_list) > 0:
+            for etr in ups_etr_list:
+                etr_list.append(UpsExperimentTimeRequest(**etr))
+    except ValidationError as error:
+        error_message = f"Error validating data recevied from Universal Proposal System (UPS) for ETR corresponding to proposal {proposal_id}."
+        logger.error(error_message)
+        raise UniversalProposalSystemException(error_message) from error
+    except Exception as error:
+        error_message = (
+            f"Error retrieving ETR for proposal {proposal_id} from the Universal Proposal System (UPS)."
+        )
+        logger.exception(error_message)
+        raise UniversalProposalSystemException(error_message) from error
+    
+    return etr_list
+
+async def get_beamlines_from_proposal(proposal_id: str) -> list[str]:
+    beamlines = []
+
+    etr_list = await get_etr_for_proposal(proposal_id)
+    if etr_list and len(etr_list) > 0:
+        for etr in etr_list:
+            logger.info(f"Getting beamlines for ETR {etr.sys_id.value}.")
+            beamline_one = await beamline_service.beamline_by_ups_id(etr.u_beamline_one.value)
+            beamline_two = await beamline_service.beamline_by_ups_id(etr.u_beamline_two.value)
+ 
+            if beamline_one:
+                beamlines.append(beamline_one)
+            else:
+                # Only display a warning if we actually have anything
+                if len(etr.u_beamline_one.display_value) > 0:
+                    logger.warning(f"Could not find beamline name for UPS beamline (one) {etr.u_beamline_one.display_value}.")
+ 
+            if beamline_two:
+                beamlines.append(beamline_two)
+            else:
+                # Only display a warning if we actually have anything
+                if len(etr.u_beamline_two.display_value) > 0:
+                    logger.warning(f"Could not find beamline name for UPS beamline (two) {etr.u_beamline_two.display_value}.")
+ 
+
+    logger.info(f"Found {len(beamlines)} beamlines for proposal {proposal_id}.")
+    return beamlines
 
 async def get_cycle_by_name(cycle_name: str, facility: UpsFacilityName = UpsFacilityName.nsls2) -> Optional[UpsCycle]:
     """
@@ -531,3 +598,8 @@ async def extract_users_from_proposal(proposal: UpsProposalRecord) -> list[User]
             )
 
     return users
+
+
+async def get_beamline(beamline_ups_id: str):
+    servicenow_table_name = "sn_customerservice_beamlines"
+    return
