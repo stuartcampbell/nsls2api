@@ -38,6 +38,39 @@ class UpsProposalType(pydantic.BaseModel):
     u_proposal_review_required: ServiceNowValue
     u_type: ServiceNowValue
 
+class UpsUser(pydantic.BaseModel):
+    active: ServiceNowValue
+    avatar: ServiceNowValue
+    building: ServiceNowValue
+    email: ServiceNowValue
+    first_name: ServiceNowValue
+    last_login: ServiceNowValue
+    last_login_time: ServiceNowValue
+    last_name: ServiceNowValue
+    location: ServiceNowValue
+    middle_name: ServiceNowValue
+    name: ServiceNowValue
+    photo: ServiceNowValue
+    source: ServiceNowValue
+    sso_source: ServiceNowValue
+    sys_created_on: ServiceNowValue
+    sys_id: ServiceNowValue
+    sys_mod_count: ServiceNowValue
+    sys_tags: ServiceNowValueWithLink
+    sys_updated_on: ServiceNowValue
+    title: ServiceNowValue
+    u_alternate_email: ServiceNowValue
+    u_brookhaven_badge: ServiceNowValue
+    u_country: ServiceNowValue
+    u_employer_institution: ServiceNowValue
+    u_employment_level: ServiceNowValue
+    u_institution_name: ServiceNowValue
+    u_keywords: ServiceNowValue
+    u_missing_institution: ServiceNowValue
+    u_orcid: ServiceNowValue
+    u_slac_badge: ServiceNowValue
+    user_name: ServiceNowValue
+    web_service_access_only: ServiceNowValue
 
 class UpsProposalRecord(pydantic.BaseModel):
     sys_class_name: ServiceNowValue
