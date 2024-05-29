@@ -148,6 +148,22 @@ async def worker_function():
                         raise Exception(
                             f"Unknown cycle info sync source {job.sync_parameters.sync_source}."
                         )
+                case JobActions.synchronize_all_proposals:
+                    logger.info(
+                        f"Processing job {job.id} to synchronize all proposals for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."
+                    )
+                    if job.sync_parameters.sync_source == JobSyncSource.universal_proposal_system:
+                        await sync_service.worker_synchronize_all_proposals_from_ups(
+                            job.sync_parameters.facility
+                        )
+                    # elif job.sync_parameters.sync_source == JobSyncSource.PASS:
+                    #     await sync_service.worker_synchronize_all_proposals_from_pass(
+                    #         job.sync_parameters.facility
+                    #     )
+                    else:
+                        raise Exception(
+                            f"Unknown proposal sync source {job.sync_parameters.sync_source}."
+                        )
                 case JobActions.synchronize_proposal_types:
                     logger.info(
                         f"Processing job {job.id} to synchronize proposal types for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."

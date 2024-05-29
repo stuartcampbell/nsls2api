@@ -27,6 +27,7 @@ class JobActions(StrEnum):
     synchronize_cycles = "synchronize_cycles"
     synchronize_proposal = "synchronize_proposal"
     synchronize_proposals_for_cycle = "synchronize_proposals_for_cycle"
+    synchronize_all_proposals = "synchronize_all_proposals"
     synchronize_proposal_types = "synchronize_proposal_types"
     update_cycle_information = "update_cycle_information"
     create_slack_channel = "create_slack_channel"
