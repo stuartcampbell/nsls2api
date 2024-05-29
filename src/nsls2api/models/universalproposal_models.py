@@ -109,3 +109,14 @@ class UpsProposalRecord(pydantic.BaseModel):
     u_submission_date: ServiceNowValue
     u_supporting_documentation: ServiceNowValue
     u_title: ServiceNowValue
+
+class UpsRunCycleProposalMapping(pydantic.BaseModel):
+    sys_created_on: ServiceNowValue
+    sys_id: ServiceNowValue
+    sys_mod_count: ServiceNowValue
+    sys_tags: ServiceNowValue
+    sys_updated_on: ServiceNowValue
+    u_available_start: ServiceNowValue
+    u_available_end: ServiceNowValue
+    u_proposal: ServiceNowValueWithLink
+    u_run_cycle: ServiceNowValueWithLink
