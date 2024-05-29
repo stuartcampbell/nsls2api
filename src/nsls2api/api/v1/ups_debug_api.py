@@ -2,7 +2,7 @@ import fastapi
 
 from nsls2api.api.models.facility_model import UpsFacilityName
 from nsls2api.models.proposal_types import ProposalType
-from nsls2api.models.universalproposal_models import UpsProposalRecord, UpsProposalType
+from nsls2api.models.universalproposal_models import UpsProposalRecord, UpsProposalType, UpsRunCycleProposalMapping
 from nsls2api.services import proposal_service, universalproposal_service
 
 router = fastapi.APIRouter()
@@ -75,6 +75,12 @@ async def get_ups_proposal(proposal_id: str) -> UpsProposalRecord:
         )
     # response_model = SingleProposal(proposal=proposal)
     return proposal
+
+@router.get("/ups/proposals/cycle/{cycle_name}")
+async def get_ups_cycle_proposal_mapping(cycle_name: str, facility: UpsFacilityName):
+    cycle_list = await universalproposal_service.get_proposals_for_cycle(cycle_name=cycle_name, facility=facility)
+
+    return cycle_list
 
 @router.get("/ups/proposals/")
 async def get_ups_all_proposals(facility: UpsFacilityName):
