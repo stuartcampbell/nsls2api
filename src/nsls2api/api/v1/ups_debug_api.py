@@ -76,6 +76,11 @@ async def get_ups_proposal(proposal_id: str) -> UpsProposalRecord:
     # response_model = SingleProposal(proposal=proposal)
     return proposal
 
+@router.get("/ups/proposal/{proposal_id}/etr")
+async def get_ups_proposal_etr(proposal_id: str):
+    etr = await universalproposal_service.get_etr_for_proposal(proposal_id=proposal_id)
+    return etr
+
 @router.get("/ups/proposals/cycle/{cycle_name}")
 async def get_ups_cycle_proposal_mapping(cycle_name: str, facility: UpsFacilityName):
     cycle_list = await universalproposal_service.get_proposals_for_cycle(cycle_name=cycle_name, facility=facility)
