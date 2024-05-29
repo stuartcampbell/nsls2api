@@ -110,7 +110,7 @@ async def get_proposal(proposal_id: str):
 
 
 @router.get("/proposal/{proposal_id}/users", response_model=ProposalUserList)
-async def get_proposals_users(proposal_id: int):
+async def get_proposals_users(proposal_id: str):
     try:
         users = await proposal_service.fetch_users_on_proposal(proposal_id)
         if users is None:
