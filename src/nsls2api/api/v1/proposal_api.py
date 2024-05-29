@@ -93,7 +93,7 @@ async def get_proposals(
 
 
 @router.get("/proposal/{proposal_id}", response_model=SingleProposal)
-async def get_proposal(proposal_id: int):
+async def get_proposal(proposal_id: str):
     try:
         proposal = await proposal_service.proposal_by_id(proposal_id)
         if proposal is None:
@@ -138,7 +138,7 @@ async def get_proposals_users(proposal_id: int):
 @router.get(
     "/proposal/{proposal_id}/principal-investigator", response_model=ProposalUser
 )
-async def get_proposal_principal_investigator(proposal_id: int):
+async def get_proposal_principal_investigator(proposal_id: str):
     try:
         principal_investigator = await proposal_service.pi_from_proposal(proposal_id)
         if len(principal_investigator) == 0:
@@ -169,7 +169,7 @@ async def get_proposal_principal_investigator(proposal_id: int):
 
 
 @router.get("/proposal/{proposal_id}/usernames", response_model=UsernamesList)
-async def get_proposal_usernames(proposal_id: int):
+async def get_proposal_usernames(proposal_id: str):
     try:
         # Check to see if proposal exists
         if not await proposal_service.exists(proposal_id):
@@ -199,7 +199,7 @@ async def get_proposal_usernames(proposal_id: int):
 
 
 @router.get("/proposal/{proposal_id}/directories")
-async def get_proposal_directories(proposal_id: int) -> ProposalDirectoriesList:
+async def get_proposal_directories(proposal_id: str) -> ProposalDirectoriesList:
     try:
         directories = await proposal_service.directories(proposal_id)
         if directories is None:
