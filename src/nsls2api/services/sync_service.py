@@ -278,7 +278,7 @@ async def update_proposals_with_cycle(cycle_name: str) -> None:
         # Add the cycle to the Proposal object
 
         try:
-            proposal = await proposal_service.proposal_by_id(int(proposal_id))
+            proposal = await proposal_service.proposal_by_id(proposal_id)
             await proposal.update(AddToSet({Proposal.cycles: cycle_name}))
             proposal.last_updated = datetime.datetime.now()
             await proposal.save()
@@ -346,11 +346,10 @@ async def worker_update_proposal_to_cycle_mapping(
         cycles = await Cycle.find(Cycle.facility == facility).to_list()
 
     for individual_cycle in cycles:
-        if sync_source == JobSyncSource.PASS:
-            logger.info(
-                f"Updating proposals with information for cycle {individual_cycle.name} (from PASS)"
-            )
-            await update_proposals_with_cycle(individual_cycle)
+        logger.info(
+            f"Updating proposals with information for cycle {individual_cycle.name}."
+        )
+        await update_proposals_with_cycle(individual_cycle.name)
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
@@ -420,13 +419,13 @@ async def worker_synchronize_cycles_from_ups(
         )
 
         # Now let's update the list of proposals for this cycle
-        # proposals_list = await pass_service.get_proposals_allocated_by_cycle(cycle.name)
-        # for proposal in proposals_list:
-        #     await updated_cycle.update(
-        #         AddToSet({Cycle.proposals: str(proposal.Proposal_ID)})
-        #     )
-        #     updated_cycle.last_updated = datetime.datetime.now()
-        #     await updated_cycle.save()
+        proposals_list = await universalproposal_service.get_proposals_for_cycle(cycle_name=cycle.name, facility=facility_name)
+        for proposal in proposals_list:
+             await updated_cycle.update(
+                 AddToSet({Cycle.proposals: str(proposal)})
+             )
+             updated_cycle.last_updated = datetime.datetime.now()
+             await updated_cycle.save()
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
