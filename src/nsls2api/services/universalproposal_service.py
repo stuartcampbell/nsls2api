@@ -7,6 +7,7 @@ from nsls2api.models.universalproposal_models import (
     UpsCycle,
     UpsProposalType,
     UpsProposalRecord,
+    UpsRunCycleProposalMapping,
     UpsUser,
 )
 from nsls2api.infrastructure.config import get_settings
@@ -218,11 +219,22 @@ async def get_all_proposals_for_facility(
     return facility_proposal_list
 
 
-async def get_cycles(
-    facility: FacilityName = FacilityName.nsls2,
-) -> Optional[list[UpsCycle]]:
-    ups_facility_id = await facility_service.ups_id_for_facility(facility_name=facility)
+async def get_cycle_by_name(cycle_name: str, facility: UpsFacilityName = UpsFacilityName.nsls2) -> Optional[UpsCycle]:
+    """
+    Retrieves a cycle from the Universal Proposal System (UPS) based on the cycle name and facility.
 
+    Args:
+        cycle_name (str): The name of the cycle to retrieve. e.g. "2024-1"
+        facility (UpsFacilityName, optional): The facility for which to retrieve the cycle. Defaults to UpsFacilityName.nsls2.
+
+    Returns:
+        Optional[UpsCycle]: The retrieved cycle, or None if no cycle is found.
+
+    Raises:
+        UniversalProposalSystemException: If there is an error retrieving the cycle from UPS.
+
+    """
+    ups_facility_id = await facility_service.ups_id_for_facility(facility_name=facility)
     if not ups_facility_id:
         error_message: str = (
             f"Facility {facility} does not have a Universal Proposal System ID."
@@ -231,14 +243,57 @@ async def get_cycles(
         raise UniversalProposalSystemException(error_message)
 
     servicenow_table_name = "sn_customerservice_run_cycle"
-    url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query=u_facility={ups_facility_id}&sysparm_display_value=all"
+    query=f"u_facility={ups_facility_id}^u_title={cycle_name}"
+    url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query={query}&sysparm_display_value=all"
+
+    logger.info(f"Getting cycles from UPS for {facility} facility.")
+
+    cycle = None
+
+    try:
+        ups_cycle_response = await _call_ups_servicenow_webservice(url)
+        ups_cycle = ups_cycle_response["result"]
+
+        if len(ups_cycle) > 1:
+            error_message = f"UPS returned more than one cycle for the {facility} facility with the name {cycle_name}."
+            raise UniversalProposalSystemException(error_message)
+
+        if ups_cycle and len(ups_cycle) > 0:
+            cycle = UpsCycle(**ups_cycle[0])
+
+    except ValidationError as error:
+        error_message = f"Error validating cycle data recevied from UPS for the {facility} facility."
+        logger.error(error_message)
+        raise UniversalProposalSystemException(error_message) from error
+    except Exception as error:
+        error_message = "Error retrieving cycle information from UPS."
+        logger.exception(error_message)
+        raise UniversalProposalSystemException(error_message) from error
+
+    return cycle
+
+
+async def get_cycles(
+    facility: UpsFacilityName = UpsFacilityName.nsls2,
+) -> list[UpsCycle]:
+    ups_facility_id = await facility_service.ups_id_for_facility(facility_name=facility)
+    if not ups_facility_id:
+        error_message: str = (
+            f"Facility {facility} does not have a Universal Proposal System ID."
+        )
+        logger.error(error_message)
+        raise UniversalProposalSystemException(error_message)
+
+    cycles = []
+    servicenow_table_name = "sn_customerservice_run_cycle"
+    query = f"u_facility={ups_facility_id}"
+    url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query={query}&sysparm_display_value=all"
 
     logger.info(f"Getting cycles from UPS for {facility} facility.")
 
     try:
         ups_cycle_list_response = await _call_ups_servicenow_webservice(url)
         ups_cycle_list = ups_cycle_list_response["result"]
-        cycles = []
         if ups_cycle_list and len(ups_cycle_list) > 0:
             for ups_cycle in ups_cycle_list:
                 cycles.append(UpsCycle(**ups_cycle))
@@ -276,9 +331,71 @@ async def get_user(user_ups_id: str) -> Optional[UpsUser]:
 
     return user
 
+async def get_mapping_of_cycles_for_proposal(proposal_ups_id: str) -> list[UpsRunCycleProposalMapping]:
+    servicenow_table_name = "sn_customerservice_m2m_run_cycles_proposals"
+    url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query=u_proposal={proposal_ups_id}&sysparm_display_value=all"
 
-async def get_institution_info(institution_id: str):
-    servicenow_table_name = "u_ror_data"
+    results_list = []
+
+    try:
+        ups_response = await _call_ups_servicenow_webservice(url)
+        mapping_list = ups_response["result"]
+        if mapping_list and len(mapping_list) > 0:
+            for mapping in mapping_list:
+                results_list.append(UpsRunCycleProposalMapping(**mapping))
+    except ValidationError as error:
+        error_message = f"Error validating cycle to proposal mapping data recevied from UPS for proposal sysid {proposal_ups_id}."
+        logger.error(error_message)
+        raise UniversalProposalSystemException(error_message) from error
+    except Exception as error:
+        error_message = "Error retrieving cycle to proposal mapping information from UPS."
+        logger.exception(error_message)
+        raise UniversalProposalSystemException(error_message) from error       
+         
+    return results_list
+
+async def get_mapping_of_proposals_for_cycle(cycle_ups_id: str) -> list[UpsRunCycleProposalMapping]:
+    servicenow_table_name = "sn_customerservice_m2m_run_cycles_proposals"
+    url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query=u_run_cycle={cycle_ups_id}&sysparm_display_value=all"
+
+    results_list = []
+
+    try:
+        ups_response = await _call_ups_servicenow_webservice(url)
+        mapping_list = ups_response["result"]
+        if mapping_list and len(mapping_list) > 0:    
+            for mapping in mapping_list:
+                results_list.append(UpsRunCycleProposalMapping(**mapping))
+    except ValidationError as error:
+        error_message = f"Error validating cycle to proposal mapping data recevied from UPS for proposal sysid {proposal_ups_id}."
+        logger.error(error_message)
+        raise UniversalProposalSystemException(error_message) from error
+    except Exception as error:
+        error_message = "Error retrieving cycle to proposal mapping information from UPS."
+        logger.exception(error_message)
+        raise UniversalProposalSystemException(error_message) from error       
+         
+    return results_list
+
+
+async def get_proposals_for_cycle(cycle_name: str, facility: UpsFacilityName = UpsFacilityName):
+    cycle : UpsCycle= await get_cycle_by_name(cycle_name=cycle_name, facility=facility)
+    if not cycle:
+        error_message = f"No cycle found for {cycle_name} in the {facility} facility."
+        logger.error(error_message)
+        raise UniversalProposalSystemException(error_message)
+
+    proposal_list = []
+    mapping_list : list[UpsRunCycleProposalMapping] = await get_mapping_of_proposals_for_cycle(cycle.sys_id.value)
+    if mapping_list and len(mapping_list) > 0:
+        for mapping in mapping_list:
+            proposal_list.append(mapping.u_proposal.display_value)
+
+    return proposal_list
+
+
+# async def get_institution_info(institution_id: str):
+#     servicenow_table_name = "u_ror_data"
 
 
 async def extract_users_from_proposal(proposal: UpsProposalRecord) -> list[User]:
