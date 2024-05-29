@@ -498,12 +498,14 @@ async def worker_synchronize_proposal_types_from_ups(
     )
 
 
-async def synchronize_all_proposals_from_ups(
+async def worker_synchronize_all_proposals_from_ups(
     facility_name: FacilityName = FacilityName.nsls2,
 ) -> None:
     beamline_list = []
     user_list = []
     saf_list = []
+
+    start_time = datetime.datetime.now()
 
     try:
         ups_proposals: list[
@@ -521,33 +523,43 @@ async def synchronize_all_proposals_from_ups(
             ups_proposal.u_proposal_number.display_value, prefix="ups"
         )
 
+        user_list = await universalproposal_service.extract_users_from_proposal(ups_proposal)
+
         proposal = Proposal(
             proposal_id=ups_proposal.u_proposal_number.display_value,
             title=ups_proposal.u_title.display_value,
             data_session=data_session,
             pass_type_id=None,
             type=ups_proposal.u_proposal_type.display_value,
+            universal_proposal_system_id=ups_proposal.sys_id.value,
+            universal_proposal_system_type=ups_proposal.u_proposal_type.value,
             instruments=beamline_list,
             safs=saf_list,
             users=user_list,
             last_updated=datetime.datetime.now(),
         )
 
-    response = await Proposal.find_one(
-        Proposal.proposal_id == ups_proposal.u_proposal_number.display_value
-    ).upsert(
-        Set(
-            {
-                Proposal.title: proposal.title,
-                Proposal.data_session: data_session,
-                Proposal.type: proposal.type,
-                Proposal.instruments: beamline_list,
-                Proposal.safs: saf_list,
-                Proposal.users: user_list,
-                Proposal.last_updated: datetime.datetime.now(),
-            }
-        ),
-        on_insert=proposal,
-        response_type=UpdateResponse.UPDATE_RESULT,
-    )
+        response = await Proposal.find_one(
+            Proposal.proposal_id == ups_proposal.u_proposal_number.display_value
+        ).upsert(
+            Set(
+                {
+                    Proposal.title: proposal.title,
+                    Proposal.data_session: data_session,
+                    Proposal.type: proposal.type,
+                    Proposal.instruments: beamline_list,
+                    Proposal.universal_proposal_system_id: proposal.universal_proposal_system_id,
+                    Proposal.universal_proposal_system_type: proposal.universal_proposal_system_type,
+                    Proposal.safs: saf_list,
+                    Proposal.users: user_list,
+                    Proposal.last_updated: datetime.datetime.now(),
+                }
+            ),
+            on_insert=proposal,
+            response_type=UpdateResponse.UPDATE_RESULT,
+        )
+    time_taken = datetime.datetime.now() - start_time
     logger.debug(f"Response: {response}")
+    logger.info(
+        f"All Proposals (for {facility_name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
+    )
