@@ -86,7 +86,7 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
 
 
 def generate_data_session_for_proposal(proposal_id: str, prefix="pass") -> str:
-    return f"{prefix}-{str(proposal_id)}"
+    return f"{prefix}-{(proposal_id.lower())}"
 
 
 def slack_channel_name_for_proposal(proposal_id: str) -> str:
@@ -444,3 +444,4 @@ async def convert_ups_proposal_type(ups_proposal_type: UpsProposalType) -> Propo
         ups_type=ups_proposal_type.u_type.value,
         active=string_to_bool(ups_proposal_type.u_active.value),
     )
+
