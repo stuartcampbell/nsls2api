@@ -286,7 +286,7 @@ async def update_proposals_with_cycle(cycle_name: str) -> None:
             logger.warning(error)
 
 
-async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
+async def worker_synchronize_proposal_from_pass(proposal_id: str) -> None:
     start_time = datetime.datetime.now()
 
     await synchronize_proposal_from_pass(proposal_id)
@@ -496,6 +496,68 @@ async def worker_synchronize_proposal_types_from_ups(
         f"Proposal type information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )
 
+async def worker_synchronize_proposal_from_ups(proposal_id: str) -> None:
+    beamline_list = []
+    user_list = []
+    saf_list = []
+
+    start_time = datetime.datetime.now()
+
+    ups_proposal = await universalproposal_service.get_proposal(proposal_id=proposal_id)
+
+    if ups_proposal is None:
+        logger.error(f"Proposal {proposal_id} not found in UPS.")
+        return
+
+    data_session = proposal_service.generate_data_session_for_proposal(
+        ups_proposal.u_proposal_number.display_value, prefix="ups"
+    )
+
+    user_list = await universalproposal_service.extract_users_from_proposal(ups_proposal)
+
+    beamline_list = await universalproposal_service.get_beamlines_from_proposal(ups_proposal.u_proposal_number.display_value)
+    beamline_names_list = []
+    for beamline in beamline_list:
+        beamline_names_list.append(beamline.name)
+
+    proposal = Proposal(
+        proposal_id=ups_proposal.u_proposal_number.display_value,
+        title=ups_proposal.u_title.display_value,
+        data_session=data_session,
+        pass_type_id=None,
+        type=ups_proposal.u_proposal_type.display_value,
+        universal_proposal_system_id=ups_proposal.sys_id.value,
+        universal_proposal_system_type=ups_proposal.u_proposal_type.value,
+        instruments=set(beamline_names_list),
+        safs=saf_list,
+        users=user_list,
+        last_updated=datetime.datetime.now(),
+    )
+
+    response = await Proposal.find_one(
+        Proposal.proposal_id == ups_proposal.u_proposal_number.display_value
+    ).upsert(
+        Set(
+            {
+                Proposal.title: proposal.title,
+                Proposal.data_session: data_session,
+                Proposal.type: proposal.type,
+                Proposal.instruments: set(beamline_names_list),
+                Proposal.universal_proposal_system_id: proposal.universal_proposal_system_id,
+                Proposal.universal_proposal_system_type: proposal.universal_proposal_system_type,
+                Proposal.safs: saf_list,
+                Proposal.users: user_list,
+                Proposal.last_updated: datetime.datetime.now(),
+            }
+        ),
+        on_insert=proposal,
+        response_type=UpdateResponse.UPDATE_RESULT,
+    )
+
+    time_taken = datetime.datetime.now() - start_time
+    logger.info(
+        f"Proposal {proposal_id} synchronized in {time_taken.total_seconds():,.0f} seconds"
+    )
 
 async def worker_synchronize_all_proposals_from_ups(
     facility_name: FacilityName = FacilityName.nsls2,
@@ -524,6 +586,11 @@ async def worker_synchronize_all_proposals_from_ups(
 
         user_list = await universalproposal_service.extract_users_from_proposal(ups_proposal)
 
+        beamline_list = await universalproposal_service.get_beamlines_from_proposal(ups_proposal.u_proposal_number.display_value)
+        beamline_names_list = []
+        for beamline in beamline_list:
+            beamline_names_list.append(beamline.name)
+
         proposal = Proposal(
             proposal_id=ups_proposal.u_proposal_number.display_value,
             title=ups_proposal.u_title.display_value,
@@ -532,7 +599,7 @@ async def worker_synchronize_all_proposals_from_ups(
             type=ups_proposal.u_proposal_type.display_value,
             universal_proposal_system_id=ups_proposal.sys_id.value,
             universal_proposal_system_type=ups_proposal.u_proposal_type.value,
-            instruments=beamline_list,
+            instruments=beamline_names_list,
             safs=saf_list,
             users=user_list,
             last_updated=datetime.datetime.now(),
