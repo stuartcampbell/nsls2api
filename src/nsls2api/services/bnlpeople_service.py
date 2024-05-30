@@ -1,5 +1,7 @@
 from typing import Optional, List
 
+from httpx import HTTPStatusError
+
 from nsls2api.infrastructure.logging import logger
 
 from nsls2api.services.helpers import _call_async_webservice_with_client
@@ -54,9 +56,12 @@ async def get_username_by_id(lifenumber: str) -> Optional[str]:
 async def get_person_by_id(lifenumber: str) -> Optional[BNLPerson]:
     if lifenumber is None:
         return None
-
-    url = f"{base_url}/api/BNLPeople?employeeNumber={lifenumber}"
-    person = await _call_bnlpeople_webservice(url)
+    try: 
+        url = f"{base_url}/api/BNLPeople?employeeNumber={lifenumber}"
+        person = await _call_bnlpeople_webservice(url)
+    except HTTPStatusError as e:
+        logger.error(f"Error calling BNLPeople webservice: {e}")
+        return None
     if len(person) == 0 or len(person) > 1:
         raise LookupError(
             f"BNL People could not find a person with an employee/life number of '{lifenumber}'"
@@ -72,6 +77,24 @@ async def get_person_by_email(email: str) -> Optional[BNLPerson]:
             f"BNL People could not find a person with an email of '{email}'"
         )
     return BNLPerson(**person[0])
+
+
+async def get_username_by_id(lifenumber: str) -> Optional[str]:
+    if lifenumber is None:
+        return None
+    bnl_person = await get_person_by_id(lifenumber)
+    if bnl_person is None:
+        return None
+    return bnl_person.ActiveDirectoryName
+
+
+async def get_username_by_email(email: str) -> Optional[str]:
+    if email is None:
+        return None
+    bnl_person = await get_person_by_email(email)
+    if bnl_person is None:
+        return None
+    return bnl_person.ActiveDirectoryName
 
 
 async def get_people_by_department(

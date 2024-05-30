@@ -17,6 +17,7 @@ class User(pydantic.BaseModel):
     last_name: Optional[str] = None
     email: str
     bnl_id: Optional[str] = None
+    orcid: Optional[str] = None
     username: Optional[str] = None
     is_pi: bool = False
 
@@ -32,6 +33,8 @@ class Proposal(beanie.Document):
     users: Optional[list[User]] = []
     safs: Optional[list[SafetyForm]] = []
     slack_channel_id: Optional[str] = None
+    universal_proposal_system_id: Optional[str] = None
+    universal_proposal_system_type: Optional[str] = None
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
