@@ -89,10 +89,8 @@ async def data_admin_group(facility_name: FacilityName) -> str:
         str: The data admin group for the specified facility or None if a group is not found.
     """
     facility = await Facility.find_one(Facility.facility_id == facility_name)
-    if facility.data_admin_group is None:
-        return None
-    else:
-        return facility.data_admin_group
+
+    return facility.data_admin_group
 
 async def update_data_admins(facility_id: FacilityName, data_admins: list[str]):
     """
