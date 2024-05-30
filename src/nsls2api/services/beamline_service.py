@@ -58,6 +58,16 @@ async def beamline_by_pass_id(pass_id: str) -> Optional[Beamline]:
     beamline = await Beamline.find_one(Beamline.pass_id == str(pass_id))
     return beamline
 
+async def beamline_by_ups_id(ups_id: str) -> Optional[Beamline]:
+    """
+    Find and return a beamline by its Universal Proposal System (UPS) sys_id.
+
+    :param pass_id: The UPS sys_id of the beamline to search for.
+    :return: The found beamline, if any. Otherwise, returns None.
+    """
+    beamline = await Beamline.find_one(Beamline.universal_proposal_system_id == str(ups_id))
+    return beamline
+
 
 async def all_services(name: str) -> Optional[ServicesOnly]:
     beamline_services = await Beamline.find_one(Beamline.name == name.upper()).project(
@@ -181,7 +191,7 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
     return beamline_names
 
 
-async def custom_data_admin_group(name: str) -> str:
+async def data_admin_group(name: str) -> str:
     beamline = await Beamline.find_one(Beamline.name == name.upper())
 
     if beamline.custom_data_admin_group is None:
@@ -216,7 +226,7 @@ async def proposal_directory_skeleton(name: str):
     
     users_acl.append({"nsls2data": "r"})
 
-    groups_acl.append({f"{await custom_data_admin_group(name)}": "r"})
+    groups_acl.append({f"{await data_admin_group(name)}": "r"})
     groups_acl.append({"n2sn-right-dataadmin": "r"})
 
     # Add the asset directory so this has the same permissions as the detector directories

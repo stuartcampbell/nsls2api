@@ -12,10 +12,12 @@ class Cycle(beanie.Document):
     active: Optional[bool] = False
     end_date: Optional[datetime.datetime]
     facility: str
-    pass_description: Optional[str]
-    pass_id: Optional[str]
+    pass_description: Optional[str] = None
+    pass_id: Optional[str] = None
+    universal_proposal_system_id: Optional[str] = None
+    universal_proposal_system_name: Optional[str] = None
     start_date: Optional[datetime.datetime]
-    year: str
+    year: str | None = None
     proposals: Optional[list[str]] = []
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now

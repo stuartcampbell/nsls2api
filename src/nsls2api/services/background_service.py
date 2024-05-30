@@ -6,7 +6,7 @@ from typing import Optional
 import bson
 
 from nsls2api.infrastructure.logging import logger
-from nsls2api.models.jobs import BackgroundJob, JobActions, JobStatus, JobSyncParameters
+from nsls2api.models.jobs import BackgroundJob, JobActions, JobStatus, JobSyncParameters, JobSyncSource
 from nsls2api.services import sync_service 
 
 
@@ -106,7 +106,7 @@ async def worker_function():
             match job.action:
                 case JobActions.update_cycle_information:
                     logger.info(
-                        f"Processing job {job.id} to update cycle information for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."
+                        f"Processing job {job.id} to update cycle information for the {job.sync_parameters.facility} facilty."
                     )
                     await sync_service.worker_update_proposal_to_cycle_mapping(
                         job.sync_parameters.facility, job.sync_parameters.cycle, job.sync_parameters.sync_source
@@ -115,30 +115,80 @@ async def worker_function():
                     logger.info(
                         f"Processing job {job.id} to synchronize cycles for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."
                     )
-                    await sync_service.worker_synchronize_cycles_from_pass(
-                        job.sync_parameters.facility
-                    )
+                    if job.sync_parameters.sync_source == JobSyncSource.universal_proposal_system:
+                        await sync_service.worker_synchronize_cycles_from_ups(job.sync_parameters.facility)
+                    elif job.sync_parameters.sync_source == JobSyncSource.PASS:
+                        await sync_service.worker_synchronize_cycles_from_pass(
+                            job.sync_parameters.facility
+                        )
+                    else:
+                        raise Exception(
+                            f"Unknown sync source {job.sync_parameters.sync_source} for synchronize_cycles."
+                        )
                 case JobActions.synchronize_proposal:
                     logger.info(
                         f"Processing job {job.id} to synchronize proposal {job.sync_parameters.proposal_id} (from {job.sync_parameters.sync_source})."
                     )
-                    await sync_service.worker_synchronize_proposal_from_pass(
-                        job.sync_parameters.proposal_id
-                    )
+                    if job.sync_parameters.sync_source == JobSyncSource.universal_proposal_system:
+                        await sync_service.worker_synchronize_proposal_from_ups(
+                            job.sync_parameters.proposal_id
+                        )
+                    elif job.sync_parameters.sync_source == JobSyncSource.PASS:
+                        await sync_service.worker_synchronize_proposal_from_pass(
+                            job.sync_parameters.proposal_id
+                        )
+                    else:
+                        raise Exception(
+                            f"Unknown proposal sync source {job.sync_parameters.sync_source}."
+                        )
                 case JobActions.synchronize_proposals_for_cycle:
                     logger.info(
                         f"Processing job {job.id} to synchronize proposals for cycle {job.sync_parameters.cycle} (from {job.sync_parameters.sync_source})."
                     )
-                    await sync_service.worker_synchronize_proposals_for_cycle_from_pass(
-                        job.sync_parameters.cycle
+                    if job.sync_parameters.sync_source == JobSyncSource.universal_proposal_system:
+                        await sync_service.worker_synchronize_proposals_for_cycle_from_ups(
+                            job.sync_parameters.cycle
+                        )
+                    elif job.sync_parameters.sync_source == JobSyncSource.PASS:
+                        await sync_service.worker_synchronize_proposals_for_cycle_from_pass(
+                            job.sync_parameters.cycle
                     )
+                    else:
+                        raise Exception(
+                            f"Unknown cycle info sync source {job.sync_parameters.sync_source}."
+                        )
+                case JobActions.synchronize_all_proposals:
+                    logger.info(
+                        f"Processing job {job.id} to synchronize all proposals for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."
+                    )
+                    if job.sync_parameters.sync_source == JobSyncSource.universal_proposal_system:
+                        await sync_service.worker_synchronize_all_proposals_from_ups(
+                            job.sync_parameters.facility
+                        )
+                    # elif job.sync_parameters.sync_source == JobSyncSource.PASS:
+                    #     await sync_service.worker_synchronize_all_proposals_from_pass(
+                    #         job.sync_parameters.facility
+                    #     )
+                    else:
+                        raise Exception(
+                            f"Unknown proposal sync source {job.sync_parameters.sync_source}."
+                        )
                 case JobActions.synchronize_proposal_types:
                     logger.info(
                         f"Processing job {job.id} to synchronize proposal types for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."
                     )
-                    await sync_service.worker_synchronize_proposal_types_from_pass(
-                        job.sync_parameters.facility
-                    )
+                    if job.sync_parameters.sync_source == JobSyncSource.universal_proposal_system:
+                        await sync_service.worker_synchronize_proposal_types_from_ups(
+                            job.sync_parameters.facility
+                        )
+                    elif job.sync_parameters.sync_source == JobSyncSource.PASS:
+                        await sync_service.worker_synchronize_proposal_types_from_pass(
+                            job.sync_parameters.facility
+                        )
+                    else:
+                        raise Exception(
+                            f"Unknown proposal type sync source {job.sync_parameters.sync_source}."
+                        )
                 case JobActions.create_slack_channel:
                     logger.info(
                         f"I would be Processing job {job.id} to create Slack channel for proposal {job.sync_parameters.proposal_id} if it was written."

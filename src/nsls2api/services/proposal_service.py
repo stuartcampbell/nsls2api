@@ -12,12 +12,15 @@ from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
+from nsls2api.models.universalproposal_models import UpsProposalType
 from nsls2api.services import (
     beamline_service,
+    facility_service,
 )
+from nsls2api.utils import string_to_bool
 
 
-async def exists(proposal_id: int) -> bool:
+async def exists(proposal_id: str) -> bool:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
     return False if proposal is None else True
 
@@ -82,8 +85,8 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
     return data_sessions
 
 
-def generate_data_session_for_proposal(proposal_id: int) -> str:
-    return f"pass-{str(proposal_id)}"
+def generate_data_session_for_proposal(proposal_id: str, prefix="pass") -> str:
+    return f"{prefix}-{(proposal_id.lower())}"
 
 
 def slack_channel_name_for_proposal(proposal_id: str) -> str:
@@ -91,7 +94,7 @@ def slack_channel_name_for_proposal(proposal_id: str) -> str:
     return f"test-sic-{str(proposal_id)}"
 
 
-async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
+async def proposal_by_id(proposal_id: str) -> Optional[Proposal]:
     """
     Retrieve a single proposal by its ID.
 
@@ -208,22 +211,22 @@ async def proposal_type_description_from_pass_type_id(
         return proposal_type.description
 
 
-async def data_session_for_proposal(proposal_id: int) -> Optional[str]:
+async def data_session_for_proposal(proposal_id: str) -> Optional[str]:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
     return proposal.data_session
 
 
-async def beamlines_for_proposal(proposal_id: int) -> Optional[list[str]]:
+async def beamlines_for_proposal(proposal_id: str) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
     return proposal.instruments
 
 
-async def cycles_for_proposal(proposal_id: int) -> Optional[list[str]]:
+async def cycles_for_proposal(proposal_id: str) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
     return proposal.cycles
 
 
-async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
+async def fetch_users_on_proposal(proposal_id: str) -> Optional[list[User]]:
     """
     Fetches the users associated with a given proposal.
 
@@ -238,7 +241,7 @@ async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
 
 
 async def fetch_usernames_from_proposal(
-    proposal_id: int,
+    proposal_id: str,
 ) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
 
@@ -259,7 +262,7 @@ async def safs_from_proposal(proposal_id: str) -> Optional[list[str]]:
     return safs
 
 
-async def pi_from_proposal(proposal_id: int) -> Optional[list[User]]:
+async def pi_from_proposal(proposal_id: str) -> Optional[list[User]]:
     proposal = await proposal_by_id(proposal_id)
 
     pi = [u for u in proposal.users if u.is_pi]
@@ -313,7 +316,7 @@ async def is_commissioning(proposal: Proposal):
 
 
 # Return the directories and permissions that should be present for a given proposal
-async def directories(proposal_id: int):
+async def directories(proposal_id: str):
     proposal = await proposal_by_id(proposal_id)
 
     # if any of the following are null or zero length, then we don't have
@@ -379,7 +382,7 @@ async def directories(proposal_id: int):
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
             groups_acl.append(
                 {
-                    f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"
+                    f"{await beamline_service.data_admin_group(beamline_tla)}": "rw"
                 }
             )
 
@@ -421,3 +424,24 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
     )
 
     return proposal_diagnostics
+
+
+async def convert_ups_proposal_type(ups_proposal_type: UpsProposalType) -> ProposalType:
+    
+    facility = await facility_service.facility_by_ups_id(ups_proposal_type.u_facility.value)
+    if facility is None:
+        error_message = f"Facility {ups_proposal_type.u_facility.display_value} not found.  Check that the facilities have been synchronized."
+        logger.error(error_message)
+        raise LookupError(error_message)
+    
+    return ProposalType(
+        code=None,
+        facility_id=facility.facility_id,
+        description=ups_proposal_type.u_name.display_value,
+        pass_id=None, pass_description=None,
+        ups_id=ups_proposal_type.sys_id.value,
+        ups_description=ups_proposal_type.u_name.display_value,
+        ups_type=ups_proposal_type.u_type.value,
+        active=string_to_bool(ups_proposal_type.u_active.value),
+    )
+
