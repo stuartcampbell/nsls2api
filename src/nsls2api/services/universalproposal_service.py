@@ -264,7 +264,7 @@ async def get_beamlines_from_proposal(proposal_id: str) -> list[str]:
     etr_list = await get_etr_for_proposal(proposal_id)
     if etr_list and len(etr_list) > 0:
         for etr in etr_list:
-            logger.info(f"Getting beamlines for ETR {etr.sys_id.value}.")
+            logger.debug(f"Getting beamlines for ETR {etr.sys_id.value}.")
             beamline_one = await beamline_service.beamline_by_ups_id(etr.u_beamline_one.value)
             beamline_two = await beamline_service.beamline_by_ups_id(etr.u_beamline_two.value)
  
@@ -273,17 +273,15 @@ async def get_beamlines_from_proposal(proposal_id: str) -> list[str]:
             else:
                 # Only display a warning if we actually have anything
                 if len(etr.u_beamline_one.display_value) > 0:
-                    logger.warning(f"Could not find beamline name for UPS beamline (one) {etr.u_beamline_one.display_value}.")
+                    logger.warning(f"Could not find beamline name for UPS beamline (one) {etr.u_beamline_one.display_value}. ({etr.u_beamline_one.value})")
  
             if beamline_two:
                 beamlines.append(beamline_two)
             else:
                 # Only display a warning if we actually have anything
                 if len(etr.u_beamline_two.display_value) > 0:
-                    logger.warning(f"Could not find beamline name for UPS beamline (two) {etr.u_beamline_two.display_value}.")
+                    logger.warning(f"Could not find beamline name for UPS beamline (two) {etr.u_beamline_two.display_value}. ({etr.u_beamline_two.value})")
  
-
-    logger.info(f"Found {len(beamlines)} beamlines for proposal {proposal_id}.")
     return beamlines
 
 async def get_cycle_by_name(cycle_name: str, facility: UpsFacilityName = UpsFacilityName.nsls2) -> Optional[UpsCycle]:
