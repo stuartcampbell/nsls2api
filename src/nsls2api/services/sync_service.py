@@ -36,7 +36,7 @@ async def worker_synchronize_dataadmins() -> None:
     time_taken = datetime.datetime.now() - start_time
     logger.info(f"Facility Data Admin permissions synchronized in {time_taken.total_seconds():,.2f} seconds")
 
-    beamline_list :Beamline = await beamline_service.all_beamlines()
+    beamline_list : Beamline = await beamline_service.all_beamlines()
     for beamline in beamline_list:
         logger.info(f"Synchronizing data admins for beamline {beamline.name}.")
         data_admin_group_name = await beamline_service.data_admin_group(beamline.name)
