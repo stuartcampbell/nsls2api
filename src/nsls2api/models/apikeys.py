@@ -25,7 +25,7 @@ class ApiUser(beanie.Document):
     id: UUID = Field(default_factory=uuid4)
     username: str
     type: ApiUserType
-    role: ApiUserRole = ApiUserRole.user
+    role: Optional[ApiUserRole] = ApiUserRole.user
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )

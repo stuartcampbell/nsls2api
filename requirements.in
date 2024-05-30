@@ -2,6 +2,7 @@ aiofiles
 argon2_cffi
 asgi-correlation-id
 beanie
+faker
 fastapi
 gunicorn
 httpx

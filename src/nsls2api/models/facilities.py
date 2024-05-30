@@ -12,6 +12,7 @@ class Facility(beanie.Document):
     pass_facility_id: Optional[str] = None
     universal_proposal_system_facility_sysid: Optional[str] = None
     data_admins: Optional[list[str]] = []
+    data_admin_group: Optional[str] = None
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )

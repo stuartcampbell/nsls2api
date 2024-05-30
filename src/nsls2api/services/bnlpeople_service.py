@@ -31,6 +31,28 @@ async def get_person_by_username(username: str) -> Optional[BNLPerson]:
     return BNLPerson(**person[0])
 
 
+async def get_username_by_id(lifenumber: str) -> Optional[str]:
+    if lifenumber is None:
+        return None
+
+    url = f"{base_url}/api/BNLPeople?employeeNumber={lifenumber}"
+    person = await _call_bnlpeople_webservice(url)
+    if len(person) == 0 or len(person) > 1:
+        logger.warning(
+            f"BNL People could not find a person with an employee/life number of '{lifenumber}'"
+        )
+        return None
+
+    # Let's check that the response validates
+    bnl_person = BNLPerson(**person[0])
+
+    # Guard against the BNLPeople API giving us an empty string.
+    if len(bnl_person.ActiveDirectoryName) > 0:
+        return bnl_person.ActiveDirectoryName
+    else:
+        return None
+
+
 async def get_person_by_id(lifenumber: str) -> Optional[BNLPerson]:
     if lifenumber is None:
         return None

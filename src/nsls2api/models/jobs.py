@@ -24,6 +24,7 @@ class JobSyncSource(StrEnum):
 
 
 class JobActions(StrEnum):
+    synchronize_admins = "synchronize_admins"
     synchronize_cycles = "synchronize_cycles"
     synchronize_proposal = "synchronize_proposal"
     synchronize_proposals_for_cycle = "synchronize_proposals_for_cycle"

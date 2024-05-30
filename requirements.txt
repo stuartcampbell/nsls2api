@@ -34,8 +34,7 @@ dnspython==2.6.1
     #   pymongo
 email-validator==2.1.1
     # via fastapi
-exceptiongroup==1.2.1
-    # via anyio
+faker==25.2.0
 fastapi==0.111.0
     # via fastapi-cli
 fastapi-cli==0.0.3
@@ -114,6 +113,8 @@ pygments==2.18.0
     # via rich
 pymongo==4.7.2
     # via motor
+python-dateutil==2.9.0.post0
+    # via faker
 python-dotenv==1.0.1
     # via
     #   pydantic-settings
@@ -132,6 +133,8 @@ rich==13.7.1
     #   typer
 shellingham==1.5.4
     # via typer
+six==1.16.0
+    # via python-dateutil
 slack-bolt==1.18.1
 slack-sdk==3.27.1
     # via slack-bolt
@@ -150,14 +153,11 @@ typer==0.12.3
     # via fastapi-cli
 typing-extensions==4.11.0
     # via
-    #   anyio
-    #   beanie
     #   fastapi
     #   pydantic
     #   pydantic-core
     #   textual
     #   typer
-    #   uvicorn
 uc-micro-py==1.0.3
     # via linkify-it-py
 ujson==5.9.0
