@@ -13,7 +13,7 @@ from nsls2api.models.jobs import (
 )
 from nsls2api.services import background_service
 
-SYNC_ROUTES_IN_SCHEMA = False
+SYNC_ROUTES_IN_SCHEMA = True
 
 router = fastapi.APIRouter(tags=["jobs"])
 
@@ -36,6 +36,11 @@ async def check_job_status(request: Request, job_id: str):
     else:
         return job.processing_status
 
+
+@router.get("/sync/dataadmins", dependencies=[Depends(get_current_user)], include_in_schema=SYNC_ROUTES_IN_SCHEMA, tags=["sync"])
+async def sync_dataadmins(request: Request) -> BackgroundJob:
+    job = await background_service.create_background_job(JobActions.synchronize_admins)
+    return job
 
 @router.get(
     "/sync/proposal/{proposal_id}",

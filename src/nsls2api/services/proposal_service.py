@@ -385,7 +385,7 @@ async def directories(proposal_id: int):
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
             groups_acl.append(
                 {
-                    f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"
+                    f"{await beamline_service.data_admin_group(beamline_tla)}": "rw"
                 }
             )
 
