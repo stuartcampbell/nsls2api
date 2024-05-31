@@ -32,8 +32,11 @@ async def stats():
     for cycle in nsls2_cycle_list:
         proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
         if proposal_list is not None:
+            number_of_proposals=len(proposal_list)
+        else:
+            number_of_proposals = 0
             model = ProposalsPerCycleModel(
-                cycle=cycle, proposal_count=len(proposal_list)
+                cycle=cycle, proposal_count=number_of_proposals
             )
             nsls2_proposals_per_cycle.append(model)
 
