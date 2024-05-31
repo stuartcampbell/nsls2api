@@ -41,25 +41,27 @@ async def worker_synchronize_dataadmins() -> None:
     start_time = datetime.datetime.now()
 
     facility_list = await facility_service.all_facilities()
+    facility_username_list = []
     for facility in facility_list:
         logger.info(f"Synchronizing data admins for facility {facility.name}.")
         data_admin_group_name = await facility_service.data_admin_group(facility.facility_id)
         if data_admin_group_name:
             ad_users : list[ActiveDirectoryUser]= await n2sn_service.get_users_in_group(data_admin_group_name)
             if ad_users is not None:
-                username_list = [u['sAMAccountName'] for u in ad_users if u['sAMAccountName'] is not None]
-            await facility_service.update_data_admins(facility.facility_id, username_list)
+                facility_username_list = [u['sAMAccountName'] for u in ad_users if u['sAMAccountName'] is not None]
+            await facility_service.update_data_admins(facility.facility_id, facility_username_list)
     time_taken = datetime.datetime.now() - start_time
     logger.info(f"Facility Data Admin permissions synchronized in {time_taken.total_seconds():,.2f} seconds")
 
     beamline_list : Beamline = await beamline_service.all_beamlines()
+    beamline_username_list = []
     for beamline in beamline_list:
         logger.info(f"Synchronizing data admins for beamline {beamline.name}.")
         data_admin_group_name = await beamline_service.data_admin_group(beamline.name)
         ad_users : list[ActiveDirectoryUser]= await n2sn_service.get_users_in_group(data_admin_group_name)
         if ad_users is not None:
-            username_list = [u['sAMAccountName'] for u in ad_users if u['sAMAccountName'] is not None]
-        await beamline_service.update_data_admins(beamline.name, username_list)
+            beamline_username_list = [u['sAMAccountName'] for u in ad_users if u['sAMAccountName'] is not None]
+        await beamline_service.update_data_admins(beamline.name, beamline_username_list)
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(f"Beamline Data Admin permissions synchronized in {time_taken.total_seconds():,.2f} seconds")
