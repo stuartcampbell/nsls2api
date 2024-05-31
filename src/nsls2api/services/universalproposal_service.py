@@ -228,10 +228,16 @@ async def get_all_proposals_for_facility(
 
 async def get_etr_for_proposal(proposal_id: str) -> Optional[str]:
 
-    proposal = await proposal_service.proposal_by_id(proposal_id)
+    try:
+        proposal = await proposal_service.proposal_by_id(proposal_id)
+        proposal_ups_sys_id = proposal.universal_proposal_system_id
+    except LookupError:
+        # If we haven't found the proposal in our local database, then ask the UPS
+        proposal = await get_proposal(proposal_id)
+        proposal_ups_sys_id = proposal.u_proposal_number.display_value
 
     servicenow_table_name = "sn_customerservice_experiment_time_request"
-    query=f"u_proposal={proposal.universal_proposal_system_id}"
+    query=f"u_proposal={proposal_ups_sys_id}"
     url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query={query}&sysparm_display_value=all"
 
     etr_list = []
