@@ -495,8 +495,7 @@ async def generate_fake_test_proposal(
     # If there is a real user, make them the only PI using the above `is_pi` logic.
     if isinstance(add_specific_user, str):
         try:
-            person = await bnlpeople_service.get_person_by_username(add_specific_user)
-            print(person)
+            person = await bnlpeople_service.get_person_by_username(add_specific_user) 
             if person:
                 user = User(
                     first_name=person.FirstName,
