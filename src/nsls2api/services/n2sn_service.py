@@ -7,6 +7,7 @@ from nsls2api.api.models.person_model import (
     ActiveDirectoryUserGroups,
 )
 from nsls2api.infrastructure.config import get_settings
+from nsls2api.infrastructure.logging import logger
 
 settings = get_settings()
 
@@ -18,16 +19,22 @@ async def get_groups_by_username(username: str) -> Optional[ActiveDirectoryUserG
     :return: An instance of ActiveDirectoryUserGroups that contains information about the groups the user belongs to. Returns None if the user is not found or if there are multiple users with the same username.
     """
 
-    with ADObjects(
-        settings.active_directory_server,
-        user_search=settings.n2sn_user_search,
-        group_search=settings.n2sn_group_search,
-        authenticate=False,
-        ca_certs_file=settings.bnlroot_ca_certs_file,
-    ) as ad:
-        user_details = ad.get_group_by_samaccountname(username)
+    try:
+        with ADObjects(
+            settings.active_directory_server,
+            user_search=settings.n2sn_user_search,
+            group_search=settings.n2sn_group_search,
+            authenticate=False,
+            ca_certs_file=settings.bnlroot_ca_certs_file,
+        ) as ad:
+            user_details = ad.get_group_by_samaccountname(username)
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return None
+
     if len(user_details) == 0 or len(user_details) > 1:
         return None
+
     return ActiveDirectoryUserGroups(**user_details[0])
 
 
