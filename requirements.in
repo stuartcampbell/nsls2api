@@ -1,6 +1,7 @@
 aiofiles
 argon2_cffi
 asgi-correlation-id
+asyncer
 beanie
 faker
 fastapi
