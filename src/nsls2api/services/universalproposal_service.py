@@ -228,6 +228,8 @@ async def get_all_proposals_for_facility(
 
 async def get_etr_for_proposal(proposal_id: str) -> Optional[str]:
 
+    proposal_ups_sys_id = None
+
     try:
         proposal = await proposal_service.proposal_by_id(proposal_id)
         proposal_ups_sys_id = proposal.universal_proposal_system_id
@@ -239,7 +241,7 @@ async def get_etr_for_proposal(proposal_id: str) -> Optional[str]:
     servicenow_table_name = "sn_customerservice_experiment_time_request"
     query=f"u_proposal={proposal_ups_sys_id}"
     url = f"{base_url}/now/table/{servicenow_table_name}?sysparm_query={query}&sysparm_display_value=all"
-
+    logger.info(url)
     etr_list = []
 
     try:
