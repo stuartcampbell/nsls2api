@@ -56,7 +56,7 @@ async def worker_synchronize_dataadmins() -> None:
         logger.info(f"Synchronizing data admins for beamline {beamline.name}.")
         data_admin_group_name = await beamline_service.data_admin_group(beamline.name)
         ad_users : list[ActiveDirectoryUser]= await n2sn_service.get_users_in_group(data_admin_group_name)
-        if ad_users:
+        if ad_users is not None:
             username_list = [u['sAMAccountName'] for u in ad_users if u['sAMAccountName'] is not None]
         await beamline_service.update_data_admins(beamline.name, username_list)
 

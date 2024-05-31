@@ -98,6 +98,8 @@ async def get_users_in_group(group: str) -> list[ActiveDirectoryUser]:
     :return: A list of `ActiveDirectoryUser` objects representing the users in the specified group.
 
     """
+    logger.debug(f"Getting users in group: {group}")
+
     try:
         with ADObjects(
             settings.active_directory_server,
@@ -108,7 +110,7 @@ async def get_users_in_group(group: str) -> list[ActiveDirectoryUser]:
         ) as ad:
             users = ad.get_group_members(group)
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.error(f"N2SN Service Error: {e}")
         return None
 
     return users
