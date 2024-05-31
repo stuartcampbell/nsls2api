@@ -98,14 +98,19 @@ async def get_users_in_group(group: str) -> list[ActiveDirectoryUser]:
     :return: A list of `ActiveDirectoryUser` objects representing the users in the specified group.
 
     """
-    with ADObjects(
-        settings.active_directory_server,
-        user_search=settings.n2sn_user_search,
-        group_search=settings.n2sn_group_search,
-        authenticate=False,
-        ca_certs_file=settings.bnlroot_ca_certs_file,
-    ) as ad:
-        users = ad.get_group_members(group)
+    try:
+        with ADObjects(
+            settings.active_directory_server,
+            user_search=settings.n2sn_user_search,
+            group_search=settings.n2sn_group_search,
+            authenticate=False,
+            ca_certs_file=settings.bnlroot_ca_certs_file,
+        ) as ad:
+            users = ad.get_group_members(group)
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return None
+
     return users
 
 
