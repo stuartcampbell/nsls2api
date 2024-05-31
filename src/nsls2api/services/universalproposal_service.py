@@ -236,7 +236,7 @@ async def get_etr_for_proposal(proposal_id: str) -> Optional[str]:
     except LookupError:
         # If we haven't found the proposal in our local database, then ask the UPS
         proposal = await get_proposal(proposal_id)
-        proposal_ups_sys_id = proposal.u_proposal_number.value
+        proposal_ups_sys_id = proposal.sys_id.value
 
     servicenow_table_name = "sn_customerservice_experiment_time_request"
     query=f"u_proposal={proposal_ups_sys_id}"
