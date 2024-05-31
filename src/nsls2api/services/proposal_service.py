@@ -441,14 +441,13 @@ async def generate_fake_proposal_id() -> int:
 
 
 async def generate_fake_test_proposal(
-    facility_name: FacilityName = FacilityName.nsls2, include_real_people=False, add_specific_user=None
+    facility_name: FacilityName = FacilityName.nsls2, add_specific_user=None
 ) -> Optional[Proposal]:
     """
     Generates a fake test proposal.
 
     Args:
         facility_name (FacilityName, optional): The name of the facility. Defaults to using the NSLS-II facility.
-        include_real_people (bool, optional): Whether to include real people in the proposal. Defaults to False.
         add_specific_user (Optional[str], optional): If specified, the username of a specific user to add to the proposal, propagated by the BNL AD. Defaults to None.
     Returns:
         Optional[Proposal]: The generated fake test proposal, or None if an error occurred.
@@ -488,11 +487,12 @@ async def generate_fake_test_proposal(
             email=fake.email(),
             bnl_id=user_bnl_id,
             username=username,
-            is_pi=is_pi
+            is_pi=False if isinstance(add_specific_user, str) else is_pi
         )
         user_list.append(user)
 
     # Real User(s)
+    # If there is a real user, make them the only PI using the above `is_pi` logic.
     if isinstance(add_specific_user, str):
         try:
             person = await bnlpeople_service.get_person_by_username(add_specific_user)
@@ -504,7 +504,7 @@ async def generate_fake_test_proposal(
                     email=person.BNLEmail,
                     bnl_id=person.EmployeeNumber,
                     username=add_specific_user,
-                    is_pi=random.choice([True, False])
+                    is_pi=True
                 )
                 user_list.append(user)
         except LookupError:
