@@ -35,10 +35,10 @@ async def stats():
             number_of_proposals=len(proposal_list)
         else:
             number_of_proposals = 0
-            model = ProposalsPerCycleModel(
-                cycle=cycle, proposal_count=number_of_proposals
-            )
-            nsls2_proposals_per_cycle.append(model)
+        model = ProposalsPerCycleModel(
+            cycle=cycle, proposal_count=number_of_proposals
+        )
+        nsls2_proposals_per_cycle.append(model)
 
     model = StatsModel(
         facility_count=facilities,
