@@ -20,6 +20,7 @@ from nsls2api.models.proposals import Proposal, ProposalIdView, User
 from nsls2api.services import (
     beamline_service,
     facility_service,
+    bnlpeople_service
 )
 
 
@@ -385,7 +386,7 @@ async def directories(proposal_id: int):
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
             groups_acl.append(
                 {
-                    f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"
+                    f"{await beamline_service.data_admin_group(beamline_tla)}": "rw"
                 }
             )
 
@@ -440,15 +441,14 @@ async def generate_fake_proposal_id() -> int:
 
 
 async def generate_fake_test_proposal(
-    facility_name: FacilityName = FacilityName.nsls2, include_real_people=False
+    facility_name: FacilityName = FacilityName.nsls2, add_specific_user=None
 ) -> Optional[Proposal]:
     """
     Generates a fake test proposal.
 
     Args:
         facility_name (FacilityName, optional): The name of the facility. Defaults to using the NSLS-II facility.
-        include_real_people (bool, optional): Whether to include real people in the proposal. Defaults to False.
-
+        add_specific_user (Optional[str], optional): If specified, the username of a specific user to add to the proposal, propagated by the BNL AD. Defaults to None.
     Returns:
         Optional[Proposal]: The generated fake test proposal, or None if an error occurred.
     """
@@ -463,6 +463,7 @@ async def generate_fake_test_proposal(
     fake.add_provider(python)
     fake.add_provider(date_time)
 
+    # Fake Users
     for i in range(number_of_users):
         if i == pi_number:
             is_pi = True
@@ -486,9 +487,28 @@ async def generate_fake_test_proposal(
             email=fake.email(),
             bnl_id=user_bnl_id,
             username=username,
-            is_pi=is_pi,
+            is_pi=False if isinstance(add_specific_user, str) else is_pi
         )
         user_list.append(user)
+
+    # Real User(s)
+    # If there is a real user, make them the only PI using the above `is_pi` logic.
+    if isinstance(add_specific_user, str):
+        try:
+            person = await bnlpeople_service.get_person_by_username(add_specific_user) 
+            if person:
+                user = User(
+                    first_name=person.FirstName,
+                    last_name=person.LastName,
+                    email=person.BNLEmail,
+                    bnl_id=person.EmployeeNumber,
+                    username=add_specific_user,
+                    is_pi=True
+                )
+                user_list.append(user)
+        except LookupError:
+            logger.error(f"Could not find user {add_specific_user} in BNLPeople.")
+            return None
 
     fake_proposal_id = await generate_fake_proposal_id()
     fake_title = fake.sentence()
