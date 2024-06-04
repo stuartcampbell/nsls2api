@@ -21,6 +21,7 @@ class HTTPXClientWrapper:
     async def stop(self):
         logger.info(f"HTTPXClientWrapper [{click.style(str(id(self.async_client)), fg='cyan')}] stopped.")
         await self.async_client.aclose()
+        self.async_client = None
 
     def __call__(self):
         # logger.info(f"HTTPXClientWrapper called. {id(self.async_client)}")
@@ -60,3 +61,5 @@ async def _call_async_webservice_with_client(
         resp.raise_for_status()
         results = resp.json()
         return results
+
+httpx_client_wrapper = HTTPXClientWrapper()
