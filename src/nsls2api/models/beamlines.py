@@ -4,10 +4,73 @@ from typing import Optional
 import beanie
 import pydantic
 
+from enum import StrEnum
+
+
+class DirectoryGranularity(StrEnum):
+    """
+    Represents the granularity options for asset directory YYYY/MM/DD/HH tree structure.
+    The value specifies the most granular level to create directories for.  If no date
+    structure is wanted then the value "flat" is used.
+    """
+
+    flat = "flat"
+    year = "year"
+    month = "month"
+    day = "day"
+    hour = "hour"
+
+
+class Directory(pydantic.BaseModel):
+    path: str
+    owner: str
+    group: str | None = None
+    beamline: str | None = None
+    users: list[dict[str, str]]
+    groups: list[dict[str, str]]
+    directory_most_granular_level: DirectoryGranularity | None = (
+        DirectoryGranularity.day
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "directory_count": 1,
+                    "directories": [
+                        {
+                            "path": "assets/detector1",
+                            "owner": "nsls2data",
+                            "group": "nsls2data",
+                            "beamline": "TST",
+                            "directory_most_granular_level": "month",
+                            "users": [
+                                {"softioc-tst": "rw"},
+                                {"service-account": "rw"},
+                            ],
+                            "groups": [
+                                {"dataadmins": "rw"},
+                                {"datareaders": "r"},
+                            ],
+                        }
+                    ],
+                }
+            ]
+        }
+    }
+
+
+class DirectoryList(pydantic.BaseModel):
+    directory_count: int
+    directories: list[Directory]
+
 
 class Detector(pydantic.BaseModel):
     name: str
-    directory_name: str | None = None
+    directory_name: str
+    granularity: DirectoryGranularity | None = DirectoryGranularity.day
+    description: str | None = None
+    manufacturer: str | None = None
 
 
 class DetectorView(pydantic.BaseModel):

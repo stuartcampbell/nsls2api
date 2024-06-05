@@ -4,8 +4,9 @@ from typing import Optional
 
 from beanie.odm.operators.find.comparison import In
 from beanie.odm.operators.find.array import ElemMatch
+from beanie.odm.operators.update.general import Set
 
-from nsls2api.api.models.beamline_model import AssetDirectoryGranularity
+from nsls2api.models.beamlines import DirectoryGranularity
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.beamlines import (
     Beamline,
@@ -46,6 +47,16 @@ async def beamline_by_name(name: str) -> Optional[Beamline]:
     # TODO: check that the input name looks sensible
     beamline = await Beamline.find_one(Beamline.name == name.upper())
     return beamline
+
+
+async def all_beamlines() -> list[Beamline]:
+    """
+    Retrieve all beamlines from the database.
+
+    :return: A list of all beamlines in the database.
+    """
+    beamlines = await Beamline.find().to_list()
+    return beamlines
 
 
 async def beamline_by_pass_id(pass_id: str) -> Optional[Beamline]:
@@ -224,7 +235,7 @@ async def operator_username(name: str) -> str:
 
     if operator_account is None:
         raise LookupError(
-            f"Could not find a the operattor account for the {name} beamline."
+            f"Could not find a the operator account for the {name} beamline."
         )
 
     return operator_account.username
@@ -259,16 +270,38 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
     return beamline_names
 
 
-async def custom_data_admin_group(name: str) -> str:
-    beamline = await Beamline.find_one(Beamline.name == name.upper())
+async def data_admin_group(beamline_name: str) -> str:
+    """
+    Retrieves the data admin group for a given beamline name.
+
+    Args:
+        beamline_name (str): The name of the beamline.
+
+    Returns:
+        str: The data admin group for the specified beamline name.
+    """
+    beamline = await Beamline.find_one(Beamline.name == beamline_name.upper())
 
     if beamline.custom_data_admin_group is None:
-        return f"n2sn-right-dataadmin-{name.lower()}"
+        return f"n2sn-right-dataadmin-{beamline_name.lower()}"
     else:
         return beamline.custom_data_admin_group
 
 
-async def proposal_directory_skeleton(name: str):
+async def update_data_admins(beamline_name: str, data_admins: list[str]):
+    """
+    Update the data admins for a given beamline.
+
+    Args:
+        beamline_name (str): The name of the beamline.
+        data_admins (list[str]): A list of usernames to set as data admins for the beamline.
+    """
+    await Beamline.find_one(Beamline.name == beamline_name.upper()).update(
+        Set({Beamline.data_admins: data_admins})
+    )
+
+
+async def directory_skeleton(name: str):
     detector_list = await detectors(name.upper())
 
     directory_list = []
@@ -283,18 +316,18 @@ async def proposal_directory_skeleton(name: str):
 
     if service_usernames.ioc is not None:
         users_acl.append({f"{service_usernames.ioc}": "rw"})
-    
+
     users_acl.append({"softioc": "rw"})
-    
+
     if service_usernames.bluesky is not None:
         users_acl.append({f"{service_usernames.bluesky}": "rw"})
 
     if service_usernames.workflow is not None:
         users_acl.append({f"{service_usernames.workflow}": "r"})
-    
+
     users_acl.append({"nsls2data": "rw"})
 
-    groups_acl.append({f"{await custom_data_admin_group(name)}": "r"})
+    groups_acl.append({f"{await data_admin_group(name)}": "r"})
     groups_acl.append({"n2sn-right-dataadmin": "r"})
 
     # Add the asset directory so this has the same permissions as the detector directories
@@ -306,6 +339,7 @@ async def proposal_directory_skeleton(name: str):
         "users": users_acl,
         "groups": groups_acl,
         "beamline": name.upper(),
+        "directory_most_granular_level": DirectoryGranularity.flat,
     }
     directory_list.append(asset_directory)
 
@@ -319,7 +353,7 @@ async def proposal_directory_skeleton(name: str):
                 "users": users_acl,
                 "groups": groups_acl,
                 "beamline": name.upper(),
-                "directory_most_granular_level": AssetDirectoryGranularity.day,
+                "directory_most_granular_level": detector.granularity,
             }
             directory_list.append(directory)
 
@@ -331,7 +365,7 @@ async def proposal_directory_skeleton(name: str):
         "users": users_acl,
         "groups": groups_acl,
         "beamline": name.upper(),
-        "directory_most_granular_level": AssetDirectoryGranularity.day,
+        "directory_most_granular_level": DirectoryGranularity.day,
     }
     directory_list.append(default_directory)
 

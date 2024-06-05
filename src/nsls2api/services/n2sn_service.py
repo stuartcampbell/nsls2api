@@ -83,7 +83,7 @@ async def get_username_by_id(bnl_id: str) -> Optional[str]:
     return ad_user.sAMAccountName
 
 
-async def get_users_in_group(group: str):
+async def get_users_in_group(group: str) -> list[ActiveDirectoryUser]:
     """
     :param group: The name of the group that you want to retrieve the users from.
     :param settings: The settings used to connect to the Active Directory server. Defaults to the settings defined in the `get_settings` method.

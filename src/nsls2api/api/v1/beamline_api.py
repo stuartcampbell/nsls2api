@@ -10,7 +10,14 @@ from nsls2api.infrastructure.security import (
     get_current_user,
     validate_admin_role,
 )
-from nsls2api.models.beamlines import Beamline, BeamlineService, Detector, DetectorList
+
+from nsls2api.models.beamlines import (
+    Beamline,
+    BeamlineService,
+    DetectorList,
+    DirectoryList,
+)
+
 from nsls2api.services import beamline_service
 
 router = fastapi.APIRouter()
@@ -35,14 +42,18 @@ async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_current
         )
     return service_accounts
 
+
 @router.get("/beamline/{name}/slack-channel-managers")
-async def get_beamline_slack_channel_managers(name: str, api_key: APIKey = Depends(get_current_user)):
+async def get_beamline_slack_channel_managers(
+    name: str, api_key: APIKey = Depends(get_current_user)
+):
     slack_channel_managers = await beamline_service.slack_channel_managers(name)
     if slack_channel_managers is None:
         raise HTTPException(
             status_code=404, detail=f"Beamline named {name} could not be found"
         )
     return slack_channel_managers
+
 
 @router.get(
     "/beamline/{name}/detectors", response_model=DetectorList, include_in_schema=True
@@ -84,9 +95,10 @@ async def add_detector(name: str, detector: Detector):
 @router.get(
     "/beamline/{name}/proposal-directory-skeleton",
     response_model=ProposalDirectoriesList,
+    deprecated=True,
 )
 async def get_beamline_proposal_directory_skeleton(name: str):
-    directory_skeleton = await beamline_service.proposal_directory_skeleton(name)
+    directory_skeleton = await beamline_service.directory_skeleton(name)
     if directory_skeleton is None:
         raise HTTPException(
             status_code=404,
@@ -99,14 +111,11 @@ async def get_beamline_proposal_directory_skeleton(name: str):
 
 
 @router.get(
-    "/beamline/{name}/proposal-directory-skeleton-alternate",
-    response_model=ProposalDirectoriesList,
-    include_in_schema=False,
+    "/beamline/{name}/directory-skeleton",
+    response_model=DirectoryList,
 )
-async def get_beamline_proposal_directory_skeleton_alternate(
-    name: str, proposal_id: int
-):
-    directory_skeleton = await beamline_service.proposal_directory_skeleton(name)
+async def get_beamline_directory_skeleton(name: str):
+    directory_skeleton = await beamline_service.directory_skeleton(name)
     if directory_skeleton is None:
         raise HTTPException(
             status_code=404,
