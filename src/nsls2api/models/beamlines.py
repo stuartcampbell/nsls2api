@@ -7,7 +7,7 @@ import pydantic
 from enum import StrEnum
 
 
-class AssetDirectoryGranularity(StrEnum):
+class DirectoryGranularity(StrEnum):
     """
     Represents the granularity options for asset directory YYYY/MM/DD/HH tree structure.
     The value specifies the most granular level to create directories for.  If no date
@@ -21,15 +21,15 @@ class AssetDirectoryGranularity(StrEnum):
     hour = "hour"
 
 
-class AssetDirectory(pydantic.BaseModel):
+class Directory(pydantic.BaseModel):
     path: str
     owner: str
     group: str | None = None
     beamline: str | None = None
     users: list[dict[str, str]]
     groups: list[dict[str, str]]
-    directory_most_granular_level: AssetDirectoryGranularity | None = (
-        AssetDirectoryGranularity.day
+    directory_most_granular_level: DirectoryGranularity | None = (
+        DirectoryGranularity.day
     )
 
     model_config = {
@@ -60,15 +60,15 @@ class AssetDirectory(pydantic.BaseModel):
     }
 
 
-class AssetDirectoryList(pydantic.BaseModel):
+class DirectoryList(pydantic.BaseModel):
     directory_count: int
-    directories: list[AssetDirectory]
+    directories: list[Directory]
 
 
 class Detector(pydantic.BaseModel):
     name: str
     directory_name: str
-    granularity: AssetDirectoryGranularity | None = AssetDirectoryGranularity.day
+    granularity: DirectoryGranularity | None = DirectoryGranularity.day
     description: str | None = None
     manufacturer: str | None = None
 

@@ -14,7 +14,7 @@ from nsls2api.models.beamlines import (
     Beamline,
     BeamlineService,
     DetectorList,
-    AssetDirectoryList,
+    DirectoryList,
 )
 from nsls2api.services import beamline_service
 
@@ -74,7 +74,7 @@ async def get_beamline_detectors(name: str) -> DetectorList:
     deprecated=True,
 )
 async def get_beamline_proposal_directory_skeleton(name: str):
-    directory_skeleton = await beamline_service.assets_directory_skeleton(name)
+    directory_skeleton = await beamline_service.directory_skeleton(name)
     if directory_skeleton is None:
         raise HTTPException(
             status_code=404,
@@ -87,11 +87,11 @@ async def get_beamline_proposal_directory_skeleton(name: str):
 
 
 @router.get(
-    "/beamline/{name}/asset-directory-skeleton",
-    response_model=AssetDirectoryList,
+    "/beamline/{name}/directory-skeleton",
+    response_model=DirectoryList,
 )
-async def get_beamline_asset_directory_skeleton(name: str):
-    directory_skeleton = await beamline_service.assets_directory_skeleton(name)
+async def get_beamline_directory_skeleton(name: str):
+    directory_skeleton = await beamline_service.directory_skeleton(name)
     if directory_skeleton is None:
         raise HTTPException(
             status_code=404,
