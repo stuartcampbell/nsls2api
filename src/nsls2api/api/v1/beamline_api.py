@@ -86,7 +86,7 @@ async def add_detector(name: str, detector: Detector):
 
     if new_detector is None:
         raise HTTPException(
-            status_code=404,
+            status_code=409,
             detail=f"Detector {detector.name} already exists in beamline {name}",
     )
 
