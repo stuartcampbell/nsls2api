@@ -6,7 +6,7 @@ from beanie.odm.operators.find.comparison import In
 from beanie.odm.operators.find.array import ElemMatch
 from beanie.odm.operators.update.general import Set
 
-from nsls2api.models.beamlines import AssetDirectoryGranularity
+from nsls2api.models.beamlines import DirectoryGranularity
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.beamlines import (
     Beamline,
@@ -223,7 +223,7 @@ async def update_data_admins(beamline_name: str, data_admins: list[str]):
     )
 
 
-async def proposal_directory_skeleton(name: str):
+async def directory_skeleton(name: str):
     detector_list = await detectors(name.upper())
 
     directory_list = []
@@ -261,7 +261,7 @@ async def proposal_directory_skeleton(name: str):
         "users": users_acl,
         "groups": groups_acl,
         "beamline": name.upper(),
-        "directory_most_granular_level": AssetDirectoryGranularity.flat,
+        "directory_most_granular_level": DirectoryGranularity.flat,
     }
     directory_list.append(asset_directory)
 
@@ -287,7 +287,7 @@ async def proposal_directory_skeleton(name: str):
         "users": users_acl,
         "groups": groups_acl,
         "beamline": name.upper(),
-        "directory_most_granular_level": AssetDirectoryGranularity.day,
+        "directory_most_granular_level": DirectoryGranularity.day,
     }
     directory_list.append(default_directory)
 
