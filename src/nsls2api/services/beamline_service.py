@@ -109,8 +109,9 @@ async def add_detector(
 
     new_detector = Detector(name=detector_name, directory_name=directory_name)
 
-    if new_detector in beamline.detectors:
-        logger.info(f"Detector {detector_name} already exists in beamline {beamline_name}")
+    current_directory_names = (detector.directory_name for detector in beamline.detectors)
+    if directory_name in current_directory_names:
+        logger.info(f"Detector with directory name {directory_name} already exists in beamline {beamline_name}")
         return None
     else:
         beamline.detectors.append(new_detector)
