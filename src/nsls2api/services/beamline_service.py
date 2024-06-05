@@ -223,7 +223,7 @@ async def update_data_admins(beamline_name: str, data_admins: list[str]):
     )
 
 
-async def proposal_directory_skeleton(name: str):
+async def assets_directory_skeleton(name: str):
     detector_list = await detectors(name.upper())
 
     directory_list = []
