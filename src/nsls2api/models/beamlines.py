@@ -21,6 +21,50 @@ class AssetDirectoryGranularity(StrEnum):
     hour = "hour"
 
 
+class AssetDirectory(pydantic.BaseModel):
+    path: str
+    owner: str
+    group: str | None = None
+    beamline: str | None = None
+    users: list[dict[str, str]]
+    groups: list[dict[str, str]]
+    directory_most_granular_level: AssetDirectoryGranularity | None = (
+        AssetDirectoryGranularity.day
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "directory_count": 1,
+                    "directories": [
+                        {
+                            "path": "assets/detector1",
+                            "owner": "nsls2data",
+                            "group": "nsls2data",
+                            "beamline": "TST",
+                            "directory_most_granular_level": "month",
+                            "users": [
+                                {"softioc-tst": "rw"},
+                                {"service-account": "rw"},
+                            ],
+                            "groups": [
+                                {"dataadmins": "rw"},
+                                {"datareaders": "r"},
+                            ],
+                        }
+                    ],
+                }
+            ]
+        }
+    }
+
+
+class AssetDirectoryList(pydantic.BaseModel):
+    directory_count: int
+    directories: list[AssetDirectory]
+
+
 class Detector(pydantic.BaseModel):
     name: str
     directory_name: str
