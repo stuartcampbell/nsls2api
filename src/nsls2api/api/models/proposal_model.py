@@ -14,7 +14,16 @@ class UsernamesList(pydantic.BaseModel):
     count: int
 
     model_config = {
-        "json_schema_extra": {"examples": [{"groupname": "pass-314159", "usernames": ["rdeckard", "rbatty"]}]}
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "groupname": "pass-314159",
+                    "usernames": ["rdeckard", "rbatty"],
+                    "proposal_id": "666666",
+                    "count": 2,
+                }
+            ]
+        }
     }
 
 
@@ -69,7 +78,9 @@ class ProposalDirectories(pydantic.BaseModel):
     cycle: str | None = None
     users: list[dict[str, str]]
     groups: list[dict[str, str]]
-    directory_most_granular_level: AssetDirectoryGranularity | None = AssetDirectoryGranularity.day
+    directory_most_granular_level: AssetDirectoryGranularity | None = (
+        AssetDirectoryGranularity.day
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -93,26 +104,6 @@ class ProposalDirectories(pydantic.BaseModel):
             ]
         }
     }
-
-
-# Not used - may remove
-class ACL(pydantic.BaseModel):
-    entity: str
-    permissions: str
-
-
-# Not used - may remove
-class Directory(pydantic.BaseModel):
-    path: str
-    is_aboslute: bool
-    owner: str
-    group: str
-    acls: list[ACL] | None = []
-
-
-# Not used - may remove
-class ProposalDirectorySkeleton(pydantic.BaseModel):
-    asset_directories: list[Directory]
 
 
 class ProposalDirectoriesList(pydantic.BaseModel):
