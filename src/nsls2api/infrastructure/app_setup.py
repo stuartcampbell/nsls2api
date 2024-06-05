@@ -4,10 +4,9 @@ from contextlib import asynccontextmanager
 from nsls2api.infrastructure import mongodb_setup
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.services import background_service
-from nsls2api.services.helpers import HTTPXClientWrapper
+from nsls2api.services.helpers import httpx_client_wrapper
 
 settings = get_settings()
-httpx_client_wrapper = HTTPXClientWrapper()
 
 local_development_mode = False
 

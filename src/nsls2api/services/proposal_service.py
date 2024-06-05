@@ -18,9 +18,9 @@ from nsls2api.models.cycles import Cycle
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
 from nsls2api.services import (
+    bnlpeople_service,
     beamline_service,
     facility_service,
-    bnlpeople_service
 )
 
 
@@ -385,9 +385,7 @@ async def directories(proposal_id: int):
 
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
             groups_acl.append(
-                {
-                    f"{await beamline_service.data_admin_group(beamline_tla)}": "rw"
-                }
+                {f"{await beamline_service.data_admin_group(beamline_tla)}": "rw"}
             )
 
             directory = {
@@ -487,7 +485,7 @@ async def generate_fake_test_proposal(
             email=fake.email(),
             bnl_id=user_bnl_id,
             username=username,
-            is_pi=False if isinstance(add_specific_user, str) else is_pi
+            is_pi=False if isinstance(add_specific_user, str) else is_pi,
         )
         user_list.append(user)
 
@@ -495,7 +493,7 @@ async def generate_fake_test_proposal(
     # If there is a real user, make them the only PI using the above `is_pi` logic.
     if isinstance(add_specific_user, str):
         try:
-            person = await bnlpeople_service.get_person_by_username(add_specific_user) 
+            person = await bnlpeople_service.get_person_by_username(add_specific_user)
             if person:
                 user = User(
                     first_name=person.FirstName,
@@ -503,7 +501,7 @@ async def generate_fake_test_proposal(
                     email=person.BNLEmail,
                     bnl_id=person.EmployeeNumber,
                     username=add_specific_user,
-                    is_pi=True
+                    is_pi=True,
                 )
                 user_list.append(user)
         except LookupError:

@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.logging import logger
-from nsls2api.infrastructure.app_setup import httpx_client_wrapper
+from nsls2api.services.helpers import httpx_client_wrapper
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.pass_models import (
     PassAllocation,
