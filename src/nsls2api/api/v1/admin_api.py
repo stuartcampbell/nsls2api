@@ -55,7 +55,7 @@ async def generate_user_apikey(username: str):
 
 @router.post("/admin/proposal/generate-test")
 async def generate_fake_proposal(
-    add_specific_user: str,
+    add_specific_user: str | None = None,
 ) -> Optional[SingleProposal]:
     proposal = await proposal_service.generate_fake_test_proposal()
 
