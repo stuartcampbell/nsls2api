@@ -57,7 +57,9 @@ async def generate_user_apikey(username: str):
 async def generate_fake_proposal(
     add_specific_user: str | None = None,
 ) -> Optional[SingleProposal]:
-    proposal = await proposal_service.generate_fake_test_proposal()
+    proposal = await proposal_service.generate_fake_test_proposal(
+        None, add_specific_user
+    )
 
     if proposal is None:
         raise HTTPException(
