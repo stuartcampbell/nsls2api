@@ -69,8 +69,6 @@ async def generate_api_key(username: str, usertype=ApiUserType.user):
 
         old_keys = await ApiKey.find(ApiKey.username == username).to_list()
 
-        # user.user_api_keys.append(new_key)
-        # await user.update(link_rule=WriteRules.WRITE)
         await new_key.save(link_rule=WriteRules.WRITE)
 
         # Now that we have saved a new key for this user, we should invalidate any other keys
