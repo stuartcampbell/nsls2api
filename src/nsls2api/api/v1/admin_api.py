@@ -10,7 +10,7 @@ from nsls2api.infrastructure.security import (
     validate_admin_role,
     generate_api_key,
 )
-from nsls2api.models.apikeys import ApiUser
+from nsls2api.models.apikeys import ApiUser, ApiUserRole, ApiUserResponseModel, ApiUserType
 from nsls2api.models.slack_models import SlackChannelCreationResponseModel
 from nsls2api.services import beamline_service, proposal_service, slack_service
 
@@ -43,14 +43,14 @@ async def check_admin_validation(
 
 
 @router.post("/admin/generate_api_key/{username}")
-async def generate_user_apikey(username: str):
+async def generate_user_apikey(username: str, usertype: ApiUserType = ApiUserType.user):
     """
     Generate an API key for a given username.
 
     :param username: The username for which to generate the API key.
     :return: The generated API key.
     """
-    return await generate_api_key(username)
+    return await generate_api_key(username, usertype=usertype)
 
 
 @router.post("/admin/proposal/generate-test")
@@ -152,3 +152,34 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
     )
 
     return response_model
+
+
+@router.put("/admin/user/{username}/role/{role}")
+async def update_user_role(username: str, role: ApiUserRole) -> ApiUserResponseModel:
+    """
+    Update the role of a user.
+
+    :param username: The username of the user to update.
+    :param role: The new role for the user.
+    :return: The updated user object.
+    """
+    user = await ApiUser.find_one(ApiUser.username==username)
+    if user is None:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"User {username} not found",
+        )
+
+    user.role = role
+    await user.save()
+
+    response = ApiUserResponseModel(
+        id=user.id,
+        username=user.username,
+        type=user.type,
+        role=user.role,
+        created_on=user.created_on,
+        last_updated=user.last_updated,
+    )
+
+    return response
