@@ -14,6 +14,7 @@ from nsls2api.infrastructure.security import (
 from nsls2api.models.beamlines import (
     Beamline,
     BeamlineService,
+    Detector,
     DetectorList,
     DirectoryList,
 )
