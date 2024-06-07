@@ -42,7 +42,7 @@ async def check_admin_validation(
     return admin_user.username
 
 
-@router.post("/admin/generate_api_key/{username}")
+@router.post("/admin/generate-api-key/{username}")
 async def generate_user_apikey(username: str, usertype: ApiUserType = ApiUserType.user):
     """
     Generate an API key for a given username.
