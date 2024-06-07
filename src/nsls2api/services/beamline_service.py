@@ -85,7 +85,6 @@ async def detectors(name: str) -> Optional[list[Detector]]:
     if detectors is None:
         return None
 
-    Beamline.set_detectors(detectors)
     return detectors.detectors
 
 
