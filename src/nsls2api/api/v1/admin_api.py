@@ -55,15 +55,11 @@ async def generate_user_apikey(username: str, usertype: ApiUserType = ApiUserTyp
 
 @router.post("/admin/proposal/generate-test")
 async def generate_fake_proposal(
-    use_real_people: bool = False,
+    add_specific_user: str | None = None,
 ) -> Optional[SingleProposal]:
-    if use_real_people:
-        raise HTTPException(
-            status_code=fastapi.status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Creating proposals using real people is not implemented yet",
-        )
-
-    proposal = await proposal_service.generate_fake_test_proposal()
+    proposal = await proposal_service.generate_fake_test_proposal(
+        None, add_specific_user
+    )
 
     if proposal is None:
         raise HTTPException(
