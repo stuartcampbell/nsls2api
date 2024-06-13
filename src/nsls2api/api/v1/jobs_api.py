@@ -13,7 +13,7 @@ from nsls2api.models.jobs import (
 )
 from nsls2api.services import background_service
 
-SYNC_ROUTES_IN_SCHEMA = True
+SYNC_ROUTES_IN_SCHEMA = False
 
 router = fastapi.APIRouter(tags=["jobs"])
 
