@@ -315,9 +315,9 @@ async def directory_skeleton(name: str):
     service_usernames = await service_accounts(name)
 
     if service_usernames.ioc is not None:
-        users_acl.append({f"{service_usernames.ioc}": "rw"})
+        users_acl.append({f"{service_usernames.ioc}": "r"})
 
-    users_acl.append({"softioc": "rw"})
+    users_acl.append({"softioc": "r"})
 
     if service_usernames.bluesky is not None:
         users_acl.append({f"{service_usernames.bluesky}": "rw"})
@@ -342,6 +342,21 @@ async def directory_skeleton(name: str):
         "directory_most_granular_level": DirectoryGranularity.flat,
     }
     directory_list.append(asset_directory)
+
+    users_acl: list[dict[str, str]] = []
+
+    if service_usernames.ioc is not None:
+        users_acl.append({f"{service_usernames.ioc}": "rw"})
+
+    users_acl.append({"softioc": "rw"})
+
+    if service_usernames.bluesky is not None:
+        users_acl.append({f"{service_usernames.bluesky}": "rw"})
+
+    if service_usernames.workflow is not None:
+        users_acl.append({f"{service_usernames.workflow}": "r"})
+
+    users_acl.append({"nsls2data": "rw"})
 
     # Add the detector subdirectories
     if detector_list:
