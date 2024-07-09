@@ -19,7 +19,8 @@ jobs:
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        distribution: 'zulu'
+        java-version: '21'
     
     - name: Download ijhttp.zip 
       run: curl -f -L -o ijhttp.zip "https://jb.gg/ijhttp/latest"
