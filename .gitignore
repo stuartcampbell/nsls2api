@@ -148,3 +148,6 @@ settings.json
 .idea/
 .idea/dataSources.xml
 /workspace.code-workspace
+
+# macOS specific files
+.DS_Store
