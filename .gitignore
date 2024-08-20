@@ -152,5 +152,5 @@ settings.json
 # macOS specific files
 .DS_Store
 
-# Output from chechmarx
+# Output from checkmarx
 results.json
