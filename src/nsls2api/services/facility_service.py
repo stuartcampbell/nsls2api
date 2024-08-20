@@ -116,7 +116,7 @@ async def set_current_operating_cycle(facility: str, cycle: str) -> Optional[str
     # Now find previous current operating cycle.
     previous_cycle = await Cycle.find_one(
         Cycle.facility == facility,
-        Cycle.is_current_operating_cycle == True,  # noqa: E712
+        Cycle.is_current_operating_cycle is True,
     )
 
     if previous_cycle is not None:
