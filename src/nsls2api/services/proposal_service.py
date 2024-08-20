@@ -81,11 +81,7 @@ async def fetch_proposals_for_cycle(cycle: str) -> list[str]:
     if cycle is None:
         raise LookupError(f"Cycle {cycle} not found")
 
-    # In case a 'None' has crept into the database
-    if cycle.proposals is None:
-        return []
-
-    return cycle.proposals
+    return cycle.proposals or []
 
 
 async def fetch_data_sessions_for_username(username: str) -> list[str]:
