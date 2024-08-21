@@ -27,7 +27,7 @@ async def info(settings: Annotated[config.Settings, Depends(config.get_settings)
 
 @router.get("/admin/validate", response_model=str)
 async def check_admin_validation(
-    admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None,
+        admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None,
 ):
     """
     :return: str - The username of the validated admin user.
@@ -55,7 +55,7 @@ async def generate_user_apikey(username: str, usertype: ApiUserType = ApiUserTyp
 
 @router.post("/admin/proposal/generate-test")
 async def generate_fake_proposal(
-    add_specific_user: str | None = None,
+        add_specific_user: str | None = None,
 ) -> Optional[SingleProposal]:
     proposal = await proposal_service.generate_fake_test_proposal(
         None, add_specific_user
@@ -75,19 +75,15 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
     proposal = await proposal_service.proposal_by_id(int(proposal_id))
 
     if proposal is None:
-        return fastapi.responses.JSONResponse(
-            {"error": f"Proposal {proposal_id} not found"}, status_code=404
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=f"Proposal {proposal_id} not found"
         )
 
     channel_name = proposal_service.slack_channel_name_for_proposal(proposal_id)
 
     if channel_name is None:
-        return fastapi.responses.JSONResponse(
-            {
-                "error": f"Slack channel name cannot be generated for proposal {proposal_id}"
-            },
-            status_code=404,
-        )
+        raise HTTPException(status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"Slack channel name could not be generated for the proposal {proposal_id}")
 
     channel_id = await slack_service.create_channel(
         channel_name,
@@ -95,9 +91,9 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
     )
 
     if channel_id is None:
-        return fastapi.responses.JSONResponse(
-            {"error": f"Slack channel creation failed for proposal {proposal_id}"},
-            status_code=500,
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Slack channel could not be created for the proposal {proposal_id}"
         )
 
     logger.info(f"Created slack channel '{channel_name}' for proposal {proposal_id}.")
@@ -159,7 +155,7 @@ async def update_user_role(username: str, role: ApiUserRole) -> ApiUserResponseM
     :param role: The new role for the user.
     :return: The updated user object.
     """
-    user = await ApiUser.find_one(ApiUser.username==username)
+    user = await ApiUser.find_one(ApiUser.username == username)
     if user is None:
         raise HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND,
