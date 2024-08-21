@@ -70,6 +70,7 @@ async def get_beamline_detectors(name: str) -> DetectorList:
     response_model = DetectorList(detectors=detectors, count=len(detectors))
     return response_model
 
+
 @router.put(
     "/beamline/{name}/detector/",
     include_in_schema=True,
@@ -83,15 +84,19 @@ async def add_detector(name: str, detector: Detector):
         beamline_name=name,
         detector_name=detector.name,
         directory_name=detector.directory_name,
+        granularity=detector.granularity,
+        description=detector.description,
+        manufacturer=detector.manufacturer,
     )
 
     if new_detector is None:
         raise HTTPException(
             status_code=409,
             detail=f"Detector {detector.name} already exists in beamline {name}",
-    )
+        )
 
     return new_detector
+
 
 @router.get(
     "/beamline/{name}/proposal-directory-skeleton",
