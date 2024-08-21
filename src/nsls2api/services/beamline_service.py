@@ -136,6 +136,63 @@ async def add_detector(
     return new_detector
 
 
+async def del_detector(
+    beamline_name: str,
+    detector_name: str,
+    directory_name: str,
+    granularity: DirectoryGranularity,
+    description: str,
+    manufacturer: str,
+) -> Optional[Detector]:
+    """
+    Delete a detector from a beamline.
+
+    Args:
+        beamline_name (str): The name of the beamline.
+        detector_name (str): The name of the detector.
+        directory_name (str): The directory name of the detector.
+        granularity (DirectoryGranularity): The time-granularity of directories to generate.
+        description (str): The description of the detector.
+        manufacturer (str): The manufacturer of the detector.
+
+    Returns:
+        Optional[Detector]: The deleted Detector object if successful, None otherwise.
+    """
+    beamline = await Beamline.find_one(Beamline.name == beamline_name.upper())
+
+    old_detector = Detector(
+        name=detector_name,
+        directory_name=directory_name,
+        granularity=granularity,
+        description=description,
+        manufacturer=manufacturer,
+    )
+
+    deleted_detector = next(
+        (
+            detector
+            for detector in beamline.detectors
+            if detector.name == old_detector.name
+            and detector.directory_name == old_detector.directory_name
+        ),
+        None,
+    )
+    if deleted_detector is None:
+        logger.info(
+            f"Detector with name {detector_name} and directory name {directory_name} was not found for beamline {beamline_name}"
+        )
+        return None
+
+    beamline.detectors.remove(deleted_detector)
+    beamline.last_updated = datetime.datetime.now()
+    await beamline.save()
+    logger.info(
+        f"Detector with directory name {directory_name} was deleted from beamline {beamline_name}"
+    )
+
+    return deleted_detector
+
+
 async def service_accounts(name: str) -> Optional[ServiceAccounts]:
     accounts = await Beamline.find_one(Beamline.name == name.upper()).project(
         ServiceAccountsView

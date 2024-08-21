@@ -98,6 +98,33 @@ async def add_detector(name: str, detector: Detector):
     return new_detector
 
 
+@router.delete(
+    "/beamline/{name}/detector/",
+    include_in_schema=True,
+    response_model=Detector,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def del_detector(name: str, detector: Detector):
+    logger.info(f"Deleting detector {detector.name} from beamline {name}")
+
+    deleted_detector = await beamline_service.del_detector(
+        beamline_name=name,
+        detector_name=detector.name,
+        directory_name=detector.directory_name,
+        granularity=detector.granularity,
+        description=detector.description,
+        manufacturer=detector.manufacturer,
+    )
+
+    if deleted_detector is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Detector {detector_name} with directory {directory_name} was not found for beamline {beamline_name}",
+        )
+
+    return deleted_detector
+
+
 @router.get(
     "/beamline/{name}/proposal-directory-skeleton",
     response_model=ProposalDirectoriesList,
