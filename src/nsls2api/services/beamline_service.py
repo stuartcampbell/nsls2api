@@ -120,10 +120,18 @@ async def add_detector(
         manufacturer=manufacturer,
     )
 
+    current_detector_names = (
+        detector.name for detector in beamlines.detectors
+    )
     current_directory_names = (
         detector.directory_name for detector in beamline.detectors
     )
-    if directory_name in current_directory_names:
+    if detector_name in current_detector_names:
+        logger.info(
+            f"Detector with name {detector_name} already exists in beamline {beamline_name}"
+        )
+        return None:
+    elif directory_name in current_directory_names:
         logger.info(
             f"Detector with directory name {directory_name} already exists in beamline {beamline_name}"
         )
