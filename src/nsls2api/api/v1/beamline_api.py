@@ -112,7 +112,7 @@ async def add_or_delete_detector(
         if new_detector is None:
             raise HTTPException(
                 status_code=409,
-                detail=f"Detector {detector.name} already exists in beamline {name}",
+                detail=f"Detector already exists in beamline {name} with either name '{detector.name}' or directory name '[detector.directory_name}'",
             )
 
         changed_detector = new_detector
