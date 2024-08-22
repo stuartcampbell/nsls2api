@@ -136,7 +136,7 @@ async def add_detector(
     return new_detector
 
 
-async def del_detector(
+async def delete_detector(
     beamline_name: str,
     detector_name: str,
     directory_name: str,

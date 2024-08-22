@@ -104,10 +104,10 @@ async def add_detector(name: str, detector: Detector):
     response_model=Detector,
     dependencies=[Depends(validate_admin_role)],
 )
-async def del_detector(name: str, detector: Detector):
+async def delete_detector(name: str, detector: Detector):
     logger.info(f"Deleting detector {detector.name} from beamline {name}")
 
-    deleted_detector = await beamline_service.del_detector(
+    deleted_detector = await beamline_service.delete_detector(
         beamline_name=name,
         detector_name=detector.name,
         directory_name=detector.directory_name,
