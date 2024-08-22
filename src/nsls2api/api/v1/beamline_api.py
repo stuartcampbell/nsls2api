@@ -110,16 +110,12 @@ async def delete_detector(name: str, detector: Detector):
     deleted_detector = await beamline_service.delete_detector(
         beamline_name=name,
         detector_name=detector.name,
-        directory_name=detector.directory_name,
-        granularity=detector.granularity,
-        description=detector.description,
-        manufacturer=detector.manufacturer,
     )
 
     if deleted_detector is None:
         raise HTTPException(
             status_code=404,
-            detail=f"Detector {detector_name} with directory {directory_name} was not found for beamline {beamline_name}",
+            detail=f"Detector {detector_name} was not found for beamline {beamline_name}",
         )
 
     return deleted_detector
