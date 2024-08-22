@@ -98,7 +98,7 @@ async def add_detector(name: str, detector: Detector):
     return new_detector
 
 
-@router.delete(
+@router.put(
     "/beamline/{name}/delete-detector/",
     include_in_schema=True,
     response_model=Detector,
