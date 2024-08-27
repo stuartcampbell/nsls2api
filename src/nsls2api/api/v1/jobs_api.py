@@ -48,8 +48,8 @@ async def sync_dataadmins(request: Request) -> BackgroundJob:
     include_in_schema=SYNC_ROUTES_IN_SCHEMA,
     tags=["sync"],
 )
-async def sync_proposal(request: Request, proposal_id: int) -> BackgroundJob:
-    sync_params = JobSyncParameters(proposal_id=str(proposal_id))
+async def sync_proposal(request: Request, proposal_id: str) -> BackgroundJob:
+    sync_params = JobSyncParameters(proposal_id=proposal_id)
     job = await background_service.create_background_job(
         JobActions.synchronize_proposal,
         sync_parameters=sync_params,
@@ -99,7 +99,7 @@ async def sync_update_cycles(
     cycle: Optional[str] = None,
 ):
     sync_params = JobSyncParameters(
-        facility=facility, cycle=cycle, sync_source=JobSyncSource.PASS
+        facility=facility, sync_source=JobSyncSource.PASS
     )
 
     job = await background_service.create_background_job(

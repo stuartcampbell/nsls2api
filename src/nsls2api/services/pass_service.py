@@ -32,7 +32,7 @@ async def _call_pass_webservice(url: str):
 
 
 async def get_proposal(
-    proposal_id: int, facility: FacilityName = FacilityName.nsls2
+    proposal_id: str, facility: FacilityName = FacilityName.nsls2
 ) -> Optional[PassProposal]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
@@ -79,7 +79,7 @@ async def get_proposal_types(
             for proposal_type in pass_proposal_types_list:
                 proposal_types.append(PassProposalType(**proposal_type))
     except ValidationError as error:
-        error_message = f"Error validating data recevied from PASS for proposal type for the {facility} facility."
+        error_message = f"Error validating data received from PASS for proposal type for the {facility} facility."
         logger.error(error_message)
         raise PassException(error_message) from error
     except Exception as error:
@@ -91,7 +91,7 @@ async def get_proposal_types(
 
 
 async def get_saf_from_proposal(
-    proposal_id: int, facility: FacilityName = FacilityName.nsls2
+    proposal_id: str, facility: FacilityName = FacilityName.nsls2
 ) -> Optional[list[PassSaf]]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
@@ -109,7 +109,7 @@ async def get_saf_from_proposal(
                 saf_list.append(PassSaf(**saf))
     except ValidationError as error:
         error_message = (
-            f"Error validating SAF data recevied from PASS for proposal {proposal_id}."
+            f"Error validating SAF data received from PASS for proposal {proposal_id}."
         )
         logger.error(error_message)
         raise PassException(error_message) from error
