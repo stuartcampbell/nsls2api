@@ -6,6 +6,10 @@ import pydantic
 import pymongo
 
 from enum import StrEnum
+
+from nsls2api.api.models.facility_model import FacilityName
+
+
 # If we want to use Python < 3.11 then replace the above line with
 # from strenum import StrEnum
 
@@ -35,7 +39,7 @@ class JobActions(StrEnum):
 
 class JobSyncParameters(pydantic.BaseModel):
     proposal_id: Optional[str] = None
-    facility: Optional[str] = None
+    facility: Optional[FacilityName] = None
     year: Optional[int] = None
     cycle: Optional[str] = None
     proposal_type_id: Optional[str] = None
