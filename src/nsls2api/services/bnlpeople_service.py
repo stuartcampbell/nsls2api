@@ -34,7 +34,9 @@ async def get_username_by_id(lifenumber: str) -> Optional[str]:
         return None
 
     url = f"{base_url}/api/BNLPeople?employeeNumber={lifenumber}"
+    logger.debug(f"Calling URL: {url}")
     person = await _call_bnlpeople_webservice(url)
+    logger.debug(person)
     if len(person) == 0 or len(person) > 1:
         logger.warning(
             f"BNL People could not find a person with an employee/life number of '{lifenumber}'"
@@ -57,6 +59,7 @@ async def get_person_by_id(lifenumber: str) -> Optional[BNLPerson]:
 
     url = f"{base_url}/api/BNLPeople?employeeNumber={lifenumber}"
     person = await _call_bnlpeople_webservice(url)
+
     if len(person) == 0 or len(person) > 1:
         raise LookupError(
             f"BNL People could not find a person with an employee/life number of '{lifenumber}'"
