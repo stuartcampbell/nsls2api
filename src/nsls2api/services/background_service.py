@@ -114,7 +114,7 @@ async def worker_function():
                         f"Processing job {job.id} to update cycle information for the {job.sync_parameters.facility} facilty (from {job.sync_parameters.sync_source})."
                     )
                     await sync_service.worker_update_proposal_to_cycle_mapping(
-                        job.sync_parameters.facility, job.sync_parameters.cycle, job.sync_parameters.sync_source
+                        job.sync_parameters.facility, job.sync_parameters.sync_source
                     )
                 case JobActions.synchronize_cycles:
                     logger.info(

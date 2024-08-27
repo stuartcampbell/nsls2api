@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from beanie import UpdateResponse
 from beanie.operators import AddToSet, Set
@@ -20,7 +19,7 @@ from nsls2api.models.proposals import Proposal, SafetyForm, User
 
 async def worker_synchronize_dataadmins() -> None:
     """
-    This method synchronizes the (data) admin permissions (both beamline and facility) 
+    This method synchronizes the (data) admin permissions (both beamline and facility)
     for all users in the system.
     """
     start_time = datetime.datetime.now()
@@ -173,7 +172,7 @@ async def worker_synchronize_proposal_types_from_pass(
     )
 
 
-async def synchronize_proposal_from_pass(proposal_id: int) -> None:
+async def synchronize_proposal_from_pass(proposal_id: str) -> None:
     beamline_list = []
     user_list = []
     saf_list = []
@@ -190,9 +189,9 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
     for saf in pass_saf_list:
         saf_beamline_list = []
         for resource in saf.Resources:
-            beamline = await beamline_service.beamline_by_pass_id(resource.ID)
+            beamline = await beamline_service.beamline_by_pass_id(str(resource.ID))
             if beamline:
-                saf_beamline_list.append(beamline.name)
+                beamline_list.append(beamline.name)
 
         saf_list.append(
             SafetyForm(
@@ -202,7 +201,7 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
 
     # Get the beamlines for this proposal and add them
     for resource in pass_proposal.Resources:
-        beamline = await beamline_service.beamline_by_pass_id(resource.ID)
+        beamline = await beamline_service.beamline_by_pass_id(str(resource.ID))
         if beamline:
             beamline_list.append(beamline.name)
 
@@ -221,7 +220,9 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
                 user_is_pi = True
                 pi_found_in_experimenters = True
         try:
+            logger.debug(f"Looking up username for employee/life number = {user.BNL_ID}")
             bnl_username = await bnlpeople_service.get_username_by_id(user.BNL_ID)
+            logger.debug(f"     ---> {bnl_username}")
         except HTTPStatusError as error:
             logger.error(f"Could not find BNL username for BNL ID '{user.BNL_ID}'.")
             logger.error(f"BNL People API returned: {error}")
@@ -237,7 +238,7 @@ async def synchronize_proposal_from_pass(proposal_id: int) -> None:
         )
         user_list.append(userinfo)
 
-    # Let's add the PI explictly anyway as PASS sometimes includes the PI in the
+    # Let's add the PI explicitly anyway as PASS sometimes includes the PI in the
     # Experimenters list and sometimes not.
     if pass_proposal.PI and not pi_found_in_experimenters:
         bnl_username = await bnlpeople_service.get_username_by_id(
@@ -310,7 +311,7 @@ async def update_proposals_with_cycle(cycle_name: str) -> None:
             logger.warning(error)
 
 
-async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
+async def worker_synchronize_proposal_from_pass(proposal_id: str) -> None:
     start_time = datetime.datetime.now()
 
     await synchronize_proposal_from_pass(proposal_id)
@@ -351,30 +352,24 @@ async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str) -> None:
         f"Proposals for the {cycle} cycle synchronized in {time_taken.total_seconds():,.0f} seconds"
     )
 
-
 async def worker_update_proposal_to_cycle_mapping(
     facility: FacilityName = FacilityName.nsls2,
-    cycle: Optional[str] = None,
     sync_source: JobSyncSource = JobSyncSource.PASS,
 ) -> None:
     start_time = datetime.datetime.now()
 
-    # TODO: Add test that cycle and facility combination is valid
-
-    if cycle:
-        # If we've specified a cycle then only sync that one
-        cycles = await Cycle.find(
-            Cycle.name == str(cycle), Cycle.facility == facility
-        ).to_list()
-    else:
-        cycles = await Cycle.find(Cycle.facility == facility).to_list()
+    cycles = await Cycle.find(Cycle.facility == facility).to_list()
 
     for individual_cycle in cycles:
         if sync_source == JobSyncSource.PASS:
-            logger.info(
-                f"Updating proposals with information for cycle {individual_cycle.name} (from PASS)"
-            )
-            await update_proposals_with_cycle(individual_cycle)
+            if individual_cycle:
+                logger.info(
+                    f"Updating proposals with information for cycle {individual_cycle.name} (from PASS)"
+                )
+                await update_proposals_with_cycle(individual_cycle)
+            else:
+                logger.warning(f"The cycle {individual_cycle} is not valid.")
+                return
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
