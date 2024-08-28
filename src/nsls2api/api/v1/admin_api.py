@@ -3,6 +3,7 @@ from typing import Annotated, Optional
 import fastapi
 from fastapi import Depends, HTTPException
 
+from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import SingleProposal
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.logging import logger
@@ -48,6 +49,7 @@ async def generate_user_apikey(username: str, usertype: ApiUserType = ApiUserTyp
     Generate an API key for a given username.
 
     :param username: The username for which to generate the API key.
+    :param usertype: The type of API key to generate.
     :return: The generated API key.
     """
     return await generate_api_key(username, usertype=usertype)
@@ -58,7 +60,7 @@ async def generate_fake_proposal(
         add_specific_user: str | None = None,
 ) -> Optional[SingleProposal]:
     proposal = await proposal_service.generate_fake_test_proposal(
-        None, add_specific_user
+        FacilityName.nsls2, add_specific_user
     )
 
     if proposal is None:
@@ -72,7 +74,7 @@ async def generate_fake_proposal(
 
 @router.post("/admin/slack/create-proposal-channel/{proposal_id}")
 async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponseModel:
-    proposal = await proposal_service.proposal_by_id(int(proposal_id))
+    proposal = await proposal_service.proposal_by_id(proposal_id)
 
     if proposal is None:
         raise HTTPException(
@@ -98,11 +100,11 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
 
     logger.info(f"Created slack channel '{channel_name}' for proposal {proposal_id}.")
 
-    # Store the created slack channel ID
+    # Store the created Slack channel ID
     proposal.slack_channel_id = channel_id
     await proposal.save()
 
-    # Add the beamline slack channel managers to the channel
+    # Add the beamline Slack channel managers to the channel
     slack_managers_added = []
     for beamline in proposal.instruments:
         slack_managers = await beamline_service.slack_channel_managers(beamline)

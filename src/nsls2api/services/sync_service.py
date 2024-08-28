@@ -7,8 +7,9 @@ from httpx import HTTPStatusError
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.person_model import ActiveDirectoryUser
 from nsls2api.models.beamlines import Beamline
-from nsls2api.models.pass_models import PassCycle
-from nsls2api.services import beamline_service, bnlpeople_service, facility_service, n2sn_service, pass_service, proposal_service
+from nsls2api.models.pass_models import PassCycle, PassProposalType
+from nsls2api.services import beamline_service, bnlpeople_service, facility_service, n2sn_service, pass_service, \
+    proposal_service
 
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -16,6 +17,7 @@ from nsls2api.models.jobs import JobSyncSource
 from nsls2api.models.pass_models import PassProposal, PassSaf
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, SafetyForm, User
+
 
 async def worker_synchronize_dataadmins() -> None:
     """
@@ -29,24 +31,18 @@ async def worker_synchronize_dataadmins() -> None:
         logger.info(f"Synchronizing data admins for facility {facility.name}.")
         data_admin_group_name = await facility_service.data_admin_group(facility.facility_id)
         if data_admin_group_name:
-            ad_users : list[ActiveDirectoryUser]= await n2sn_service.get_users_in_group(data_admin_group_name)
+            ad_users: list[ActiveDirectoryUser] = await n2sn_service.get_users_in_group(data_admin_group_name)
             username_list = [u['sAMAccountName'] for u in ad_users if u['sAMAccountName'] is not None]
             await facility_service.update_data_admins(facility.facility_id, username_list)
     time_taken = datetime.datetime.now() - start_time
     logger.info(f"Facility Data Admin permissions synchronized in {time_taken.total_seconds():,.2f} seconds")
 
-    beamline_list : Beamline = await beamline_service.all_beamlines()
+    beamline_list: list[Beamline] = await beamline_service.all_beamlines()
     for beamline in beamline_list:
         logger.info(f"Synchronizing data admins for beamline {beamline.name}.")
         data_admin_group_name = await beamline_service.data_admin_group(beamline.name)
-        ad_users : list[ActiveDirectoryUser]= await n2sn_service.get_users_in_group(data_admin_group_name)
+        ad_users: list[ActiveDirectoryUser] = await n2sn_service.get_users_in_group(data_admin_group_name)
         username_list = [u['sAMAccountName'] for u in ad_users if u['sAMAccountName'] is not None]
-        # username_list = []
-        # for user in ad_users:
-        #     logger.info("---------")
-        #     logger.info(user)
-        #     if user.sAMAccountName:
-        #         username_list.append(user.sAMAccountName)
         await beamline_service.update_data_admins(beamline.name, username_list)
 
     time_taken = datetime.datetime.now() - start_time
@@ -54,17 +50,17 @@ async def worker_synchronize_dataadmins() -> None:
 
 
 async def worker_synchronize_cycles_from_pass(
-    facility_name: FacilityName = FacilityName.nsls2,
+        facility_name: FacilityName = FacilityName.nsls2,
 ) -> None:
     """
     This method synchronizes the cycles for a facility from PASS.
 
-    :param facility: The facility name (FacilityName).
+    :param facility_name: The facility name (FacilityName).
     """
     start_time = datetime.datetime.now()
 
     try:
-        pass_cycles: PassCycle = await pass_service.get_cycles(facility_name)
+        pass_cycles: list[PassCycle] = await pass_service.get_cycles(facility_name)
     except pass_service.PassException as error:
         error_message = f"Error retrieving cycle information from PASS for {facility_name} facility."
         logger.exception(error_message)
@@ -121,12 +117,12 @@ async def worker_synchronize_cycles_from_pass(
 
 
 async def worker_synchronize_proposal_types_from_pass(
-    facility_name: FacilityName = FacilityName.nsls2,
+        facility_name: FacilityName = FacilityName.nsls2,
 ) -> None:
     start_time = datetime.datetime.now()
 
     try:
-        pass_proposal_types: PassProposal = await pass_service.get_proposal_types(
+        pass_proposal_types: list[PassProposalType] = await pass_service.get_proposal_types(
             facility_name
         )
     except pass_service.PassException as error:
@@ -303,7 +299,7 @@ async def update_proposals_with_cycle(cycle_name: str) -> None:
         # Add the cycle to the Proposal object
 
         try:
-            proposal = await proposal_service.proposal_by_id(int(proposal_id))
+            proposal = await proposal_service.proposal_by_id(proposal_id)
             await proposal.update(AddToSet({Proposal.cycles: cycle_name}))
             proposal.last_updated = datetime.datetime.now()
             await proposal.save()
@@ -342,7 +338,7 @@ async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str) -> None:
     )
     for proposal in commissioning_proposals:
         logger.info(f"Synchronizing commissioning proposal {proposal.Proposal_ID}.")
-        await synchronize_proposal_from_pass(proposal.Proposal_ID)
+        await synchronize_proposal_from_pass(str(proposal.Proposal_ID))
 
     # Now update the cycle information for each proposal
     await update_proposals_with_cycle(cycle)
@@ -352,9 +348,10 @@ async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str) -> None:
         f"Proposals for the {cycle} cycle synchronized in {time_taken.total_seconds():,.0f} seconds"
     )
 
+
 async def worker_update_proposal_to_cycle_mapping(
-    facility: FacilityName = FacilityName.nsls2,
-    sync_source: JobSyncSource = JobSyncSource.PASS,
+        facility: FacilityName = FacilityName.nsls2,
+        sync_source: JobSyncSource = JobSyncSource.PASS,
 ) -> None:
     start_time = datetime.datetime.now()
 
@@ -366,7 +363,7 @@ async def worker_update_proposal_to_cycle_mapping(
                 logger.info(
                     f"Updating proposals with information for cycle {individual_cycle.name} (from PASS)"
                 )
-                await update_proposals_with_cycle(individual_cycle)
+                await update_proposals_with_cycle(individual_cycle.name)
             else:
                 logger.warning(f"The cycle {individual_cycle} is not valid.")
                 return

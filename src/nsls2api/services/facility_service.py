@@ -51,7 +51,7 @@ async def facility_by_pass_id(pass_user_facility_id: str) -> Optional[Facility]:
 
     This method retrieves the facility by the PASS ID.
 
-    :param pass_id: The PASS ID (str).
+    :param pass_user_facility_id: The PASS ID (str).
     :return: The facility (Facility) or None if no facility is found.
     """
     return await Facility.find_one(Facility.pass_facility_id == pass_user_facility_id)
@@ -78,26 +78,29 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
     facility_names = [f.facility_id for f in facilities if f.facility_id is not None]
     return facility_names
 
-async def data_admin_group(facility_name: FacilityName) -> str:
+async def data_admin_group(facility_name: str) -> Optional[str]:
     """
     Retrieves the data admin group for a given facility name.
 
     Args:
-        facility_name (FacilityName): The facility name. e.g. "nsls2, lbms, cfn, etc."
+        facility_name (str): The facility name. e.g. "nsls2, lbms, cfn, etc."
 
     Returns:
         str: The data admin group for the specified facility or None if a group is not found.
     """
     facility = await Facility.find_one(Facility.facility_id == facility_name)
 
+    if facility is None:
+        return None
+
     return facility.data_admin_group
 
-async def update_data_admins(facility_id: FacilityName, data_admins: list[str]):
+async def update_data_admins(facility_id: str, data_admins: list[str]):
     """
     Update the data admins for a given facility.
 
     Args:
-        facility_name (FacilityName): The name of the facility.
+        facility_id (str): The name/ID of the facility (e.g. nsls2, lbms, cfn, etc.).
         data_admins (list[str]): A list of usernames to set as data admins for the facility.
     """
     await Facility.find_one(Facility.facility_id == facility_id.lower()).update(
