@@ -1,3 +1,5 @@
+import datetime
+
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure.logging import logger
 
@@ -18,6 +20,7 @@ async def facilities_count() -> int:
     """
     return await Facility.count()
 
+
 async def all_facilities() -> list[Facility]:
     """
     This method retrieves all facilities in the database.
@@ -25,6 +28,7 @@ async def all_facilities() -> list[Facility]:
     :return: A list of facilities (list[Facility]).
     """
     return await Facility.find().to_list()
+
 
 async def facility_cycles(facility: str) -> Optional[list[str]]:
     """
@@ -78,6 +82,7 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
     facility_names = [f.facility_id for f in facilities if f.facility_id is not None]
     return facility_names
 
+
 async def data_admin_group(facility_name: str) -> Optional[str]:
     """
     Retrieves the data admin group for a given facility name.
@@ -95,6 +100,7 @@ async def data_admin_group(facility_name: str) -> Optional[str]:
 
     return facility.data_admin_group
 
+
 async def update_data_admins(facility_id: str, data_admins: list[str]):
     """
     Update the data admins for a given facility.
@@ -104,7 +110,7 @@ async def update_data_admins(facility_id: str, data_admins: list[str]):
         data_admins (list[str]): A list of usernames to set as data admins for the facility.
     """
     await Facility.find_one(Facility.facility_id == facility_id.lower()).update(
-        Set({Facility.data_admins: data_admins})
+        Set({Facility.data_admins: data_admins, Facility.last_updated: datetime.datetime.now(), })
     )
 
 
@@ -129,7 +135,7 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
 
 
 async def cycle_year(
-    cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
+        cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
 ) -> Optional[str]:
     """
     Cycle Year
