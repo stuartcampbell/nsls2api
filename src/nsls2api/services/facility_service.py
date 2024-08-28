@@ -51,7 +51,7 @@ async def facility_by_pass_id(pass_user_facility_id: str) -> Optional[Facility]:
 
     This method retrieves the facility by the PASS ID.
 
-    :param pass_id: The PASS ID (str).
+    :param pass_user_facility_id: The PASS ID (str).
     :return: The facility (Facility) or None if no facility is found.
     """
     return await Facility.find_one(Facility.pass_facility_id == pass_user_facility_id)
