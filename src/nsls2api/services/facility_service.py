@@ -95,12 +95,12 @@ async def data_admin_group(facility_name: str) -> Optional[str]:
 
     return facility.data_admin_group
 
-async def update_data_admins(facility_id: FacilityName, data_admins: list[str]):
+async def update_data_admins(facility_id: str, data_admins: list[str]):
     """
     Update the data admins for a given facility.
 
     Args:
-        facility_name (FacilityName): The name of the facility.
+        facility_id (str): The name/ID of the facility (e.g. nsls2, lbms, cfn, etc.).
         data_admins (list[str]): A list of usernames to set as data admins for the facility.
     """
     await Facility.find_one(Facility.facility_id == facility_id.lower()).update(

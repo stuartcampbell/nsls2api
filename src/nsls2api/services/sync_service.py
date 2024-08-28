@@ -31,7 +31,7 @@ async def worker_synchronize_dataadmins() -> None:
         if data_admin_group_name:
             ad_users : list[ActiveDirectoryUser]= await n2sn_service.get_users_in_group(data_admin_group_name)
             username_list = [u['sAMAccountName'] for u in ad_users if u['sAMAccountName'] is not None]
-            await facility_service.update_data_admins(FacilityName(facility.facility_id), username_list)
+            await facility_service.update_data_admins(facility.facility_id, username_list)
     time_taken = datetime.datetime.now() - start_time
     logger.info(f"Facility Data Admin permissions synchronized in {time_taken.total_seconds():,.2f} seconds")
 
