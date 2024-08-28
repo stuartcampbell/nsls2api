@@ -522,7 +522,7 @@ async def generate_fake_test_proposal(
         type="Fake Test Proposal",
         users=user_list,
         pass_type_id="666666",
-        data_session=generate_data_session_for_proposal(fake_proposal_id),
+        data_session=generate_data_session_for_proposal(str(fake_proposal_id)),
         instruments=["TST"],
         cycles=[fake_cycle],
         last_updated=datetime.datetime.now(),
