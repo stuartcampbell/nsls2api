@@ -1,8 +1,10 @@
 from http.client import HTTPException
 from typing import Annotated
+
 import fastapi
 from fastapi import Depends, Query, HTTPException
 
+from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
     ProposalDirectoriesList,
@@ -14,11 +16,8 @@ from nsls2api.api.models.proposal_model import (
     SingleProposal,
 )
 from nsls2api.api.models.proposal_model import UsernamesList
-from nsls2api.api.v1.beamline_api import details
 from nsls2api.infrastructure.security import get_current_user
-
 from nsls2api.services import proposal_service
-from nsls2api.api.models.facility_model import FacilityName
 
 router = fastapi.APIRouter(dependencies=[Depends(get_current_user)])
 
