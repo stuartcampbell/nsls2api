@@ -78,17 +78,20 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
     facility_names = [f.facility_id for f in facilities if f.facility_id is not None]
     return facility_names
 
-async def data_admin_group(facility_name: FacilityName) -> str:
+async def data_admin_group(facility_name: str) -> Optional[str]:
     """
     Retrieves the data admin group for a given facility name.
 
     Args:
-        facility_name (FacilityName): The facility name. e.g. "nsls2, lbms, cfn, etc."
+        facility_name (str): The facility name. e.g. "nsls2, lbms, cfn, etc."
 
     Returns:
         str: The data admin group for the specified facility or None if a group is not found.
     """
     facility = await Facility.find_one(Facility.facility_id == facility_name)
+
+    if facility is None:
+        return None
 
     return facility.data_admin_group
 
