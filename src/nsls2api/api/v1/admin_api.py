@@ -3,6 +3,7 @@ from typing import Annotated, Optional
 import fastapi
 from fastapi import Depends, HTTPException
 
+from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import SingleProposal
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.logging import logger
@@ -27,7 +28,7 @@ async def info(settings: Annotated[config.Settings, Depends(config.get_settings)
 
 @router.get("/admin/validate", response_model=str)
 async def check_admin_validation(
-    admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None,
+        admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None,
 ):
     """
     :return: str - The username of the validated admin user.
@@ -48,6 +49,7 @@ async def generate_user_apikey(username: str, usertype: ApiUserType = ApiUserTyp
     Generate an API key for a given username.
 
     :param username: The username for which to generate the API key.
+    :param usertype: The type of API key to generate.
     :return: The generated API key.
     """
     return await generate_api_key(username, usertype=usertype)
@@ -55,10 +57,10 @@ async def generate_user_apikey(username: str, usertype: ApiUserType = ApiUserTyp
 
 @router.post("/admin/proposal/generate-test")
 async def generate_fake_proposal(
-    add_specific_user: str | None = None,
+        add_specific_user: str | None = None,
 ) -> Optional[SingleProposal]:
     proposal = await proposal_service.generate_fake_test_proposal(
-        None, add_specific_user
+        FacilityName.nsls2, add_specific_user
     )
 
     if proposal is None:
@@ -72,22 +74,18 @@ async def generate_fake_proposal(
 
 @router.post("/admin/slack/create-proposal-channel/{proposal_id}")
 async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponseModel:
-    proposal = await proposal_service.proposal_by_id(int(proposal_id))
+    proposal = await proposal_service.proposal_by_id(proposal_id)
 
     if proposal is None:
-        return fastapi.responses.JSONResponse(
-            {"error": f"Proposal {proposal_id} not found"}, status_code=404
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=f"Proposal {proposal_id} not found"
         )
 
     channel_name = proposal_service.slack_channel_name_for_proposal(proposal_id)
 
     if channel_name is None:
-        return fastapi.responses.JSONResponse(
-            {
-                "error": f"Slack channel name cannot be generated for proposal {proposal_id}"
-            },
-            status_code=404,
-        )
+        raise HTTPException(status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"Slack channel name could not be generated for the proposal {proposal_id}")
 
     channel_id = await slack_service.create_channel(
         channel_name,
@@ -95,18 +93,18 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
     )
 
     if channel_id is None:
-        return fastapi.responses.JSONResponse(
-            {"error": f"Slack channel creation failed for proposal {proposal_id}"},
-            status_code=500,
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Slack channel could not be created for the proposal {proposal_id}"
         )
 
     logger.info(f"Created slack channel '{channel_name}' for proposal {proposal_id}.")
 
-    # Store the created slack channel ID
+    # Store the created Slack channel ID
     proposal.slack_channel_id = channel_id
     await proposal.save()
 
-    # Add the beamline slack channel managers to the channel
+    # Add the beamline Slack channel managers to the channel
     slack_managers_added = []
     for beamline in proposal.instruments:
         slack_managers = await beamline_service.slack_channel_managers(beamline)
@@ -159,7 +157,7 @@ async def update_user_role(username: str, role: ApiUserRole) -> ApiUserResponseM
     :param role: The new role for the user.
     :return: The updated user object.
     """
-    user = await ApiUser.find_one(ApiUser.username==username)
+    user = await ApiUser.find_one(ApiUser.username == username)
     if user is None:
         raise HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND,

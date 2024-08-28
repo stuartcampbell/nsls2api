@@ -24,7 +24,7 @@ from nsls2api.services import (
 )
 
 
-async def exists(proposal_id: int) -> bool:
+async def exists(proposal_id: str) -> bool:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
     return False if proposal is None else True
 
@@ -89,7 +89,7 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
     return data_sessions
 
 
-def generate_data_session_for_proposal(proposal_id: int) -> str:
+def generate_data_session_for_proposal(proposal_id: str) -> str:
     return f"pass-{str(proposal_id)}"
 
 
@@ -98,7 +98,7 @@ def slack_channel_name_for_proposal(proposal_id: str) -> str:
     return f"test-sic-{str(proposal_id)}"
 
 
-async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
+async def proposal_by_id(proposal_id: str) -> Optional[Proposal]:
     """
     Retrieve a single proposal by its ID.
 
@@ -215,22 +215,22 @@ async def proposal_type_description_from_pass_type_id(
         return proposal_type.description
 
 
-async def data_session_for_proposal(proposal_id: int) -> Optional[str]:
+async def data_session_for_proposal(proposal_id: str) -> Optional[str]:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
     return proposal.data_session
 
 
-async def beamlines_for_proposal(proposal_id: int) -> Optional[list[str]]:
+async def beamlines_for_proposal(proposal_id: str) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
     return proposal.instruments
 
 
-async def cycles_for_proposal(proposal_id: int) -> Optional[list[str]]:
+async def cycles_for_proposal(proposal_id: str) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
     return proposal.cycles
 
 
-async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
+async def fetch_users_on_proposal(proposal_id: str) -> Optional[list[User]]:
     """
     Fetches the users associated with a given proposal.
 
@@ -245,7 +245,7 @@ async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
 
 
 async def fetch_usernames_from_proposal(
-    proposal_id: int,
+    proposal_id: str,
 ) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
 
@@ -266,7 +266,7 @@ async def safs_from_proposal(proposal_id: str) -> Optional[list[str]]:
     return safs
 
 
-async def pi_from_proposal(proposal_id: int) -> Optional[list[User]]:
+async def pi_from_proposal(proposal_id: str) -> Optional[list[User]]:
     proposal = await proposal_by_id(proposal_id)
 
     pi = [u for u in proposal.users if u.is_pi]
@@ -320,7 +320,7 @@ async def is_commissioning(proposal: Proposal):
 
 
 # Return the directories and permissions that should be present for a given proposal
-async def directories(proposal_id: int):
+async def directories(proposal_id: str):
     proposal = await proposal_by_id(proposal_id)
 
     # if any of the following are null or zero length, then we don't have
@@ -433,7 +433,7 @@ async def generate_fake_proposal_id() -> int:
 
     while proposal_id_already_exists:
         fake_proposal_id = random.randint(900000, 999999)
-        proposal_id_already_exists = await exists(fake_proposal_id)
+        proposal_id_already_exists = await exists(str(fake_proposal_id))
 
     return fake_proposal_id
 
@@ -522,7 +522,7 @@ async def generate_fake_test_proposal(
         type="Fake Test Proposal",
         users=user_list,
         pass_type_id="666666",
-        data_session=generate_data_session_for_proposal(fake_proposal_id),
+        data_session=generate_data_session_for_proposal(str(fake_proposal_id)),
         instruments=["TST"],
         cycles=[fake_cycle],
         last_updated=datetime.datetime.now(),

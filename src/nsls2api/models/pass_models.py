@@ -23,7 +23,7 @@ class PassPerson(pydantic.BaseModel):
     Email: Optional[str] = None
     First_Name: Optional[str] = None
     Last_Name: Optional[str] = None
-    User_Faciity_ID: Optional[str] = None
+    User_Facility_ID: Optional[str] = None
 
 
 class PassAllocation(pydantic.BaseModel):
@@ -91,7 +91,7 @@ class PassExperimenter(pydantic.BaseModel):
     Email: Optional[str] = None
     First_Name: Optional[str] = None
     Last_Name: Optional[str] = None
-    User_Faciity_ID: Optional[str] = None
+    User_Facility_ID: Optional[str] = None
 
 
 class PassResource(pydantic.BaseModel):
