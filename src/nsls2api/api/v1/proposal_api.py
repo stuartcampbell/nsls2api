@@ -61,7 +61,7 @@ async def get_commissioning_proposals(beamline: str | None = None):
     return model
 
 
-@router.get("/proposals/", response_model=ProposalFullDetailsList)
+@router.get("/proposals/", response_model=ProposalFullDetailsList, description="Not fully functional yet.")
 async def get_proposals(
         proposal_id: Annotated[list[str], Query()] = [],
         beamline: Annotated[list[str], Query()] = [],
