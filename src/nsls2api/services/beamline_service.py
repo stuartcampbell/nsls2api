@@ -78,20 +78,20 @@ async def all_services(name: str) -> Optional[ServicesOnly]:
 
 
 async def detectors(name: str) -> Optional[list[Detector]]:
-    detectors = await Beamline.find_one(Beamline.name == name.upper()).project(
+    beamline_detectors = await Beamline.find_one(Beamline.name == name.upper()).project(
         DetectorView
     )
 
-    if detectors is None:
+    if beamline_detectors is None:
         return None
 
-    return detectors.detectors
+    return beamline_detectors.detectors
 
 
 async def add_detector(
-    beamline_name: str,
-    detector_name: str,
-    directory_name: str
+        beamline_name: str,
+        detector_name: str,
+        directory_name: str
 ) -> Optional[Detector]:
     """
     Add a new detector to a beamline.
@@ -121,12 +121,12 @@ async def add_detector(
 
 
 async def add_service(
-    beamline_name: str,
-    service_name: str,
-    used_in_production: bool = False,
-    host: str = None,
-    port: int = None,
-    uri: str = None,
+        beamline_name: str,
+        service_name: str,
+        used_in_production: bool = False,
+        host: str = None,
+        port: int = None,
+        uri: str = None,
 ) -> Optional[BeamlineService]:
     """
     Add a new service to a beamline.
@@ -163,7 +163,6 @@ async def add_service(
         await beamline.save()
 
     return service
-
 
 
 async def service_accounts(name: str) -> Optional[ServiceAccounts]:
@@ -419,53 +418,6 @@ async def check_service_exists(beamline_name: str, service_name: str) -> bool:
         logger.info(f"Service {service_name} found in beamline {beamline_name}")
         return True
 
-    return False
-
-
-async def add_service(
-    beamline_name: str,
-    service_name: str,
-    used_in_production: bool = False,
-    host: str = None,
-    port: int = None,
-    uri: str = None,
-) -> Optional[BeamlineService]:
-    """
-    Add a new service to a beamline.
-
-    Args:
-        beamline_name (str): The name of the beamline.
-        service_name (str): The name of the service.
-        used_in_production (bool, optional): Whether the service is used in production. Defaults to False.
-        host (str, optional): The host of the service. Defaults to None.
-        port (int, optional): The port of the service. Defaults to None.
-        uri (str, optional): The URI of the service. Defaults to None.
-
-    Returns:
-        Optional[BeamlineService]: The newly created BeamlineService object if successful, None otherwise.
-    """
-    beamline = await Beamline.find_one(Beamline.name == beamline_name.upper())
-
-    service = BeamlineService(
-        name=service_name,
-        used_in_production=used_in_production,
-        host=host,
-        port=port,
-        uri=uri,
-    )
-
-    if await check_service_exists(beamline_name, service_name):
-        logger.info(
-            f"Service {service_name} already exists in beamline {beamline_name}"
-        )
-        return None
-    else:
-        beamline.services.append(service)
-        beamline.last_updated = datetime.datetime.now()
-        await beamline.save()
-
-    return service
-
 
 async def uses_synchweb(name: str) -> bool:
     """
@@ -483,7 +435,7 @@ async def uses_synchweb(name: str) -> bool:
         return False
 
 
-async def slack_channel_managers(beamline_name: str) -> list[str]:
+async def slack_channel_managers(beamline_name: str) -> Optional[list[str]]:
     """
     Retrieves the Slack user IDs of the channel managers for a given beamline.
 
