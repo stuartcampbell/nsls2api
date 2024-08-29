@@ -89,9 +89,12 @@ async def detectors(name: str) -> Optional[list[Detector]]:
 
 
 async def add_detector(
-        beamline_name: str,
-        detector_name: str,
-        directory_name: str
+    beamline_name: str,
+    detector_name: str,
+    directory_name: str,
+    granularity: DirectoryGranularity,
+    description: str,
+    manufacturer: str,
 ) -> Optional[Detector]:
     """
     Add a new detector to a beamline.
@@ -100,17 +103,36 @@ async def add_detector(
         beamline_name (str): The name of the beamline.
         detector_name (str): The name of the detector.
         directory_name (str): The directory name of the detector.
+        granularity (DirectoryGranularity): The time-granularity of directories to generate.
+        description (str): The description of the detector.
+        manufacturer (str): The manufacturer of the detector.
 
     Returns:
         Optional[Detector]: The newly created Detector object if successful, None otherwise.
     """
     beamline = await Beamline.find_one(Beamline.name == beamline_name.upper())
 
-    new_detector = Detector(name=detector_name, directory_name=directory_name)
+    new_detector = Detector(
+        name=detector_name,
+        directory_name=directory_name,
+        granularity=granularity,
+        description=description,
+        manufacturer=manufacturer,
+    )
 
-    current_directory_names = (detector.directory_name for detector in beamline.detectors)
-    if directory_name in current_directory_names:
-        logger.info(f"Detector with directory name {directory_name} already exists in beamline {beamline_name}")
+    current_detector_names = (detector.name for detector in beamlines.detectors)
+    current_directory_names = (
+        detector.directory_name for detector in beamline.detectors
+    )
+    if detector_name in current_detector_names:
+        logger.info(
+            f"Detector with name {detector_name} already exists in beamline {beamline_name}"
+        )
+        return None
+    elif directory_name in current_directory_names:
+        logger.info(
+            f"Detector with directory name {directory_name} already exists in beamline {beamline_name}"
+        )
         return None
     else:
         beamline.detectors.append(new_detector)
@@ -120,49 +142,46 @@ async def add_detector(
     return new_detector
 
 
-async def add_service(
-        beamline_name: str,
-        service_name: str,
-        used_in_production: bool = False,
-        host: str = None,
-        port: int = None,
-        uri: str = None,
-) -> Optional[BeamlineService]:
+async def delete_detector(
+    beamline_name: str,
+    detector_name: str,
+) -> Optional[Detector]:
     """
-    Add a new service to a beamline.
+    Delete a detector from a beamline.
 
     Args:
         beamline_name (str): The name of the beamline.
-        service_name (str): The name of the service.
-        used_in_production (bool, optional): Whether the service is used in production. Defaults to False.
-        host (str, optional): The host of the service. Defaults to None.
-        port (int, optional): The port of the service. Defaults to None.
-        uri (str, optional): The URI of the service. Defaults to None.
+        detector_name (str): The name of the detector.
 
     Returns:
-        Optional[BeamlineService]: The newly created BeamlineService object if successful, None otherwise.
+        Optional[Detector]: The deleted Detector object if successful, None otherwise.
     """
     beamline = await Beamline.find_one(Beamline.name == beamline_name.upper())
 
-    service = BeamlineService(
-        name=service_name,
-        used_in_production=used_in_production,
-        host=host,
-        port=port,
-        uri=uri,
-    )
+    old_detector_name = detector_name
 
-    if await check_service_exists(beamline_name, service_name):
+    deleted_detector = next(
+        (
+            detector
+            for detector in beamline.detectors
+            if detector.name == old_detector_name
+        ),
+        None,
+    )
+    if deleted_detector is None:
         logger.info(
-            f"Service {service_name} already exists in beamline {beamline_name}"
+            f"Detector {old_detector_name} was not found for beamline {beamline_name}"
         )
         return None
-    else:
-        beamline.services.append(service)
-        beamline.last_updated = datetime.datetime.now()
-        await beamline.save()
 
-    return service
+    beamline.detectors.remove(deleted_detector)
+    beamline.last_updated = datetime.datetime.now()
+    await beamline.save()
+    logger.info(
+        f"Detector {deleted_detector.name} was deleted from beamline {beamline_name}"
+    )
+
+    return deleted_detector
 
 
 async def service_accounts(name: str) -> Optional[ServiceAccounts]:

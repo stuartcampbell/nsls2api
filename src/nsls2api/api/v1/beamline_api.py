@@ -1,5 +1,5 @@
 import fastapi
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, Request
 from fastapi.security.api_key import APIKey
 from nsls2api.api.models.proposal_model import (
     ProposalDirectoriesList,
@@ -70,28 +70,70 @@ async def get_beamline_detectors(name: str) -> DetectorList:
     response_model = DetectorList(detectors=detectors, count=len(detectors))
     return response_model
 
+
 @router.put(
-    "/beamline/{name}/detector/",
+    "/beamline/{name}/detector/{detector_name}",
     include_in_schema=True,
     response_model=Detector,
     dependencies=[Depends(validate_admin_role)],
 )
-async def add_detector(name: str, detector: Detector):
-    logger.info(f"Adding detector {detector.name} to beamline {name}")
+@router.delete(
+    "/beamline/{name}/detector/{detector_name}",
+    include_in_schema=True,
+    response_model=Detector,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def add_or_delete_detector(
+    request: Request, name: str, detector_name: str, detector: Detector | None = None
+):
+    if request.method == "PUT":
+        logger.info(f"Adding detector {detector_name} to beamline {name}")
 
-    new_detector = await beamline_service.add_detector(
-        beamline_name=name,
-        detector_name=detector.name,
-        directory_name=detector.directory_name,
-    )
+        if not detector:
+            raise HTTPException(
+                status_code=422,
+                detail=f"No detector information supplied in request body.",
+            )
+        if detector_name != detector.name:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Detector name in path '{detector_name}' does not match name in body '{detector.name}'.",
+            )
 
-    if new_detector is None:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Detector {detector.name} already exists in beamline {name}",
-    )
+        new_detector = await beamline_service.add_detector(
+            beamline_name=name,
+            detector_name=detector.name,
+            directory_name=detector.directory_name,
+            granularity=detector.granularity,
+            description=detector.description,
+            manufacturer=detector.manufacturer,
+        )
 
-    return new_detector
+        if new_detector is None:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Detector already exists in beamline {name} with either name '{detector.name}' or directory name '[detector.directory_name}'",
+            )
+
+        changed_detector = new_detector
+    elif request.method == "DELETE":
+        logger.info(f"Deleting detector {detector_name} from beamline {name}")
+
+        deleted_detector = await beamline_service.delete_detector(
+            beamline_name=name,
+            detector_name=detector_name,
+        )
+
+        if deleted_detector is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Detector {detector_name} was not found for beamline {beamline_name}",
+            )
+
+        changed_detector = deleted_detector
+
+    return changed_detector
+
 
 @router.get(
     "/beamline/{name}/proposal-directory-skeleton",
