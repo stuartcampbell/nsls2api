@@ -120,7 +120,7 @@ async def add_detector(
         manufacturer=manufacturer,
     )
 
-    current_detector_names = (detector.name for detector in beamlines.detectors)
+    current_detector_names = (detector.name for detector in beamline.detectors)
     current_directory_names = (
         detector.directory_name for detector in beamline.detectors
     )

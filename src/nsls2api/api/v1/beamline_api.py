@@ -127,7 +127,7 @@ async def add_or_delete_detector(
         if deleted_detector is None:
             raise HTTPException(
                 status_code=404,
-                detail=f"Detector {detector_name} was not found for beamline {beamline_name}",
+                detail=f"Detector {detector_name} was not found for beamline {name}",
             )
 
         changed_detector = deleted_detector
