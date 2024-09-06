@@ -371,7 +371,7 @@ async def directories(proposal_id: str):
 
             users_acl.append({"nsls2data": "rw"})
             users_acl.append({f"{service_accounts.workflow}": "rw"})
-            users_acl.append({f"{service_accounts.ioc}": "r"})
+            users_acl.append({f"{service_accounts.ioc}": "rw"})
 
             # If beamline uses SynchWeb then add access for synchweb user
             if beamline_service.uses_synchweb(beamline_tla):
