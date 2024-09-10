@@ -8,7 +8,7 @@ from nsls2api.viewmodels.shared.viewmodelbase import ViewModelBase
 
 
 class DetailsViewModel(ViewModelBase):
-    def __init__(self, proposal_id: int, request: Request):
+    def __init__(self, proposal_id: str, request: Request):
         super().__init__(request)
 
         self.proposal_id = proposal_id

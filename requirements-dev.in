@@ -1,7 +1,6 @@
 asyncer
 black
 bunnet
-faker
 ipython
 locust
 pytest

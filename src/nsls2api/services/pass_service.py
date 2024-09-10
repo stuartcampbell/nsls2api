@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.logging import logger
-from nsls2api.infrastructure.app_setup import httpx_client_wrapper
+from nsls2api.services.helpers import httpx_client_wrapper
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.pass_models import (
     PassAllocation,
@@ -32,7 +32,7 @@ async def _call_pass_webservice(url: str):
 
 
 async def get_proposal(
-    proposal_id: int, facility: FacilityName = FacilityName.nsls2
+    proposal_id: str, facility: FacilityName = FacilityName.nsls2
 ) -> Optional[PassProposal]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
@@ -48,7 +48,7 @@ async def get_proposal(
         proposal = PassProposal(**pass_proposal)
     except ValidationError as error:
         error_message = (
-            f"Error validating data recevied from PASS for proposal {proposal_id}."
+            f"Error validating data received from PASS for proposal {proposal_id}."
         )
         logger.error(error_message)
         raise PassException(error_message) from error
@@ -79,7 +79,7 @@ async def get_proposal_types(
             for proposal_type in pass_proposal_types_list:
                 proposal_types.append(PassProposalType(**proposal_type))
     except ValidationError as error:
-        error_message = f"Error validating data recevied from PASS for proposal type for the {facility} facility."
+        error_message = f"Error validating data received from PASS for proposal type for the {facility} facility."
         logger.error(error_message)
         raise PassException(error_message) from error
     except Exception as error:
@@ -91,7 +91,7 @@ async def get_proposal_types(
 
 
 async def get_saf_from_proposal(
-    proposal_id: int, facility: FacilityName = FacilityName.nsls2
+    proposal_id: str, facility: FacilityName = FacilityName.nsls2
 ) -> Optional[list[PassSaf]]:
     pass_facility = await facility_service.pass_id_for_facility(facility)
 
@@ -109,7 +109,7 @@ async def get_saf_from_proposal(
                 saf_list.append(PassSaf(**saf))
     except ValidationError as error:
         error_message = (
-            f"Error validating SAF data recevied from PASS for proposal {proposal_id}."
+            f"Error validating SAF data received from PASS for proposal {proposal_id}."
         )
         logger.error(error_message)
         raise PassException(error_message) from error
@@ -121,7 +121,7 @@ async def get_saf_from_proposal(
     return saf_list
 
 
-async def get_commissioning_proposals_by_year(year: int, facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassProposal]]:
+async def get_commissioning_proposals_by_year(year: str, facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassProposal]]:
 
     pass_facility = await facility_service.pass_id_for_facility(facility)
     if not pass_facility:
@@ -139,7 +139,7 @@ async def get_commissioning_proposals_by_year(year: int, facility: FacilityName 
             for commissioning_proposal in pass_commissioning_proposals:
                 commissioning_proposal_list.append(PassProposal(**commissioning_proposal))
     except ValidationError as error:
-        error_message = f"Error validating commissioning proposal data recevied from PASS for year {str(year)} at {facility} facility."
+        error_message = f"Error validating commissioning proposal data received from PASS for year {str(year)} at {facility} facility."
         logger.error(error_message)
         raise PassException(error_message) from error
     except Exception as error:
@@ -176,7 +176,7 @@ async def get_cycles(
             for cycle in pass_cycle_list:
                 cycles.append(PassCycle(**cycle))
     except ValidationError as error:
-        error_message = f"Error validating cycle data recevied from PASS for the {facility} facility."
+        error_message = f"Error validating cycle data received from PASS for the {facility} facility."
         logger.error(error_message)
         raise PassException(error_message) from error
     except Exception as error:
@@ -211,7 +211,7 @@ async def get_proposals_allocated_by_cycle(
             for allocation in pass_allocated_proposals:
                 allocated_proposals.append(PassAllocation(**allocation))
     except ValidationError as error:
-        error_message = f"Error validating allocated proposal data recevied from PASS for the {cycle} cycle at {facility} facility."
+        error_message = f"Error validating allocated proposal data received from PASS for the {cycle} cycle at {facility} facility."
         logger.error(error_message)
         raise PassException(error_message) from error
     except Exception as error:
@@ -241,7 +241,7 @@ async def get_proposals_allocated(
             for allocation in pass_allocated_proposals:
                 allocated_proposals.append(PassAllocation(**allocation))
     except ValidationError as error:
-        error_message = f"Error validating allocated proposal data recevied from PASS at {facility} facility."
+        error_message = f"Error validating allocated proposal data received from PASS at {facility} facility."
         logger.error(error_message)
         raise PassException(error_message) from error
     except Exception as error:

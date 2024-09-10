@@ -49,8 +49,6 @@ dnspython==2.6.1
     # via pymongo
 executing==2.1.0
     # via stack-data
-faker==28.4.1
-    # via -r requirements-dev.in
 flask==3.0.3
     # via
     #   flask-cors
@@ -159,8 +157,6 @@ pymongo==4.8.0
     # via bunnet
 pytest==8.3.3
     # via -r requirements-dev.in
-python-dateutil==2.9.0.post0
-    # via faker
 pyzmq==26.2.0
     # via locust
 requests==2.32.3

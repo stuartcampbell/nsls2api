@@ -1,5 +1,5 @@
 import fastapi
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, Request
 from fastapi.security.api_key import APIKey
 from nsls2api.api.models.proposal_model import (
     ProposalDirectoriesList,
@@ -10,7 +10,15 @@ from nsls2api.infrastructure.security import (
     get_current_user,
     validate_admin_role,
 )
-from nsls2api.models.beamlines import Beamline, BeamlineService, DetectorList
+
+from nsls2api.models.beamlines import (
+    Beamline,
+    BeamlineService,
+    Detector,
+    DetectorList,
+    DirectoryList,
+)
+
 from nsls2api.services import beamline_service
 
 router = fastapi.APIRouter()
@@ -35,14 +43,18 @@ async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_current
         )
     return service_accounts
 
+
 @router.get("/beamline/{name}/slack-channel-managers")
-async def get_beamline_slack_channel_managers(name: str, api_key: APIKey = Depends(get_current_user)):
+async def get_beamline_slack_channel_managers(
+    name: str, api_key: APIKey = Depends(get_current_user)
+):
     slack_channel_managers = await beamline_service.slack_channel_managers(name)
     if slack_channel_managers is None:
         raise HTTPException(
             status_code=404, detail=f"Beamline named {name} could not be found"
         )
     return slack_channel_managers
+
 
 @router.get(
     "/beamline/{name}/detectors", response_model=DetectorList, include_in_schema=True
@@ -59,12 +71,77 @@ async def get_beamline_detectors(name: str) -> DetectorList:
     return response_model
 
 
+@router.put(
+    "/beamline/{name}/detector/{detector_name}",
+    include_in_schema=True,
+    response_model=Detector,
+    dependencies=[Depends(validate_admin_role)],
+)
+@router.delete(
+    "/beamline/{name}/detector/{detector_name}",
+    include_in_schema=True,
+    response_model=Detector,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def add_or_delete_detector(
+    request: Request, name: str, detector_name: str, detector: Detector | None = None
+):
+    if request.method == "PUT":
+        logger.info(f"Adding detector {detector_name} to beamline {name}")
+
+        if not detector:
+            raise HTTPException(
+                status_code=422,
+                detail=f"No detector information supplied in request body.",
+            )
+        if detector_name != detector.name:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Detector name in path '{detector_name}' does not match name in body '{detector.name}'.",
+            )
+
+        new_detector = await beamline_service.add_detector(
+            beamline_name=name,
+            detector_name=detector.name,
+            directory_name=detector.directory_name,
+            granularity=detector.granularity,
+            description=detector.description,
+            manufacturer=detector.manufacturer,
+        )
+
+        if new_detector is None:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Detector already exists in beamline {name} with either name '{detector.name}' or directory name '{detector.directory_name}'",
+            )
+
+        changed_detector = new_detector
+    elif request.method == "DELETE":
+        logger.info(f"Deleting detector {detector_name} from beamline {name}")
+
+        deleted_detector = await beamline_service.delete_detector(
+            beamline_name=name,
+            detector_name=detector_name,
+        )
+
+        if deleted_detector is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Detector {detector_name} was not found for beamline {name}",
+            )
+
+        changed_detector = deleted_detector
+
+    return changed_detector
+
+
 @router.get(
     "/beamline/{name}/proposal-directory-skeleton",
     response_model=ProposalDirectoriesList,
+    deprecated=True,
 )
 async def get_beamline_proposal_directory_skeleton(name: str):
-    directory_skeleton = await beamline_service.proposal_directory_skeleton(name)
+    directory_skeleton = await beamline_service.directory_skeleton(name)
     if directory_skeleton is None:
         raise HTTPException(
             status_code=404,
@@ -77,14 +154,11 @@ async def get_beamline_proposal_directory_skeleton(name: str):
 
 
 @router.get(
-    "/beamline/{name}/proposal-directory-skeleton-alternate",
-    response_model=ProposalDirectoriesList,
-    include_in_schema=False,
+    "/beamline/{name}/directory-skeleton",
+    response_model=DirectoryList,
 )
-async def get_beamline_proposal_directory_skeleton_alternate(
-    name: str, proposal_id: int
-):
-    directory_skeleton = await beamline_service.proposal_directory_skeleton(name)
+async def get_beamline_directory_skeleton(name: str):
+    directory_skeleton = await beamline_service.directory_skeleton(name)
     if directory_skeleton is None:
         raise HTTPException(
             status_code=404,

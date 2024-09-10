@@ -216,6 +216,11 @@ def rename_channel(name: str, new_name: str) -> str | None:
     if response.data["ok"] is not True:
         raise Exception(f"Failed to rename channel {name} to {new_name}")
 
+    if channel_id is None:
+        return None
+
+    return channel_id
+
 
 def lookup_userid_by_email(email: str) -> str | None:
     """

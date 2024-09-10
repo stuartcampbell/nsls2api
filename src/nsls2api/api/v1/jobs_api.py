@@ -149,8 +149,7 @@ async def sync_update_cycles(
     cycle: Optional[str] = None,
 ):
     sync_params = JobSyncParameters(
-        facility=facility,
-        cycle=cycle,
+        facility=facility, sync_source=JobSyncSource.PASS
     )
 
     job = await background_service.create_background_job(

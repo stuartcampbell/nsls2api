@@ -14,12 +14,13 @@ jobs:
       run: echo "The hostname is $(hostname)"
       
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup Java
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        distribution: 'zulu'
+        java-version: '21'
     
     - name: Download ijhttp.zip 
       run: curl -f -L -o ijhttp.zip "https://jb.gg/ijhttp/latest"
