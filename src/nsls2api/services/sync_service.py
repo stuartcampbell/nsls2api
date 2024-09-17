@@ -192,11 +192,11 @@ async def synchronize_proposal_from_pass(proposal_id: str) -> None:
         for resource in saf.Resources:
             beamline = await beamline_service.beamline_by_pass_id(str(resource.ID))
             if beamline:
-                beamline_list.append(beamline.name)
+                saf_beamline_list.append(beamline.name)
 
         saf_list.append(
             SafetyForm(
-                saf_id=str(saf.SAF_ID), status=saf.Status, instruments=saf_beamline_list
+                saf_id=str(saf.SAF_ID), status=saf.Status, instruments=set(saf_beamline_list)
             )
         )
 
@@ -263,7 +263,7 @@ async def synchronize_proposal_from_pass(proposal_id: str) -> None:
         data_session=data_session,
         pass_type_id=str(pass_proposal.Proposal_Type_ID),
         type=pass_proposal.Proposal_Type_Description,
-        instruments=beamline_list,
+        instruments=set(beamline_list),
         safs=saf_list,
         users=user_list,
         last_updated=datetime.datetime.now(),
