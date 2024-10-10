@@ -4,6 +4,7 @@ black
 bunnet
 ipython
 locust
+pyright
 pytest
 pytest-asyncio
 ruff
