@@ -7,6 +7,7 @@ from nsls2api import models
 from nsls2api.models.beamlines import Beamline, ServiceAccounts
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
+from nsls2api.models.proposal_types import ProposalType
 from nsls2api.services.beamline_service import service_accounts
 
 
@@ -14,9 +15,9 @@ from nsls2api.services.beamline_service import service_accounts
 def event_loop():
     return asyncio.get_event_loop()
 
+
 @pytest.fixture(scope="session")
 async def db():
-
     settings = get_settings()
     await init_connection(settings.mongodb_dsn.unicode_string())
 
@@ -39,6 +40,7 @@ async def db():
                         pass_facility_id="NSLS-II")
     await facility.insert()
 
+    # Insert a cycle into the database
     cycle = Cycle(name="1999-1", facility="nsls2", year="1999",
                   start_date="1999-01-01T00:00:00.000+00:00",
                   end_date="1999-06-30T00:00:00.000+00:00",
@@ -47,6 +49,14 @@ async def db():
                   pass_id="111111"
                   )
     await cycle.insert()
+
+    # Insert a proposal type into the database
+    proposal_type = ProposalType(code="X", facility_id="nsls2",
+                                 description="Proposal Type X",
+                                 pass_id="999999",
+                                 pass_description="Proposal Type X",
+                                 )
+    await proposal_type.insert()
 
     yield
 
