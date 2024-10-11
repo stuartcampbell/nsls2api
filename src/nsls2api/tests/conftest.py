@@ -5,6 +5,7 @@ from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.mongodb_setup import init_connection
 from nsls2api import models
 from nsls2api.models.beamlines import Beamline, ServiceAccounts
+from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
 from nsls2api.services.beamline_service import service_accounts
 
@@ -37,6 +38,15 @@ async def db():
                         fullname="National Synchrotron Light Source II",
                         pass_facility_id="NSLS-II")
     await facility.insert()
+
+    cycle = Cycle(name="1999-1", facility="nsls2", year="1999",
+                  start_date="1999-01-01T00:00:00.000+00:00",
+                  end_date="1999-06-30T00:00:00.000+00:00",
+                  is_current_operating_cycle=True,
+                  pass_description="January - June",
+                  pass_id="111111"
+                  )
+    await cycle.insert()
 
     yield
 
