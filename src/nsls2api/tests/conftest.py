@@ -19,7 +19,7 @@ def event_loop():
 @pytest.fixture(scope="session")
 async def db():
     settings = get_settings()
-    await init_connection(settings.mongodb_dsn.unicode_string())
+    await init_connection(settings.mongodb_dsn)
 
     # Insert a beamline into the database
     beamline = Beamline(name="ZZZ", port="66-ID-6", long_name="Magical PyTest X-Ray Beamline",
@@ -63,5 +63,5 @@ async def db():
     # Cleanup the database collections
     for model in models.all_models:
         print(f"dropping {model}")
-        await model.get_motor_collection().drop()
-        await model.get_motor_collection().drop_indexes()
+        # await model.get_motor_collection().drop()
+        # await model.get_motor_collection().drop_indexes()

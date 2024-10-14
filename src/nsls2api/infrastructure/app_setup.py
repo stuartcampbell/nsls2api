@@ -15,7 +15,7 @@ local_development_mode = False
 async def app_lifespan(_):
 
     # Initialize the MongoDB connection
-    await mongodb_setup.init_connection(settings.mongodb_dsn.unicode_string())
+    await mongodb_setup.init_connection(settings.mongodb_dsn)
 
     # Create a shared httpx client
     httpx_client_wrapper.start()

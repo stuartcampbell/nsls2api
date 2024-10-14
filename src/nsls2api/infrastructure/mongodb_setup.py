@@ -24,7 +24,7 @@ async def init_connection(mongodb_dsn: MongoDsn):
     logger.info(f"Attempting to connect to {click.style(str(mongodb_dsn), fg='green')}")
 
     client = motor.motor_asyncio.AsyncIOMotorClient(
-        mongodb_dsn, uuidRepresentation="standard"
+        mongodb_dsn.unicode_string(), uuidRepresentation="standard"
     )
     await beanie.init_beanie(
         database=client.get_default_database(),
