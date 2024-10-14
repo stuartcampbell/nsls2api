@@ -45,6 +45,8 @@ click==8.1.7
     #   textual-dev
 configargparse==1.7
     # via locust
+coverage==7.6.3
+    # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
 dnspython==2.7.0

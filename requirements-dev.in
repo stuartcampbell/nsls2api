@@ -2,6 +2,7 @@ asgi-lifespan
 asyncer
 black
 bunnet
+coverage
 ipython
 locust
 pyright

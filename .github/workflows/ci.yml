@@ -14,6 +14,7 @@ jobs:
     strategy:
       matrix:
         python-version:
+          - "3.11"
           - "3.12"
 
     steps:
@@ -50,5 +51,7 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pytest -v
+          set -vxeuo pipefail
+          coverage run -m pytest -v
+          coverage report
       
