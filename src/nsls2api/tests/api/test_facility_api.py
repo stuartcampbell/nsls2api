@@ -1,9 +1,11 @@
+import pytest
 from httpx import AsyncClient
 
 from nsls2api.api.models.facility_model import FacilityCyclesResponseModel, FacilityCurrentOperatingCycleResponseModel
 from nsls2api.api.models.proposal_model import CycleProposalList
 
 
+@pytest.mark.asyncio
 async def test_get_current_operating_cycle(test_client: AsyncClient):
     facility_name = "nsls2"
     response = await test_client.get(f"/v1/facility/{facility_name}/cycles/current")
@@ -16,6 +18,7 @@ async def test_get_current_operating_cycle(test_client: AsyncClient):
     assert current_cycle.cycle == "1999-1"
 
 
+@pytest.mark.asyncio
 async def test_get_facility_cycles(test_client: AsyncClient):
     facility_name = "nsls2"
     response = await test_client.get(f"/v1/facility/{facility_name}/cycles")
@@ -29,6 +32,7 @@ async def test_get_facility_cycles(test_client: AsyncClient):
     assert facility_cycles.cycles[0] == "1999-1"
 
 
+@pytest.mark.asyncio
 async def test_get_proposals_for_cycle(test_client: AsyncClient):
     facility_name = "nsls2"
     cycle_name = "1999-1"
