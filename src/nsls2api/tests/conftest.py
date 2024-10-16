@@ -1,22 +1,15 @@
-import asyncio
-import pytest
+import pytest_asyncio
 
+from nsls2api import models
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.mongodb_setup import init_connection
-from nsls2api import models
 from nsls2api.models.beamlines import Beamline, ServiceAccounts
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
 from nsls2api.models.proposal_types import ProposalType
-from nsls2api.services.beamline_service import service_accounts
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    return asyncio.get_event_loop()
-
-
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
 async def db():
     settings = get_settings()
     await init_connection(settings.mongodb_dsn)
