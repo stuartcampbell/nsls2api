@@ -5,7 +5,7 @@ from httpx import AsyncClient, ASGITransport
 from nsls2api.main import app
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function", autouse=True, loop_scope="function")
 async def test_client(db):
     async with LifespanManager(app, startup_timeout=100, shutdown_timeout=100):
         server_name = "http://localhost"
