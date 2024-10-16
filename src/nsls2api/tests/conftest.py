@@ -56,5 +56,5 @@ async def db():
     # Cleanup the database collections
     for model in models.all_models:
         print(f"dropping {model}")
-        # await model.get_motor_collection().drop()
-        # await model.get_motor_collection().drop_indexes()
+        await model.get_motor_collection().drop()
+        await model.get_motor_collection().drop_indexes()
