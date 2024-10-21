@@ -1,3 +1,6 @@
+import asyncio
+import datetime
+
 import pytest_asyncio
 
 from nsls2api import models
@@ -9,7 +12,7 @@ from nsls2api.models.facilities import Facility
 from nsls2api.models.proposal_types import ProposalType
 
 
-@pytest_asyncio.fixture(scope="session", loop_scope="session")
+@pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
 async def db():
     settings = get_settings()
     await init_connection(settings.mongodb_dsn)
@@ -35,8 +38,8 @@ async def db():
 
     # Insert a cycle into the database
     cycle = Cycle(name="1999-1", facility="nsls2", year="1999",
-                  start_date="1999-01-01T00:00:00.000+00:00",
-                  end_date="1999-06-30T00:00:00.000+00:00",
+                  start_date=datetime.datetime.fromisoformat("1999-01-01"),
+                  end_date=datetime.datetime.fromisoformat("1999-06-30"),
                   is_current_operating_cycle=True,
                   pass_description="January - June",
                   pass_id="111111"
