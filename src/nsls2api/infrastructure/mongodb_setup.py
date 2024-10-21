@@ -1,3 +1,5 @@
+import asyncio
+
 import beanie
 import click
 import motor.motor_asyncio
@@ -8,7 +10,7 @@ from nsls2api.infrastructure.logging import logger
 
 
 def create_connection_string(
-    host: str, port: int, db_name: str, username: str = None, password: str = None
+        host: str, port: int, db_name: str, username: str, password: str
 ) -> MongoDsn:
     return MongoDsn.build(
         scheme="mongodb",
@@ -26,6 +28,10 @@ async def init_connection(mongodb_dsn: MongoDsn):
     client = motor.motor_asyncio.AsyncIOMotorClient(
         mongodb_dsn.unicode_string(), uuidRepresentation="standard"
     )
+
+    # This is to make sure that the client is using the same event loop as the rest of the application
+    client.get_io_loop = asyncio.get_event_loop
+
     await beanie.init_beanie(
         database=client.get_default_database(),
         document_models=models.all_models,
