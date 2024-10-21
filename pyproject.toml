@@ -52,7 +52,7 @@ target_version = ['py311']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
-asyncio_default_fixture_loop_scope = "session"
+asyncio_default_fixture_loop_scope = "function"
 asyncio_mode = "auto"
 
 [tool.ruff]
