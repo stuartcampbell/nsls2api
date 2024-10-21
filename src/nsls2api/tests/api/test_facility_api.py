@@ -1,14 +1,19 @@
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 
 from nsls2api.api.models.facility_model import FacilityCyclesResponseModel, FacilityCurrentOperatingCycleResponseModel
 from nsls2api.api.models.proposal_model import CycleProposalList
+from nsls2api.main import app
 
 
-@pytest.mark.asyncio
-async def test_get_current_operating_cycle(test_client: AsyncClient):
+@pytest.mark.anyio
+async def test_get_current_operating_cycle():
     facility_name = "nsls2"
-    response = await test_client.get(f"/v1/facility/{facility_name}/cycles/current")
+    async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response = await ac.get(f"/v1/facility/{facility_name}/cycles/current")
+
     response_json = response.json()
     assert response.status_code == 200
 
@@ -18,10 +23,14 @@ async def test_get_current_operating_cycle(test_client: AsyncClient):
     assert current_cycle.cycle == "1999-1"
 
 
-@pytest.mark.asyncio
-async def test_get_facility_cycles(test_client: AsyncClient):
+@pytest.mark.anyio
+async def test_get_facility_cycles():
     facility_name = "nsls2"
-    response = await test_client.get(f"/v1/facility/{facility_name}/cycles")
+    async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response = await ac.get(f"/v1/facility/{facility_name}/cycles")
+
     response_json = response.json()
     assert response.status_code == 200
 
@@ -33,10 +42,15 @@ async def test_get_facility_cycles(test_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_proposals_for_cycle(test_client: AsyncClient):
+async def test_get_proposals_for_cycle():
     facility_name = "nsls2"
     cycle_name = "1999-1"
-    response = await test_client.get(f"/v1/facility/{facility_name}/cycle/{cycle_name}/proposals")
+
+    async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response = await ac.get(f"/v1/facility/{facility_name}/cycle/{cycle_name}/proposals")
+
     response_json = response.json()
     assert response.status_code == 200
 

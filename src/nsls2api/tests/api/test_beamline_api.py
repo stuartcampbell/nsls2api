@@ -1,15 +1,19 @@
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 
+from nsls2api.main import app
 from nsls2api.models.beamlines import ServiceAccounts, Beamline
 
 
-@pytest.mark.asyncio
-async def test_get_beamline_service_accounts(test_client: AsyncClient):
-    response = await test_client.get("/v1/beamline/zzz/service-accounts")
-    response_json = response.json()
+@pytest.mark.anyio
+async def test_get_beamline_service_accounts():
+    async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response = await ac.get("/v1/beamline/zzz/service-accounts")
     assert response.status_code == 200
 
+    response_json = response.json()
     # Make sure we can create a ServiceAccounts object from the response
     accounts = ServiceAccounts(**response_json)
     assert accounts.workflow == "testy-mctestface-workflow"
@@ -20,9 +24,13 @@ async def test_get_beamline_service_accounts(test_client: AsyncClient):
     assert accounts.lsdc is None or accounts.lsdc == ""
 
 
-@pytest.mark.asyncio
-async def test_get_beamline_lowercase(test_client: AsyncClient):
-    response = await test_client.get("/v1/beamline/zzz")
+@pytest.mark.anyio
+async def test_get_beamline_lowercase():
+    async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response = await ac.get("/v1/beamline/zzz")
+
     response_json = response.json()
     assert response.status_code == 200
 
@@ -31,9 +39,13 @@ async def test_get_beamline_lowercase(test_client: AsyncClient):
     assert beamline.name == "ZZZ"
 
 
-@pytest.mark.asyncio
-async def test_get_beamline_uppercase(test_client: AsyncClient):
-    response = await test_client.get("/v1/beamline/ZZZ")
+@pytest.mark.anyio
+async def test_get_beamline_uppercase():
+    async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response = await ac.get("/v1/beamline/ZZZ")
+
     response_json = response.json()
     assert response.status_code == 200
 
@@ -42,8 +54,11 @@ async def test_get_beamline_uppercase(test_client: AsyncClient):
     assert beamline.name == "ZZZ"
 
 
-@pytest.mark.asyncio
-async def test_get_beamline_directory_skeleton(test_client: AsyncClient):
-    response = await test_client.get("/v1/beamline/zzz/directory-skeleton")
+@pytest.mark.anyio
+async def test_get_beamline_directory_skeleton():
+    async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response = await ac.get("/v1/beamline/zzz/directory-skeleton")
     response_json = response.json()
     assert response.status_code == 200
