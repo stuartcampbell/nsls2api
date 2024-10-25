@@ -63,6 +63,7 @@ async def test_get_beamline_directory_skeleton():
     response_json = response.json()
     assert response.status_code == 200
 
+
 @pytest.mark.anyio
 async def test_get_nonexistent_beamline():
     async with AsyncClient(
@@ -72,6 +73,7 @@ async def test_get_nonexistent_beamline():
     assert response.status_code == 404
     assert response.json() == {"detail": "Beamline 'does-not-exist' does not exist"}
 
+
 @pytest.mark.anyio
 async def test_get_service_accounts_for_nonexistent_beamline():
     async with AsyncClient(
@@ -80,6 +82,7 @@ async def test_get_service_accounts_for_nonexistent_beamline():
         response = await ac.get("/v1/beamline/does-not-exist/service-accounts")
     assert response.status_code == 404
     assert response.json() == {"detail": "Beamline 'does-not-exist' does not exist"}
+
 
 @pytest.mark.anyio
 async def test_get_directory_skeleton_for_nonexistent_beamline():
