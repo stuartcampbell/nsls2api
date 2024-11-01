@@ -4,7 +4,7 @@ aiofiles==24.1.0
     # via -r requirements.in
 annotated-types==0.7.0
     # via pydantic
-anyio==4.4.0
+anyio==4.6.2.post1
     # via
     #   httpx
     #   starlette
@@ -12,11 +12,11 @@ argon2-cffi==23.1.0
     # via -r requirements.in
 argon2-cffi-bindings==21.2.0
     # via argon2-cffi
-asgi-correlation-id==4.3.3
+asgi-correlation-id==4.3.4
     # via -r requirements.in
 async-timeout==4.0.3
     # via httpx-socks
-beanie==1.26.0
+beanie==1.27.0
     # via -r requirements.in
 certifi==2024.8.30
     # via
@@ -31,13 +31,13 @@ click==8.1.7
     #   uvicorn
 decorator==5.1.1
     # via gssapi
-dnspython==2.6.1
+dnspython==2.7.0
     # via pymongo
-faker==28.4.1
+faker==30.8.1
     # via -r requirements.in
-fastapi==0.114.2
+fastapi==0.115.3
     # via -r requirements.in
-gssapi==1.8.3
+gssapi==1.9.0
     # via n2snusertools
 gunicorn==23.0.0
     # via -r requirements.in
@@ -45,7 +45,7 @@ h11==0.14.0
     # via
     #   httpcore
     #   uvicorn
-httpcore==1.0.5
+httpcore==1.0.6
     # via
     #   httpx
     #   httpx-socks
@@ -76,7 +76,7 @@ markdown-it-py==3.0.0
     #   mdit-py-plugins
     #   rich
     #   textual
-markupsafe==2.1.5
+markupsafe==3.0.2
     # via
     #   jinja2
     #   werkzeug
@@ -84,15 +84,17 @@ mdit-py-plugins==0.4.2
     # via markdown-it-py
 mdurl==0.1.2
     # via markdown-it-py
-motor==3.5.1
+motor==3.6.0
     # via beanie
 n2snusertools==0.3.7
     # via -r requirements.in
 packaging==24.1
-    # via gunicorn
+    # via
+    #   asgi-correlation-id
+    #   gunicorn
 passlib==1.7.4
     # via -r requirements.in
-platformdirs==4.3.4
+platformdirs==4.3.6
     # via textual
 prettytable==3.11.0
     # via n2snusertools
@@ -109,23 +111,23 @@ pydantic==2.9.2
     #   pydantic-settings
 pydantic-core==2.23.4
     # via pydantic
-pydantic-settings==2.5.2
+pydantic-settings==2.6.0
     # via -r requirements.in
 pygments==2.18.0
     # via rich
-pymongo==4.8.0
+pymongo==4.9.2
     # via motor
 python-dateutil==2.9.0.post0
     # via faker
 python-dotenv==1.0.1
     # via pydantic-settings
-python-multipart==0.0.9
+python-multipart==0.0.12
     # via -r requirements.in
-python-socks==2.5.1
+python-socks==2.5.3
     # via httpx-socks
 pyyaml==6.0.2
     # via n2snusertools
-rich==13.8.1
+rich==13.9.3
     # via
     #   -r requirements.in
     #   textual
@@ -134,9 +136,9 @@ shellingham==1.5.4
     # via typer
 six==1.16.0
     # via python-dateutil
-slack-bolt==1.20.1
+slack-bolt==1.21.2
     # via -r requirements.in
-slack-sdk==3.33.0
+slack-sdk==3.33.2
     # via
     #   -r requirements.in
     #   slack-bolt
@@ -144,11 +146,11 @@ sniffio==1.3.1
     # via
     #   anyio
     #   httpx
-starlette==0.38.5
+starlette==0.41.0
     # via
     #   asgi-correlation-id
     #   fastapi
-textual==0.79.1
+textual==0.85.0
     # via -r requirements.in
 toml==0.10.2
     # via beanie
@@ -156,6 +158,8 @@ typer==0.12.5
     # via -r requirements.in
 typing-extensions==4.12.2
     # via
+    #   beanie
+    #   faker
     #   fastapi
     #   pydantic
     #   pydantic-core
@@ -165,9 +169,9 @@ uc-micro-py==1.0.3
     # via linkify-it-py
 uuid==1.30
     # via -r requirements.in
-uvicorn==0.30.6
+uvicorn==0.32.0
     # via -r requirements.in
 wcwidth==0.2.13
     # via prettytable
-werkzeug==3.0.4
+werkzeug==3.0.6
     # via -r requirements.in

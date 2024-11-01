@@ -89,12 +89,12 @@ async def detectors(name: str) -> Optional[list[Detector]]:
 
 
 async def add_detector(
-    beamline_name: str,
-    detector_name: str,
-    directory_name: str,
-    granularity: DirectoryGranularity,
-    description: str,
-    manufacturer: str,
+        beamline_name: str,
+        detector_name: str,
+        directory_name: str,
+        granularity: DirectoryGranularity,
+        description: str,
+        manufacturer: str,
 ) -> Optional[Detector]:
     """
     Add a new detector to a beamline.
@@ -143,8 +143,8 @@ async def add_detector(
 
 
 async def delete_detector(
-    beamline_name: str,
-    detector_name: str,
+        beamline_name: str,
+        detector_name: str,
 ) -> Optional[Detector]:
     """
     Delete a detector from a beamline.
@@ -320,6 +320,12 @@ async def update_data_admins(beamline_name: str, data_admins: list[str]):
 
 
 async def directory_skeleton(name: str):
+    # Let's make sure the beamline exists
+    beamline = await beamline_by_name(name)
+    # If there's no beamline then it's not possible to generate a directory skeleton
+    if beamline is None:
+        return None
+
     detector_list = await detectors(name.upper())
 
     directory_list = []

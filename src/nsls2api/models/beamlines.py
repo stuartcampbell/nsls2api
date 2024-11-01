@@ -1,6 +1,6 @@
 import datetime
 from typing import Optional
-
+from beanie import Insert, before_event
 import beanie
 import pydantic
 
@@ -213,6 +213,10 @@ class Beamline(beanie.Document):
     last_updated: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
+
+    @before_event(Insert)
+    def uppercase_name(self):
+        self.name = self.name.upper()
 
     class Settings:
         name = "beamlines"
