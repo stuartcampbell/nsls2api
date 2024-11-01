@@ -83,7 +83,9 @@ def get_settings() -> Settings:
     :returns: The dictionary of current settings.
     """
     if os.environ.get("PYTEST_VERSION") is not None:
-        settings = Settings(_env_file=str(Path(__file__).parent.parent / "pytest.env"))
+        PROJ_SRC_PATH = Path(__file__).parent.parent
+        test_env_file = str(PROJ_SRC_PATH / "pytest.env")
+        settings = Settings(_env_file=test_env_file)
     else:
         settings = Settings()
 
