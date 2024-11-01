@@ -1,5 +1,5 @@
 import fastapi
-from fastapi import HTTPException, Depends, Request
+from fastapi import Depends, HTTPException, Request
 from fastapi.security.api_key import APIKey
 
 from nsls2api.api.models.proposal_model import (
@@ -27,7 +27,8 @@ async def details(name: str):
     beamline = await beamline_service.beamline_by_name(name)
     if beamline is None:
         raise HTTPException(
-            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=f"Beamline '{name}' does not exist"
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Beamline '{name}' does not exist",
         )
     return beamline
 
@@ -37,19 +38,21 @@ async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_current
     service_accounts = await beamline_service.service_accounts(name)
     if service_accounts is None:
         raise HTTPException(
-            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=f"Beamline '{name}' does not exist"
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Beamline '{name}' does not exist",
         )
     return service_accounts
 
 
 @router.get("/beamline/{name}/slack-channel-managers")
 async def get_beamline_slack_channel_managers(
-        name: str, api_key: APIKey = Depends(get_current_user)
+    name: str, api_key: APIKey = Depends(get_current_user)
 ):
     slack_channel_managers = await beamline_service.slack_channel_managers(name)
     if slack_channel_managers is None:
         raise HTTPException(
-            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=f"Beamline named {name} could not be found"
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Beamline named {name} could not be found",
         )
     return slack_channel_managers
 
@@ -82,7 +85,7 @@ async def get_beamline_detectors(name: str) -> DetectorList:
     dependencies=[Depends(validate_admin_role)],
 )
 async def add_or_delete_detector(
-        request: Request, name: str, detector_name: str, detector: Detector | None = None
+    request: Request, name: str, detector_name: str, detector: Detector | None = None
 ):
     if request.method == "PUT":
         logger.info(f"Adding detector {detector_name} to beamline {name}")
@@ -90,7 +93,7 @@ async def add_or_delete_detector(
         if not detector:
             raise HTTPException(
                 status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"No detector information supplied in request body.",
+                detail="No detector information supplied in request body.",
             )
         if detector_name != detector.name:
             raise HTTPException(
@@ -235,7 +238,8 @@ async def get_beamline_services(name: str):
     beamline_services = await beamline_service.all_services(name)
     if beamline_services is None:
         raise HTTPException(
-            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=f"Beamline named {name} could not be found"
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Beamline named {name} could not be found",
         )
     return beamline_services
 
