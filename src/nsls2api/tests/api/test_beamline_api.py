@@ -1,14 +1,14 @@
 import pytest
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
 from nsls2api.main import app
-from nsls2api.models.beamlines import ServiceAccounts, Beamline
+from nsls2api.models.beamlines import Beamline, ServiceAccounts
 
 
 @pytest.mark.anyio
 async def test_get_beamline_service_accounts():
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get("/v1/beamline/zzz/service-accounts")
     assert response.status_code == 200
@@ -27,7 +27,7 @@ async def test_get_beamline_service_accounts():
 @pytest.mark.anyio
 async def test_get_beamline_lowercase():
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get("/v1/beamline/zzz")
 
@@ -42,7 +42,7 @@ async def test_get_beamline_lowercase():
 @pytest.mark.anyio
 async def test_get_beamline_uppercase():
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get("/v1/beamline/ZZZ")
 
@@ -57,7 +57,7 @@ async def test_get_beamline_uppercase():
 @pytest.mark.anyio
 async def test_get_beamline_directory_skeleton():
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get("/v1/beamline/zzz/directory-skeleton")
     response_json = response.json()
@@ -67,7 +67,7 @@ async def test_get_beamline_directory_skeleton():
 @pytest.mark.anyio
 async def test_get_nonexistent_beamline():
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get("/v1/beamline/does-not-exist")
     assert response.status_code == 404
@@ -77,7 +77,7 @@ async def test_get_nonexistent_beamline():
 @pytest.mark.anyio
 async def test_get_service_accounts_for_nonexistent_beamline():
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get("/v1/beamline/does-not-exist/service-accounts")
     assert response.status_code == 404
@@ -87,7 +87,7 @@ async def test_get_service_accounts_for_nonexistent_beamline():
 @pytest.mark.anyio
 async def test_get_directory_skeleton_for_nonexistent_beamline():
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get("/v1/beamline/does-not-exist/directory-skeleton")
     assert response.status_code == 404

@@ -1,7 +1,10 @@
 import pytest
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
-from nsls2api.api.models.facility_model import FacilityCyclesResponseModel, FacilityCurrentOperatingCycleResponseModel
+from nsls2api.api.models.facility_model import (
+    FacilityCurrentOperatingCycleResponseModel,
+    FacilityCyclesResponseModel,
+)
 from nsls2api.api.models.proposal_model import CycleProposalList
 from nsls2api.main import app
 
@@ -10,7 +13,7 @@ from nsls2api.main import app
 async def test_get_current_operating_cycle():
     facility_name = "nsls2"
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get(f"/v1/facility/{facility_name}/cycles/current")
 
@@ -27,7 +30,7 @@ async def test_get_current_operating_cycle():
 async def test_get_facility_cycles():
     facility_name = "nsls2"
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get(f"/v1/facility/{facility_name}/cycles")
 
@@ -47,9 +50,11 @@ async def test_get_proposals_for_cycle():
     cycle_name = "1999-1"
 
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response = await ac.get(f"/v1/facility/{facility_name}/cycle/{cycle_name}/proposals")
+        response = await ac.get(
+            f"/v1/facility/{facility_name}/cycle/{cycle_name}/proposals"
+        )
 
     response_json = response.json()
     assert response.status_code == 200
