@@ -1,9 +1,12 @@
+asgi-lifespan
 asyncer
 black
 bunnet
-faker
+coverage
 ipython
 locust
+pyright
 pytest
+pytest-asyncio
 ruff
 textual-dev

@@ -1,13 +1,76 @@
 import datetime
 from typing import Optional
-
+from beanie import Insert, before_event
 import beanie
 import pydantic
+
+from enum import StrEnum
+
+
+class DirectoryGranularity(StrEnum):
+    """
+    Represents the granularity options for asset directory YYYY/MM/DD/HH tree structure.
+    The value specifies the most granular level to create directories for.  If no date
+    structure is wanted then the value "flat" is used.
+    """
+
+    flat = "flat"
+    year = "year"
+    month = "month"
+    day = "day"
+    hour = "hour"
+
+
+class Directory(pydantic.BaseModel):
+    path: str
+    owner: str
+    group: str | None = None
+    beamline: str | None = None
+    users: list[dict[str, str]]
+    groups: list[dict[str, str]]
+    directory_most_granular_level: DirectoryGranularity | None = (
+        DirectoryGranularity.day
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "directory_count": 1,
+                    "directories": [
+                        {
+                            "path": "assets/detector1",
+                            "owner": "nsls2data",
+                            "group": "nsls2data",
+                            "beamline": "TST",
+                            "directory_most_granular_level": "month",
+                            "users": [
+                                {"softioc-tst": "rw"},
+                                {"service-account": "rw"},
+                            ],
+                            "groups": [
+                                {"dataadmins": "rw"},
+                                {"datareaders": "r"},
+                            ],
+                        }
+                    ],
+                }
+            ]
+        }
+    }
+
+
+class DirectoryList(pydantic.BaseModel):
+    directory_count: int
+    directories: list[Directory]
 
 
 class Detector(pydantic.BaseModel):
     name: str
-    directory_name: str | None = None
+    directory_name: str
+    granularity: DirectoryGranularity | None = DirectoryGranularity.day
+    description: str | None = None
+    manufacturer: str | None = None
 
 
 class DetectorView(pydantic.BaseModel):
@@ -113,6 +176,13 @@ class DataRootDirectoryView(pydantic.BaseModel):
         projection = {"data_root": "$custom_root_directory"}
 
 
+class SlackChannelManagersView(pydantic.BaseModel):
+    slack_channel_managers: list[str] | None = []
+
+    class Settings:
+        projection = {"slack_channel_managers": "$slack_channel_managers"}
+
+
 class EndStation(pydantic.BaseModel):
     name: str
     service_accounts: Optional[ServiceAccounts] = None
@@ -128,11 +198,12 @@ class Beamline(beanie.Document):
     pass_id: Optional[str]
     nsls2_redhat_satellite_location_name: Optional[str]
     service_accounts: ServiceAccounts | None = None
-    endstations: Optional[list[EndStation]]
-    data_admins: Optional[list[str]]
+    endstations: Optional[list[EndStation]] = []
+    slack_channel_managers: Optional[list[str]] = []
+    data_admins: Optional[list[str]] = []
     custom_data_admin_group: Optional[str] = None
-    github_org: Optional[str]
-    ups_id: Optional[str]
+    github_org: Optional[str] = None
+    ups_id: Optional[str] = None
     data_root: Optional[str] = None
     services: Optional[list[BeamlineService]] = []
     detectors: Optional[list[Detector]] = []
@@ -142,6 +213,10 @@ class Beamline(beanie.Document):
     last_updated: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
+
+    @before_event(Insert)
+    def uppercase_name(self):
+        self.name = self.name.upper()
 
     class Settings:
         name = "beamlines"

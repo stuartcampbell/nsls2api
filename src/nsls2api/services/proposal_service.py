@@ -1,11 +1,12 @@
 import datetime
 from pathlib import Path
+from faker import Faker
+from faker.providers import person, python, date_time
+import random
 from typing import Optional
 
-from beanie import UpdateResponse
 from beanie.odm.operators.find.array import ElemMatch
-from beanie.operators import AddToSet, And, In, RegEx, Set, Text
-from httpx import HTTPStatusError
+from beanie.operators import And, In, RegEx, Text
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
@@ -14,19 +15,16 @@ from nsls2api.api.models.proposal_model import (
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
-from nsls2api.models.jobs import JobSyncSource
-from nsls2api.models.pass_models import PassProposal, PassSaf
 from nsls2api.models.proposal_types import ProposalType
-from nsls2api.models.proposals import Proposal, ProposalIdView, SafetyForm, User
+from nsls2api.models.proposals import Proposal, ProposalIdView, User
 from nsls2api.services import (
-    beamline_service,
     bnlpeople_service,
+    beamline_service,
     facility_service,
-    pass_service,
 )
 
 
-async def exists(proposal_id: int) -> bool:
+async def exists(proposal_id: str) -> bool:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
     return False if proposal is None else True
 
@@ -76,15 +74,10 @@ async def recently_updated(count=5, beamline: str | None = None):
 #     return result
 
 
-async def fetch_proposals_for_cycle(cycle: str) -> list[str]:
-    cycle = await Cycle.find_one(Cycle.name == cycle)
+async def fetch_proposals_for_cycle(cycle_name: str) -> list[str]:
+    cycle = await Cycle.find_one(Cycle.name == cycle_name)
     if cycle is None:
-        raise LookupError(f"Cycle {cycle} not found")
-
-    # In case a 'None' has crept into the database
-    if cycle.proposals is None:
-        return []
-
+        raise LookupError(f"Cycle {cycle} not found in local database.")
     return cycle.proposals
 
 
@@ -96,11 +89,16 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
     return data_sessions
 
 
-def generate_data_session_for_proposal(proposal_id: int) -> str:
+def generate_data_session_for_proposal(proposal_id: str) -> str:
     return f"pass-{str(proposal_id)}"
 
 
-async def proposal_by_id(proposal_id: int) -> Optional[Proposal]:
+def slack_channel_name_for_proposal(proposal_id: str) -> str:
+    # TODO: Actually make this configurable and more sensible
+    return f"test-sic-{str(proposal_id)}"
+
+
+async def proposal_by_id(proposal_id: str) -> Optional[Proposal]:
     """
     Retrieve a single proposal by its ID.
 
@@ -217,22 +215,22 @@ async def proposal_type_description_from_pass_type_id(
         return proposal_type.description
 
 
-async def data_session_for_proposal(proposal_id: int) -> Optional[str]:
+async def data_session_for_proposal(proposal_id: str) -> Optional[str]:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
     return proposal.data_session
 
 
-async def beamlines_for_proposal(proposal_id: int) -> Optional[list[str]]:
+async def beamlines_for_proposal(proposal_id: str) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
     return proposal.instruments
 
 
-async def cycles_for_proposal(proposal_id: int) -> Optional[list[str]]:
+async def cycles_for_proposal(proposal_id: str) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
     return proposal.cycles
 
 
-async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
+async def fetch_users_on_proposal(proposal_id: str) -> Optional[list[User]]:
     """
     Fetches the users associated with a given proposal.
 
@@ -247,7 +245,7 @@ async def fetch_users_on_proposal(proposal_id: int) -> Optional[list[User]]:
 
 
 async def fetch_usernames_from_proposal(
-    proposal_id: int,
+    proposal_id: str,
 ) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
 
@@ -258,7 +256,17 @@ async def fetch_usernames_from_proposal(
     return usernames
 
 
-async def pi_from_proposal(proposal_id: int) -> Optional[list[User]]:
+async def safs_from_proposal(proposal_id: str) -> Optional[list[str]]:
+    proposal = await proposal_by_id(proposal_id)
+
+    safs = [s.saf_id for s in proposal.safs if s.saf_id is not None]
+
+    # data_sessions = [p.data_session for p in proposals if p.data_session is not None]
+
+    return safs
+
+
+async def pi_from_proposal(proposal_id: str) -> Optional[list[User]]:
     proposal = await proposal_by_id(proposal_id)
 
     pi = [u for u in proposal.users if u.is_pi]
@@ -312,7 +320,7 @@ async def is_commissioning(proposal: Proposal):
 
 
 # Return the directories and permissions that should be present for a given proposal
-async def directories(proposal_id: int):
+async def directories(proposal_id: str):
     proposal = await proposal_by_id(proposal_id)
 
     # if any of the following are null or zero length, then we don't have
@@ -377,9 +385,7 @@ async def directories(proposal_id: int):
 
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
             groups_acl.append(
-                {
-                    f"{await beamline_service.custom_data_admin_group(beamline_tla)}": "rw"
-                }
+                {f"{await beamline_service.data_admin_group(beamline_tla)}": "rw"}
             )
 
             directory = {
@@ -415,257 +421,113 @@ async def diagnostic_details_by_id(proposal_id: str) -> Optional[ProposalDiagnos
         data_session=proposal.data_session,
         beamlines=proposal.instruments,
         cycles=proposal.cycles,
+        safs=await safs_from_proposal(proposal.proposal_id),
         updated=proposal.last_updated,
     )
 
     return proposal_diagnostics
 
 
-async def worker_synchronize_proposal_types_from_pass(
-    facility_name: FacilityName = FacilityName.nsls2,
-) -> None:
-    start_time = datetime.datetime.now()
+async def generate_fake_proposal_id() -> int:
+    proposal_id_already_exists = True
 
-    try:
-        pass_proposal_types: PassProposal = await pass_service.get_proposal_types(
-            facility_name
-        )
-    except pass_service.PassException as error:
-        error_message = (
-            f"Error retrieving proposal types from PASS for {facility_name} facility."
-        )
-        logger.exception(error_message)
-        raise Exception(error_message) from error
+    while proposal_id_already_exists:
+        fake_proposal_id = random.randint(900000, 999999)
+        proposal_id_already_exists = await exists(str(fake_proposal_id))
 
-    for pass_proposal_type in pass_proposal_types:
-        facility = await facility_service.facility_by_pass_id(
-            pass_proposal_type.User_Facility_ID
-        )
-
-        proposal_type = ProposalType(
-            code=pass_proposal_type.Code,
-            facility_id=facility.facility_id,
-            pass_id=str(pass_proposal_type.ID),
-            description=pass_proposal_type.Description,
-            pass_description=pass_proposal_type.Description,
-        )
-
-        response = await ProposalType.find_one(
-            ProposalType.pass_id == str(pass_proposal_type.ID)
-        ).upsert(
-            Set(
-                {
-                    ProposalType.code: pass_proposal_type.Code,
-                    ProposalType.pass_description: pass_proposal_type.Description,
-                    ProposalType.description: pass_proposal_type.Description,
-                    ProposalType.facility_id: facility.facility_id,
-                    ProposalType.last_updated: datetime.datetime.now(),
-                }
-            ),
-            on_insert=proposal_type,
-            response_type=UpdateResponse.UPDATE_RESULT,
-        )
-
-    time_taken = datetime.datetime.now() - start_time
-    logger.debug(f"Response: {response}")
-    logger.info(
-        f"Proposal type information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
-    )
+    return fake_proposal_id
 
 
-async def synchronize_proposal_from_pass(proposal_id: int) -> None:
-    beamline_list = []
+async def generate_fake_test_proposal(
+    facility_name: FacilityName = FacilityName.nsls2, add_specific_user=None
+) -> Optional[Proposal]:
+    """
+    Generates a fake test proposal.
+
+    Args:
+        facility_name (FacilityName, optional): The name of the facility. Defaults to using the NSLS-II facility.
+        add_specific_user (Optional[str], optional): If specified, the username of a specific user to add to the proposal, propagated by the BNL AD. Defaults to None.
+    Returns:
+        Optional[Proposal]: The generated fake test proposal, or None if an error occurred.
+    """
+    MAX_USERS_PER_PROPOSAL: int = 9
+
+    number_of_users = random.randint(1, MAX_USERS_PER_PROPOSAL)
+    pi_number = random.randint(0, number_of_users - 1)
     user_list = []
-    saf_list = []
 
-    try:
-        pass_proposal: PassProposal = await pass_service.get_proposal(proposal_id)
-    except pass_service.PassException as error:
-        error_message = f"Error retrieving proposal {proposal_id} from PASS"
-        logger.exception(error_message)
-        raise Exception(error_message) from error
+    fake = Faker()
+    fake.add_provider(person)
+    fake.add_provider(python)
+    fake.add_provider(date_time)
 
-    # Get the SAFs for this proposal
-    pass_saf_list: list[PassSaf] = await pass_service.get_saf_from_proposal(proposal_id)
-    for saf in pass_saf_list:
-        saf_beamline_list = []
-        for resource in saf.Resources:
-            beamline = await beamline_service.beamline_by_pass_id(resource.ID)
-            if beamline:
-                saf_beamline_list.append(beamline.name)
-
-        saf_list.append(
-            SafetyForm(
-                saf_id=str(saf.SAF_ID), status=saf.Status, instruments=saf_beamline_list
-            )
-        )
-
-    # Get the beamlines for this proposal and add them
-    for resource in pass_proposal.Resources:
-        beamline = await beamline_service.beamline_by_pass_id(resource.ID)
-        if beamline:
-            beamline_list.append(beamline.name)
-
-    pi_found_in_experimenters = False
-
-    # Get the users for this proposal
-    for user in pass_proposal.Experimenters:
-        user_is_pi = False
-        bnl_username = None
-
-        if pass_proposal.PI is None:
-            logger.warning(f"Proposal {proposal_id} does not have a PI.")
-            continue
+    # Fake Users
+    for i in range(number_of_users):
+        if i == pi_number:
+            is_pi = True
         else:
-            if str(pass_proposal.PI.BNL_ID).casefold() == str(user.BNL_ID).casefold():
-                user_is_pi = True
-                pi_found_in_experimenters = True
+            is_pi = False
+
+        if fake.pybool(truth_probability=80) or is_pi:
+            user_bnl_id = fake.pystr_format(string_format="??##?").upper()
+            # Now only a subset of people with BNL IDs will actually have usernames
+            if fake.pybool(truth_probability=80) or is_pi:
+                username = fake.user_name()
+            else:
+                username = None
+        else:
+            user_bnl_id = None
+            username = None
+
+        user = User(
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            email=fake.email(),
+            bnl_id=user_bnl_id,
+            username=username,
+            is_pi=False if isinstance(add_specific_user, str) else is_pi,
+        )
+        user_list.append(user)
+
+    # Real User(s)
+    # If there is a real user, make them the only PI using the above `is_pi` logic.
+    if isinstance(add_specific_user, str):
         try:
-            bnl_username = await bnlpeople_service.get_username_by_id(user.BNL_ID)
-        except HTTPStatusError as error:
-            logger.error(f"Could not find BNL username for BNL ID '{user.BNL_ID}'.")
-            logger.error(f"BNL People API returned: {error}")
-            bnl_username = None
+            person = await bnlpeople_service.get_person_by_username(add_specific_user)
+            if person:
+                user = User(
+                    first_name=person.FirstName,
+                    last_name=person.LastName,
+                    email=person.BNLEmail,
+                    bnl_id=person.EmployeeNumber,
+                    username=add_specific_user,
+                    is_pi=True,
+                )
+                user_list.append(user)
+        except LookupError:
+            logger.error(f"Could not find user {add_specific_user} in BNLPeople.")
+            return None
 
-        userinfo = User(
-            first_name=user.First_Name,
-            last_name=user.Last_Name,
-            email=user.Email,
-            bnl_id=user.BNL_ID,
-            username=bnl_username,
-            is_pi=user_is_pi,
-        )
-        user_list.append(userinfo)
+    fake_proposal_id = await generate_fake_proposal_id()
+    fake_title = fake.sentence()
 
-    # Let's add the PI explictly anyway as PASS sometimes includes the PI in the
-    # Experimenters list and sometimes not.
-    if pass_proposal.PI and not pi_found_in_experimenters:
-        bnl_username = await bnlpeople_service.get_username_by_id(
-            pass_proposal.PI.BNL_ID
-        )
-        pi_info = User(
-            first_name=pass_proposal.PI.First_Name,
-            last_name=pass_proposal.PI.Last_Name,
-            email=pass_proposal.PI.Email,
-            bnl_id=pass_proposal.PI.BNL_ID,
-            username=bnl_username,
-            is_pi=True,
-        )
-        user_list.append(pi_info)
-
-    data_session = generate_data_session_for_proposal(proposal_id)
+    fake_cycle = await facility_service.current_operating_cycle(facility_name)
+    if fake_cycle is None:
+        # If there is no current operating cycle, then just make one up
+        fake_cycle = f"{fake.year()}-{fake.pyint(min_value=1, max_value=3)}"
 
     proposal = Proposal(
-        proposal_id=str(pass_proposal.Proposal_ID),
-        title=pass_proposal.Title,
-        data_session=data_session,
-        pass_type_id=str(pass_proposal.Proposal_Type_ID),
-        type=pass_proposal.Proposal_Type_Description,
-        instruments=beamline_list,
-        safs=saf_list,
+        proposal_id=str(fake_proposal_id),
+        title=fake_title,
+        type="Fake Test Proposal",
         users=user_list,
+        pass_type_id="666666",
+        data_session=generate_data_session_for_proposal(str(fake_proposal_id)),
+        instruments=["TST"],
+        cycles=[fake_cycle],
         last_updated=datetime.datetime.now(),
     )
 
-    response = await Proposal.find_one(Proposal.proposal_id == str(proposal_id)).upsert(
-        Set(
-            {
-                Proposal.title: pass_proposal.Title,
-                Proposal.data_session: data_session,
-                Proposal.pass_type_id: str(pass_proposal.Proposal_Type_ID),
-                Proposal.type: pass_proposal.Proposal_Type_Description,
-                Proposal.instruments: beamline_list,
-                Proposal.safs: saf_list,
-                Proposal.users: user_list,
-                Proposal.last_updated: datetime.datetime.now(),
-            }
-        ),
-        on_insert=proposal,
-        response_type=UpdateResponse.UPDATE_RESULT,
-    )
-    logger.debug(f"Response: {response}")
+    await Proposal.insert_one(proposal)
 
-
-async def worker_synchronize_proposal_from_pass(proposal_id: int) -> None:
-    start_time = datetime.datetime.now()
-
-    await synchronize_proposal_from_pass(proposal_id)
-
-    time_taken = datetime.datetime.now() - start_time
-    logger.info(
-        f"Proposal {proposal_id} synchronized in {time_taken.total_seconds():,.0f} seconds"
-    )
-
-
-async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str) -> None:
-    start_time = datetime.datetime.now()
-
-    proposals = await fetch_proposals_for_cycle(cycle)
-    logger.info(f"Synchronizing {len(proposals)} proposals for {cycle} cycle.")
-
-    for proposal_id in proposals:
-        logger.info(f"Synchronizing proposal {proposal_id}.")
-        await synchronize_proposal_from_pass(proposal_id)
-
-    time_taken = datetime.datetime.now() - start_time
-    logger.info(
-        f"Proposals for the {cycle} cycle synchronized in {time_taken.total_seconds():,.0f} seconds"
-    )
-
-
-async def update_proposals_with_cycle_information_from_pass(cycle: Cycle) -> None:
-    """
-    Update all proposals with the given cycle information.
-
-    :param cycle: The cycle information to update the proposals with.
-    :type cycle: Cycle
-    """
-
-    allocations = await pass_service.get_proposals_allocated_by_cycle(cycle.name)
-
-    for allocation in allocations:
-        # Add the proposal to the Cycle object
-
-        # logger.info(f"Going to add proposal {proposal_id} to cycle {cycle.name}")
-
-        await cycle.update(AddToSet({Cycle.proposals: str(allocation.Proposal_ID)}))
-        cycle.last_updated = datetime.datetime.now()
-        await cycle.save()
-
-        try:
-            proposal = await proposal_by_id(allocation.Proposal_ID)
-            await proposal.update(AddToSet({Proposal.cycles: cycle.name}))
-            proposal.last_updated = datetime.datetime.now()
-            await proposal.save()
-        except LookupError as error:
-            logger.warning(error)
-
-
-async def worker_update_cycle_information(
-    facility: FacilityName = FacilityName.nsls2,
-    cycle: Optional[str] = None,
-    sync_source: JobSyncSource = JobSyncSource.PASS,
-) -> None:
-    start_time = datetime.datetime.now()
-
-    # TODO: Add test that cycle and facility combination is valid
-
-    if cycle:
-        # If we've specified a cycle then only sync that one
-        cycles = await Cycle.find(
-            Cycle.name == str(cycle), Cycle.facility == facility
-        ).to_list()
-    else:
-        cycles = await Cycle.find(Cycle.facility == facility).to_list()
-
-    for individual_cycle in cycles:
-        if sync_source == JobSyncSource.PASS:
-            logger.info(
-                f"Updating proposals with information for cycle {individual_cycle.name} (from PASS)"
-            )
-            await update_proposals_with_cycle_information_from_pass(individual_cycle)
-
-    time_taken = datetime.datetime.now() - start_time
-    logger.info(
-        f"Proposal/Cycle information (for {facility}) populated in {time_taken.total_seconds():,.2f} seconds"
-    )
+    return proposal

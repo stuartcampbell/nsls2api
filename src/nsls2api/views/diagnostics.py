@@ -32,7 +32,7 @@ async def diag_username(username: str, request: Request):
 
 
 @router.get("/diagnostics/proposal/{proposal_id}", include_in_schema=False)
-async def diag_proposal(proposal_id: int, request: Request):
+async def diag_proposal(proposal_id: str, request: Request):
     vm = ProposalDiagnosticsViewModel(proposal_id, request)
 
     try:
