@@ -10,4 +10,4 @@ def view(beamline: str):
 
 @app.command("list")
 def list_beamlines():
-    print(f"Listing beamlines...")
+    print("Listing beamlines...")
