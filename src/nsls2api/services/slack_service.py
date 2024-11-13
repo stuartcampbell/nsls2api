@@ -259,7 +259,7 @@ def lookup_username_by_email(email: str) -> str | None:
     """
     response = get_boring_app().client.users_lookupByEmail(email=email)
     if response.data["ok"] is True:
-        return response.data["user"]["name"]
+        return str(response.data["user"]["name"])
 
 
 def add_users_to_channel(channel_id: str, user_ids: list[str]):
