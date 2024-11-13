@@ -1,10 +1,10 @@
 import datetime
+from enum import StrEnum
 from typing import Optional
-from beanie import Insert, before_event
+
 import beanie
 import pydantic
-
-from enum import StrEnum
+from beanie import Insert, before_event
 
 
 class DirectoryGranularity(StrEnum):
@@ -200,6 +200,7 @@ class Beamline(beanie.Document):
     service_accounts: ServiceAccounts | None = None
     endstations: Optional[list[EndStation]] = []
     slack_channel_managers: Optional[list[str]] = []
+    slack_additional_channels: Optional[list[str]] = []
     data_admins: Optional[list[str]] = []
     custom_data_admin_group: Optional[str] = None
     github_org: Optional[str] = None
