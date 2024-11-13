@@ -11,7 +11,7 @@ from nsls2api.viewmodels.proposals.search_viewmodel import SearchViewModel
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 jinja_partials.register_starlette_extensions(templates)
 
-router = fastapi.APIRouter()
+router = fastapi.APIRouter(include_in_schema=False)
 
 
 @router.get("/", include_in_schema=False)
@@ -30,7 +30,7 @@ async def healthy():
 
 
 @router.get("/default", include_in_schema=False)
-def index(request: Request):
+def default(request: Request):
     data = {"request": request}
     return templates.TemplateResponse("home/default.html", data)
 
@@ -49,9 +49,9 @@ async def search_proposals(request: Request):
     return templates.TemplateResponse("home/proposals_search.html", vm.to_dict())
 
 
-@router.get("/proposal-details", include_in_schema=False)
-async def proposals(request: Request):
-    vm = DetailsViewModel(311130, request)
+@router.get("/proposal-details/{proposal_id}", include_in_schema=False)
+async def proposals(proposal_id: str, request: Request):
+    vm = DetailsViewModel(proposal_id, request)
     await vm.load()
 
     print(vm.to_dict())
