@@ -179,7 +179,7 @@ rich==13.9.4
     #   textual-serve
 ruff==0.7.3
     # via -r requirements-dev.in
-setuptools==75.4.0
+setuptools==75.5.0
     # via
     #   zope-event
     #   zope-interface
