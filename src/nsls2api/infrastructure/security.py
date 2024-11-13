@@ -176,7 +176,7 @@ async def validate_admin_role(
                 return key.user
             else:
                 return None
-        except LookupError as lookup_err:
+        except LookupError:
             return None
     else:
         raise HTTPException(

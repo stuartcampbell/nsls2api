@@ -11,4 +11,4 @@ async def test_facilities_count():
 @pytest.mark.anyio
 async def test_all_facilities():
     facilities = await facility_service.all_facilities()
-    assert type(facilities) == list
+    assert type(facilities) is list

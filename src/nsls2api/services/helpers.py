@@ -13,13 +13,19 @@ class HTTPXClientWrapper:
     async_client = None
 
     def start(self):
-        timeouts = httpx.Timeout(None, connect=30.0)  # 30s timeout on connect, no other timeouts.
+        timeouts = httpx.Timeout(
+            None, connect=30.0
+        )  # 30s timeout on connect, no other timeouts.
         limits = httpx.Limits(max_keepalive_connections=5, max_connections=10)
         self.async_client = httpx.AsyncClient(limits=limits, timeout=timeouts)
-        logger.info(f"HTTPXClientWrapper [{click.style(str(id(self.async_client)), fg='cyan')}] started.")
+        logger.info(
+            f"HTTPXClientWrapper [{click.style(str(id(self.async_client)), fg='cyan')}] started."
+        )
 
     async def stop(self):
-        logger.info(f"HTTPXClientWrapper [{click.style(str(id(self.async_client)), fg='cyan')}] stopped.")
+        logger.info(
+            f"HTTPXClientWrapper [{click.style(str(id(self.async_client)), fg='cyan')}] stopped."
+        )
         await self.async_client.aclose()
         self.async_client = None
 
@@ -50,6 +56,7 @@ async def _call_async_webservice(
     results = resp.json()
     return results
 
+
 async def _call_async_webservice_with_client(
     url: str, headers: dict = None, client: httpx.AsyncClient = None
 ) -> Response:
@@ -61,5 +68,6 @@ async def _call_async_webservice_with_client(
         resp.raise_for_status()
         results = resp.json()
         return results
+
 
 httpx_client_wrapper = HTTPXClientWrapper()
