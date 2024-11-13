@@ -1,5 +1,4 @@
 import fastapi
-from pydantic_core import ValidationError
 
 from nsls2api._version import version as api_version
 from nsls2api.api.models.stats_model import (
@@ -7,7 +6,6 @@ from nsls2api.api.models.stats_model import (
     StatsModel,
     ProposalsPerCycleModel,
 )
-from nsls2api.infrastructure.logging import logger
 from nsls2api.services import (
     beamline_service,
     facility_service,

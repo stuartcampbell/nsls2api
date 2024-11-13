@@ -110,7 +110,12 @@ async def update_data_admins(facility_id: str, data_admins: list[str]):
         data_admins (list[str]): A list of usernames to set as data admins for the facility.
     """
     await Facility.find_one(Facility.facility_id == facility_id.lower()).update(
-        Set({Facility.data_admins: data_admins, Facility.last_updated: datetime.datetime.now(), })
+        Set(
+            {
+                Facility.data_admins: data_admins,
+                Facility.last_updated: datetime.datetime.now(),
+            }
+        )
     )
 
 
@@ -135,7 +140,7 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
 
 
 async def cycle_year(
-        cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
+    cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
 ) -> Optional[str]:
     """
     Cycle Year

@@ -14,11 +14,13 @@ settings = get_settings()
 #     signing_secret=settings.slack_signing_secret,
 # )
 
+
 def get_boring_app() -> App:
     return App(
         token=settings.slack_bot_token,
         signing_secret=settings.slack_signing_secret,
     )
+
 
 def get_bot_details() -> SlackBot:
     """
@@ -113,8 +115,8 @@ async def create_channel(
     is_private: bool = True,
 ) -> str | None:
     """
-    Creates a new Slack channel with the given name and privacy settings.  If the channel 
-    already exists, it will convert the channel to the desired privacy setting and invite 
+    Creates a new Slack channel with the given name and privacy settings.  If the channel
+    already exists, it will convert the channel to the desired privacy setting and invite
     the necessary bot user to the channel.
 
     Args:
@@ -217,7 +219,9 @@ def rename_channel(name: str, new_name: str) -> str | None:
     if channel_id is None:
         raise Exception(f"Channel {name} not found.")
 
-    response = get_boring_app().client.conversations_rename(channel=channel_id, name=new_name)
+    response = get_boring_app().client.conversations_rename(
+        channel=channel_id, name=new_name
+    )
 
     if response.data["ok"] is not True:
         raise Exception(f"Failed to rename channel {name} to {new_name}")

@@ -1,7 +1,7 @@
 import datetime
 from pathlib import Path
 from faker import Faker
-from faker.providers import person, python, date_time
+from faker.providers import python, date_time
 import random
 from typing import Optional
 
@@ -457,7 +457,6 @@ async def generate_fake_test_proposal(
     user_list = []
 
     fake = Faker()
-    fake.add_provider(person)
     fake.add_provider(python)
     fake.add_provider(date_time)
 
