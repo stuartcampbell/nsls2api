@@ -9,10 +9,12 @@ httpx
 httpx-socks[asyncio]
 jinja2
 jinja-partials
+motor
 n2snusertools
 passlib
 pydantic
 pydantic-settings
+pymongo
 python-multipart
 rich
 slack-sdk
