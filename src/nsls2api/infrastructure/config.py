@@ -65,13 +65,15 @@ class Settings(BaseSettings):
     pass_api_url: HttpUrl = "https://passservices.bnl.gov/passapi"
 
     # Universal Proposal System
-    universal_proposal_system_api_url: HttpUrl = "https://ups.servicenowservices.com/api"
+    universal_proposal_system_api_url: HttpUrl = (
+        "https://ups.servicenowservices.com/api"
+    )
     universal_proposal_system_api_user: str | None = ""
-    universal_proposal_system_api_password : str | None = ""
-
+    universal_proposal_system_api_password: str | None = ""
 
     model_config = SettingsConfigDict(
-        env_file=str(Path(__file__).parent.parent / ".env"), extra='ignore',
+        env_file=str(Path(__file__).parent.parent / ".env"),
+        extra="ignore",
     )
 
 

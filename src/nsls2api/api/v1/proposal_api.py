@@ -47,12 +47,19 @@ async def get_commissioning_proposals(beamline: str | None = None):
     try:
         proposals = await proposal_service.commissioning_proposals(beamline=beamline)
         if proposals is None:
-            raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND,
-                                detail="No commissioning proposals found")
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail="No commissioning proposals found",
+            )
     except LookupError as e:
-        raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0])
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
+        )
     except Exception as e:
-        raise HTTPException(status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {e}")
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
+        )
 
     model = CommissioningProposalsList(
         count=len(proposals), commissioning_proposals=proposals
@@ -60,15 +67,19 @@ async def get_commissioning_proposals(beamline: str | None = None):
     return model
 
 
-@router.get("/proposals/", response_model=ProposalFullDetailsList, description="Not fully functional yet.")
+@router.get(
+    "/proposals/",
+    response_model=ProposalFullDetailsList,
+    description="Not fully functional yet.",
+)
 async def get_proposals(
-        proposal_id: Annotated[list[str], Query()] = [],
-        beamline: Annotated[list[str], Query()] = [],
-        cycle: Annotated[list[str], Query()] = [],
-        facility: Annotated[list[FacilityName], Query()] = [FacilityName.nsls2],
-        page_size: int = 10,
-        page: int = 1,
-        include_directories: bool = False,
+    proposal_id: Annotated[list[str], Query()] = [],
+    beamline: Annotated[list[str], Query()] = [],
+    cycle: Annotated[list[str], Query()] = [],
+    facility: Annotated[list[FacilityName], Query()] = [FacilityName.nsls2],
+    page_size: int = 10,
+    page: int = 1,
+    include_directories: bool = False,
 ):
     proposal_list = await proposal_service.fetch_proposals(
         proposal_id=proposal_id,
@@ -95,12 +106,19 @@ async def get_proposal(proposal_id: str):
     try:
         proposal = await proposal_service.proposal_by_id(proposal_id)
         if proposal is None:
-            raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND,
-                                detail=f"Proposal {proposal_id} not found")
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Proposal {proposal_id} not found",
+            )
     except LookupError as e:
-        raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0])
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
+        )
     except Exception as e:
-        raise HTTPException(status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {e}")
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
+        )
 
     response_model = SingleProposal(proposal=proposal)
     return response_model
@@ -111,7 +129,10 @@ async def get_proposals_users(proposal_id: str):
     try:
         users = await proposal_service.fetch_users_on_proposal(proposal_id)
         if users is None:
-            raise HTTPException(fastapi.status.HTTP_404_NOT_FOUND, detail=f"Users not found for proposal {proposal_id}")
+            raise HTTPException(
+                fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Users not found for proposal {proposal_id}",
+            )
     except LookupError as e:
         raise HTTPException(status_code=404, detail=e.args[0])
     except Exception as e:
@@ -131,16 +152,25 @@ async def get_proposal_principal_investigator(proposal_id: str):
         principal_investigator = await proposal_service.pi_from_proposal(proposal_id)
         if len(principal_investigator) == 0:
             # We need a PI for every proposal
-            raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND,
-                                detail=f"PI not found for proposal {proposal_id}")
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"PI not found for proposal {proposal_id}",
+            )
         elif len(principal_investigator) > 1:
             # We should only have 1 PI
-            raise HTTPException(status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                detail=f"Proposal {proposal_id} contains more than one PI")
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Proposal {proposal_id} contains more than one PI",
+            )
     except LookupError as e:
-        raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0])
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
+        )
     except Exception as e:
-        raise HTTPException(status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {e}")
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
+        )
 
     response_model = ProposalUser(
         proposal_id=str(proposal_id), user=principal_investigator[0]
@@ -153,18 +183,27 @@ async def get_proposal_usernames(proposal_id: str):
     try:
         # Check to see if proposal exists
         if not await proposal_service.exists(proposal_id):
-            raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND,
-                                detail=f"Proposal {proposal_id} not found")
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Proposal {proposal_id} not found",
+            )
     except LookupError as e:
-        raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0])
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
+        )
     except Exception as e:
-        raise HTTPException(status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {e}")
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
+        )
 
     proposal_usernames = await proposal_service.fetch_usernames_from_proposal(
         proposal_id
     )
 
-    proposal_groupname = proposal_service.generate_data_session_for_proposal(proposal_id)
+    proposal_groupname = proposal_service.generate_data_session_for_proposal(
+        proposal_id
+    )
 
     response_model = UsernamesList(
         usernames=proposal_usernames,
@@ -180,12 +219,19 @@ async def get_proposal_directories(proposal_id: str) -> ProposalDirectoriesList:
     try:
         directories = await proposal_service.directories(proposal_id)
         if directories is None:
-            raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND,
-                                detail=f"Directories not found for proposal {proposal_id}")
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Directories not found for proposal {proposal_id}",
+            )
     except LookupError as e:
-        raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0])
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
+        )
     except Exception as e:
-        raise HTTPException(status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {e}")
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
+        )
 
     response_model = ProposalDirectoriesList(
         directories=directories,

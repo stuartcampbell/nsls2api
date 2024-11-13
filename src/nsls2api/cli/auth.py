@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Optional
 
 import httpx
-import rich.emoji
 import typer
 import getpass
 import configparser
@@ -58,7 +57,3 @@ def status():
         raise
 
     print(f"Authenticated as {logged_in_username}")
-
-
-
-

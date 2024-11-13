@@ -11,7 +11,12 @@ from nsls2api.infrastructure.security import (
     validate_admin_role,
     generate_api_key,
 )
-from nsls2api.models.apikeys import ApiUser, ApiUserRole, ApiUserResponseModel, ApiUserType
+from nsls2api.models.apikeys import (
+    ApiUser,
+    ApiUserRole,
+    ApiUserResponseModel,
+    ApiUserType,
+)
 from nsls2api.models.slack_models import SlackChannelCreationResponseModel
 from nsls2api.services import beamline_service, proposal_service, slack_service
 
@@ -28,7 +33,7 @@ async def info(settings: Annotated[config.Settings, Depends(config.get_settings)
 
 @router.get("/admin/validate", response_model=str)
 async def check_admin_validation(
-        admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None,
+    admin_user: Annotated[ApiUser, Depends(validate_admin_role)] = None,
 ):
     """
     :return: str - The username of the validated admin user.
@@ -57,7 +62,7 @@ async def generate_user_apikey(username: str, usertype: ApiUserType = ApiUserTyp
 
 @router.post("/admin/proposal/generate-test")
 async def generate_fake_proposal(
-        add_specific_user: str | None = None,
+    add_specific_user: str | None = None,
 ) -> Optional[SingleProposal]:
     proposal = await proposal_service.generate_fake_test_proposal(
         FacilityName.nsls2, add_specific_user
@@ -78,14 +83,17 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
 
     if proposal is None:
         raise HTTPException(
-            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=f"Proposal {proposal_id} not found"
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Proposal {proposal_id} not found",
         )
 
     channel_name = proposal_service.slack_channel_name_for_proposal(proposal_id)
 
     if channel_name is None:
-        raise HTTPException(status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=f"Slack channel name could not be generated for the proposal {proposal_id}")
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Slack channel name could not be generated for the proposal {proposal_id}",
+        )
 
     channel_id = await slack_service.create_channel(
         channel_name,
@@ -95,7 +103,7 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
     if channel_id is None:
         raise HTTPException(
             status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Slack channel could not be created for the proposal {proposal_id}"
+            detail=f"Slack channel could not be created for the proposal {proposal_id}",
         )
 
     logger.info(f"Created slack channel '{channel_name}' for proposal {proposal_id}.")
