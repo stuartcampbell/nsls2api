@@ -33,7 +33,7 @@ decorator==5.1.1
     # via gssapi
 dnspython==2.7.0
     # via pymongo
-faker==32.1.0
+faker==33.0.0
     # via -r requirements.in
 fastapi==0.115.5
     # via -r requirements.in
@@ -45,7 +45,7 @@ h11==0.14.0
     # via
     #   httpcore
     #   uvicorn
-httpcore==1.0.6
+httpcore==1.0.7
     # via
     #   httpx
     #   httpx-socks
@@ -154,7 +154,7 @@ starlette==0.41.2
     # via
     #   asgi-correlation-id
     #   fastapi
-textual==0.85.2
+textual==0.86.1
     # via -r requirements.in
 toml==0.10.2
     # via beanie
