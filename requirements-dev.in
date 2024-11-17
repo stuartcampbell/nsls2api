@@ -5,8 +5,10 @@ bunnet
 coverage
 ipython
 locust
+pre-commit-uv
 pyright
 pytest
 pytest-asyncio
 ruff
 textual-dev
+uv
