@@ -2,7 +2,7 @@
 #    uv pip compile requirements-dev.in -o requirements-dev.txt
 aiohappyeyeballs==2.4.3
     # via aiohttp
-aiohttp==3.10.10
+aiohttp==3.10.11
     # via
     #   aiohttp-jinja2
     #   textual-dev
@@ -39,6 +39,8 @@ certifi==2024.8.30
     #   httpcore
     #   httpx
     #   requests
+cffi==1.17.1
+    # via cryptography
 charset-normalizer==3.4.0
     # via requests
 click==8.1.7
@@ -53,6 +55,8 @@ configargparse==1.7
     # via locust
 coverage==7.6.4
     # via -r requirements-dev.in
+cryptography==43.0.3
+    # via secretstorage
 decorator==5.1.1
     # via ipython
 distlib==0.3.9
@@ -123,6 +127,10 @@ jaraco-functools==4.1.0
     # via keyring
 jedi==0.19.2
     # via ipython
+jeepney==0.8.0
+    # via
+    #   keyring
+    #   secretstorage
 jinja2==3.1.4
     # via
     #   aiohttp-jinja2
@@ -136,7 +144,7 @@ linkify-it-py==2.0.3
     # via markdown-it-py
 locust==2.32.2
     # via -r requirements-dev.in
-markdown-it-py==3.0.0
+markdown-it-py[linkify,plugins]==3.0.0
     # via
     #   mdit-py-plugins
     #   rich
@@ -205,6 +213,8 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
+pycparser==2.22
+    # via cffi
 pydantic==2.9.2
     # via
     #   bunnet
@@ -236,11 +246,8 @@ rich==13.9.4
     #   textual-serve
 ruff==0.7.3
     # via -r requirements-dev.in
-setuptools==75.5.0
-    # via
-    #   setuptools-scm
-    #   zope-event
-    #   zope-interface
+secretstorage==3.3.3
+    # via keyring
 setuptools-scm==8.1.0
     # via hatch-vcs
 shellingham==1.5.4
