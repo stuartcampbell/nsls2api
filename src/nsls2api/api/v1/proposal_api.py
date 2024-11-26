@@ -1,7 +1,10 @@
-from typing import Annotated, Optional
-import fastapi
-from fastapi import Depends, Query, Request
+from http.client import HTTPException
+from typing import Annotated
 
+import fastapi
+from fastapi import Depends, Query, HTTPException
+
+from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
     ProposalDirectoriesList,
@@ -14,10 +17,7 @@ from nsls2api.api.models.proposal_model import (
 )
 from nsls2api.api.models.proposal_model import UsernamesList
 from nsls2api.infrastructure.security import get_current_user
-
 from nsls2api.services import proposal_service
-from nsls2api.api.models.facility_model import FacilityName
-
 
 router = fastapi.APIRouter(dependencies=[Depends(get_current_user)])
 
@@ -47,13 +47,18 @@ async def get_commissioning_proposals(beamline: str | None = None):
     try:
         proposals = await proposal_service.commissioning_proposals(beamline=beamline)
         if proposals is None:
-            return fastapi.responses.JSONResponse(
-                {"error": "Commissioning Proposals not found"}, status_code=404
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail="No commissioning proposals found",
             )
     except LookupError as e:
-        return fastapi.responses.JSONResponse(
-            {"error": e.args[0]},
-            status_code=404,
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
         )
 
     model = CommissioningProposalsList(
@@ -62,7 +67,11 @@ async def get_commissioning_proposals(beamline: str | None = None):
     return model
 
 
-@router.get("/proposals/", response_model=ProposalFullDetailsList)
+@router.get(
+    "/proposals/",
+    response_model=ProposalFullDetailsList,
+    description="Not fully functional yet.",
+)
 async def get_proposals(
     proposal_id: Annotated[list[str], Query()] = [],
     beamline: Annotated[list[str], Query()] = [],
@@ -93,41 +102,41 @@ async def get_proposals(
 
 
 @router.get("/proposal/{proposal_id}", response_model=SingleProposal)
-async def get_proposal(proposal_id: int):
+async def get_proposal(proposal_id: str):
     try:
         proposal = await proposal_service.proposal_by_id(proposal_id)
         if proposal is None:
-            return fastapi.responses.JSONResponse(
-                {"error": f"Proposal {proposal_id} not found"}, status_code=404
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Proposal {proposal_id} not found",
             )
     except LookupError as e:
-        return fastapi.responses.JSONResponse(
-            {"error": e.args[0]},
-            status_code=404,
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
         )
+    except Exception as e:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
+        )
+
     response_model = SingleProposal(proposal=proposal)
     return response_model
 
 
 @router.get("/proposal/{proposal_id}/users", response_model=ProposalUserList)
-async def get_proposals_users(proposal_id: int):
+async def get_proposals_users(proposal_id: str):
     try:
         users = await proposal_service.fetch_users_on_proposal(proposal_id)
         if users is None:
-            return fastapi.responses.JSONResponse(
-                {"error": f"Users not found for proposal {proposal_id}"},
-                status_code=404,
+            raise HTTPException(
+                fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Users not found for proposal {proposal_id}",
             )
     except LookupError as e:
-        return fastapi.responses.JSONResponse(
-            {"error": e.args[0]},
-            status_code=404,
-        )
+        raise HTTPException(status_code=404, detail=e.args[0])
     except Exception as e:
-        return fastapi.responses.JSONResponse(
-            {"error": f"An error occurred: {e}"},
-            status_code=500,
-        )
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
     response_model = ProposalUserList(
         proposal_id=str(proposal_id), users=users, count=len(users)
@@ -138,28 +147,29 @@ async def get_proposals_users(proposal_id: int):
 @router.get(
     "/proposal/{proposal_id}/principal-investigator", response_model=ProposalUser
 )
-async def get_proposal_principal_investigator(proposal_id: int):
+async def get_proposal_principal_investigator(proposal_id: str):
     try:
         principal_investigator = await proposal_service.pi_from_proposal(proposal_id)
         if len(principal_investigator) == 0:
-            return fastapi.responses.JSONResponse(
-                {"error": f"PI not found for proposal {proposal_id}"},
-                status_code=404,
+            # We need a PI for every proposal
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"PI not found for proposal {proposal_id}",
             )
         elif len(principal_investigator) > 1:
-            return fastapi.responses.JSONResponse(
-                {"error": f"Proposal {proposal_id} contains more than one PI"},
-                status_code=422,
+            # We should only have 1 PI
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Proposal {proposal_id} contains more than one PI",
             )
     except LookupError as e:
-        return fastapi.responses.JSONResponse(
-            {"error": e.args[0]},
-            status_code=404,
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
         )
     except Exception as e:
-        return fastapi.responses.JSONResponse(
-            {"error": f"An error occurred: {e}"},
-            status_code=500,
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
         )
 
     response_model = ProposalUser(
@@ -169,29 +179,35 @@ async def get_proposal_principal_investigator(proposal_id: int):
 
 
 @router.get("/proposal/{proposal_id}/usernames", response_model=UsernamesList)
-async def get_proposal_usernames(proposal_id: int):
+async def get_proposal_usernames(proposal_id: str):
     try:
         # Check to see if proposal exists
         if not await proposal_service.exists(proposal_id):
-            return fastapi.responses.JSONResponse(
-                {"error": f"Proposal {proposal_id} not found"}, status_code=404
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Proposal {proposal_id} not found",
             )
     except LookupError as e:
-        return fastapi.responses.JSONResponse(
-            {"error": e.args[0]},
-            status_code=404,
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
         )
     except Exception as e:
-        return fastapi.responses.JSONResponse(
-            {"error": f"An error occurred: {e}"},
-            status_code=500,
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
         )
 
     proposal_usernames = await proposal_service.fetch_usernames_from_proposal(
         proposal_id
     )
+
+    proposal_groupname = proposal_service.generate_data_session_for_proposal(
+        proposal_id
+    )
+
     response_model = UsernamesList(
         usernames=proposal_usernames,
+        groupname=proposal_groupname,
         proposal_id=str(proposal_id),
         count=len(proposal_usernames),
     )
@@ -199,23 +215,22 @@ async def get_proposal_usernames(proposal_id: int):
 
 
 @router.get("/proposal/{proposal_id}/directories")
-async def get_proposal_directories(proposal_id: int) -> ProposalDirectoriesList:
+async def get_proposal_directories(proposal_id: str) -> ProposalDirectoriesList:
     try:
         directories = await proposal_service.directories(proposal_id)
         if directories is None:
-            return fastapi.responses.JSONResponse(
-                {"error": f"Directories not found for proposal {proposal_id}"},
-                status_code=404,
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Directories not found for proposal {proposal_id}",
             )
     except LookupError as e:
-        return fastapi.responses.JSONResponse(
-            {"error": e.args[0]},
-            status_code=404,
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
         )
     except Exception as e:
-        return fastapi.responses.JSONResponse(
-            {"error": f"An error occurred: {e}"},
-            status_code=500,
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
         )
 
     response_model = ProposalDirectoriesList(
@@ -223,4 +238,3 @@ async def get_proposal_directories(proposal_id: int) -> ProposalDirectoriesList:
         directory_count=len(directories),
     )
     return response_model
-

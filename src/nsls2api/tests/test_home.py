@@ -1,11 +1,14 @@
-from fastapi.testclient import TestClient
+import pytest
+from httpx import ASGITransport, AsyncClient
 
 from nsls2api.main import app
 
-client = TestClient(app)
 
-def test_healthy_endpoint():
-    response = client.get("/healthy")
+@pytest.mark.anyio
+async def test_healthy_endpoint():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response = await ac.get("/healthy")
     assert response.status_code == 200
     assert response.text == "OK"
-

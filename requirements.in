@@ -2,6 +2,7 @@ aiofiles
 argon2_cffi
 asgi-correlation-id
 beanie
+faker
 fastapi
 gunicorn
 httpx
@@ -14,6 +15,8 @@ pydantic
 pydantic-settings
 python-multipart
 rich
+slack-sdk
+slack-bolt
 textual
 typer
 uuid

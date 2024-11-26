@@ -8,7 +8,9 @@ from nsls2api.api.models.facility_model import (
     FacilityCyclesResponseModel,
     FacilityCurrentOperatingCycleResponseModel,
 )
+
 from nsls2api.infrastructure.security import validate_admin_role
+from nsls2api.api.models.proposal_model import CycleProposalList
 from nsls2api.services import proposal_service, facility_service
 
 router = fastapi.APIRouter()
@@ -76,7 +78,11 @@ async def get_facility_cycles(facility: FacilityName):
     return response_model
 
 
-@router.get("/facility/{facility}/cycle/{cycle}/proposals", include_in_schema=True)
+@router.get(
+    "/facility/{facility}/cycle/{cycle}/proposals",
+    response_model=CycleProposalList,
+    include_in_schema=True,
+)
 async def get_proposals_for_cycle(facility: FacilityName, cycle: str):
     if facility.name != "nsls2":
         # TODO: Add other facilities
@@ -91,5 +97,7 @@ async def get_proposals_for_cycle(facility: FacilityName, cycle: str):
             {"error": f"No proposals were found for cycle {cycle}"},
             status_code=404,
         )
-    data = {"cycle": cycle, "proposals": proposal_list}
-    return data
+    model = CycleProposalList(
+        cycle=cycle, proposals=proposal_list, count=len(proposal_list)
+    )
+    return model

@@ -1,7 +1,6 @@
 import calendar
 import datetime
 import enum
-import logging
 import secrets
 from typing import Optional
 
@@ -12,6 +11,7 @@ from passlib.handlers.argon2 import argon2 as crypto
 from pydantic_settings import BaseSettings
 
 from nsls2api.infrastructure.config import get_settings
+from nsls2api.infrastructure.logging import logger
 from nsls2api.models.apikeys import ApiKey, ApiUser, ApiUserType, ApiUserRole
 
 TOKEN_BYTE_LENGTH = 32
@@ -19,8 +19,6 @@ API_KEY_PREFIX = "nsls2-api-"
 
 api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
 api_key_query = APIKeyQuery(name="api_key", auto_error=False)
-
-logger = logging.getLogger(__name__)
 
 
 def hash_api_key(api_key):
@@ -41,14 +39,14 @@ async def get_api_key(
     return None
 
 
-async def generate_api_key(username: str):
+async def generate_api_key(username: str, usertype=ApiUserType.user):
     try:
         # Is there an API user for this key to be associated with
         user = await ApiUser.find_one(ApiUser.username == username)
         # If not create one
         if not user:
             print("No user found - creating user principal")
-            user = ApiUser(username=username, type=ApiUserType.user)
+            user = ApiUser(username=username, type=usertype)
             await user.save(link_rule=WriteRules.WRITE)
 
         # Actually generate the api key and add a readable prefix
@@ -69,17 +67,33 @@ async def generate_api_key(username: str):
             expires_after=None,
         )
 
-        # user.user_api_keys.append(new_key)
-        await user.update(link_rule=WriteRules.WRITE)
+        old_keys = await ApiKey.find(ApiKey.username == username).to_list()
+
         await new_key.save(link_rule=WriteRules.WRITE)
 
         # Now that we have saved a new key for this user, we should invalidate any other keys
+        for old_key in old_keys:
+            if old_key.valid:
+                logger.info(f"Invalidating old key: {old_key.secret_key}")
+                old_key.valid = False
+                await old_key.save(link_rule=WriteRules.WRITE)
 
         return {"key:": secret_key}
 
     except Exception as e:
-        print(e)
+        logger.exception(e)
         raise e
+
+
+async def set_user_role(username: str, role: ApiUserRole):
+    user = await ApiUser.find_one(ApiUser.username == username)
+    if user is None:
+        raise LookupError(f"Could not find a user with the username: {username}")
+
+    user.role = role
+    await user.save(link_rule=WriteRules.WRITE)
+
+    return user
 
 
 async def lookup_api_key(token: str) -> ApiKey:
@@ -162,7 +176,7 @@ async def validate_admin_role(
                 return key.user
             else:
                 return None
-        except LookupError as lookup_err:
+        except LookupError:
             return None
     else:
         raise HTTPException(

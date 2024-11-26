@@ -26,11 +26,12 @@ class Proposal(beanie.Document):
     data_session: str
     title: Optional[str] = None
     type: Optional[str] = None
-    pass_type_id: Optional[str]
+    pass_type_id: Optional[str] = None
     instruments: Optional[list[str]] = []
     cycles: Optional[list[str]] = []
     users: Optional[list[User]] = []
     safs: Optional[list[SafetyForm]] = []
+    slack_channel_id: Optional[str] = None
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )

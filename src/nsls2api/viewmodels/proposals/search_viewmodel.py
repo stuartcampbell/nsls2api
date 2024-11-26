@@ -23,7 +23,6 @@ class SearchViewModel(ViewModelBase):
         except KeyError:
             self.search_text = ""
 
-
     async def load(self):
         print(f"Searching for {self.search_text}")
         self.proposals = await proposal_service.search_proposals(self.search_text)

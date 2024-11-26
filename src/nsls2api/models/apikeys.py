@@ -1,6 +1,6 @@
 import datetime
-import enum
-from typing import Optional, List
+from enum import StrEnum
+from typing import Optional
 from uuid import UUID, uuid4
 
 import beanie
@@ -10,22 +10,31 @@ from beanie import Link, BackLink
 from pydantic import Field
 
 
-class ApiUserType(str, enum.Enum):
+class ApiUserType(StrEnum):
     user = "user"
     service = "service"
 
 
-class ApiUserRole(str, enum.Enum):
+class ApiUserRole(StrEnum):
     user = "user"
     staff = "staff"
     admin = "admin"
+
+
+class ApiUserResponseModel(pydantic.BaseModel):
+    id: UUID
+    username: str
+    type: ApiUserType
+    role: ApiUserRole
+    created_on: datetime.datetime
+    last_updated: datetime.datetime
 
 
 class ApiUser(beanie.Document):
     id: UUID = Field(default_factory=uuid4)
     username: str
     type: ApiUserType
-    role: ApiUserRole = ApiUserRole.user
+    role: Optional[ApiUserRole] = ApiUserRole.user
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
@@ -60,7 +69,9 @@ class ApiKey(beanie.Document):
     user: Link[ApiUser]
     username: str
     first_eight: pydantic.constr(min_length=8, max_length=8)
-    secret_key: str  # TODO: After development - we will not be storing this one in the database
+    secret_key: (
+        str  # TODO: After development - we will not be storing this one in the database
+    )
     hashed_key: str
     note: Optional[str] = ""
     # scopes: Optional[list[str]] = pydantic.Field(..., example=["inherit"])

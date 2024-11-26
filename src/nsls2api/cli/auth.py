@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Optional
 
 import httpx
-import rich.emoji
 import typer
 import getpass
 import configparser
@@ -11,9 +10,7 @@ from configparser import NoOptionError, NoSectionError
 from nsls2api.infrastructure.security import SpecialUsers
 
 
-BASE_URL = "http://localhost:8080"
-
-__logged_in_username = None
+BASE_URL = "http://localhost:8000"
 
 app = typer.Typer()
 
@@ -36,15 +33,15 @@ def config_from_file() -> Optional[str]:
 
 
 @app.command()
-def login():
+def status():
     # Let's see if there is a token in the local config file ?
     token = config_from_file()
     if token is None:
         print("No API token found")
         token = getpass.getpass(prompt="Please enter your API token:")
         if len(token) == 0:
-            __logged_in_username: SpecialUsers = SpecialUsers.anonymous
-            print("Logged in as anonymous")
+            logged_in_username: SpecialUsers = SpecialUsers.anonymous
+            print("Authenticated as anonymous")
             return
 
     # Let's test this token
@@ -54,21 +51,9 @@ def login():
             headers = {"Authorization": f"{token}"}
             response = client.get(url, headers=headers)
             response.raise_for_status()
-            __logged_in_username = response.json()
+            logged_in_username = response.json()
     except httpx.RequestError as exc:
         print(f"An error occurred while trying to login {exc}")
         raise
 
-    print(f"Logged in as {__logged_in_username}")
-
-
-@app.command()
-def logout():
-    print("Logging you out...")
-
-
-@app.command()
-def status():
-    print(
-        f"You might be logged in as {__logged_in_username}, or you might not be - {rich.emoji.Emoji('person_shrugging')}"
-    )
+    print(f"Authenticated as {logged_in_username}")

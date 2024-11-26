@@ -1,17 +1,15 @@
 import datetime
+
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure.logging import logger
 
 from typing import Optional
 
-from beanie import UpdateResponse
-from beanie.operators import Set
 from beanie.odm.operators.find.comparison import In
+from beanie.odm.operators.update.general import Set
 
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
-from nsls2api.models.pass_models import PassCycle
-from nsls2api.services import facility_service, pass_service
 
 
 async def facilities_count() -> int:
@@ -21,6 +19,15 @@ async def facilities_count() -> int:
     :return: The number of facilities.
     """
     return await Facility.count()
+
+
+async def all_facilities() -> list[Facility]:
+    """
+    This method retrieves all facilities in the database.
+
+    :return: A list of facilities (list[Facility]).
+    """
+    return await Facility.find().to_list()
 
 
 async def facility_cycles(facility: str) -> Optional[list[str]]:
@@ -48,22 +55,22 @@ async def facility_by_pass_id(pass_user_facility_id: str) -> Optional[Facility]:
 
     This method retrieves the facility by the PASS ID.
 
-    :param pass_id: The PASS ID (str).
+    :param pass_user_facility_id: The PASS ID (str).
     :return: The facility (Facility) or None if no facility is found.
     """
     return await Facility.find_one(Facility.pass_facility_id == pass_user_facility_id)
 
 
-async def pass_id_for_facility(facility_name: str) -> Optional[str]:
+async def pass_id_for_facility(facility_id: str) -> Optional[str]:
     """
     PASS ID for Facility
 
     This method retrieves the PASS ID for a given facility.
 
-    :param facility: The facility name (str). e.g. "nsls2, lbms, cfn, etc."
+    :param facility_id: The facility name (str). e.g. "nsls2, lbms, cfn, etc."
     :return: The PASS ID (str) or None if no facility is found.
     """
-    facility = await Facility.find_one(Facility.facility_id == facility_name)
+    facility = await Facility.find_one(Facility.facility_id == facility_id)
     if facility is None:
         return None
 
@@ -74,6 +81,42 @@ async def data_roles_by_user(username: str) -> Optional[list[str]]:
     facilities = await Facility.find(In(Facility.data_admins, [username])).to_list()
     facility_names = [f.facility_id for f in facilities if f.facility_id is not None]
     return facility_names
+
+
+async def data_admin_group(facility_name: str) -> Optional[str]:
+    """
+    Retrieves the data admin group for a given facility name.
+
+    Args:
+        facility_name (str): The facility name. e.g. "nsls2, lbms, cfn, etc."
+
+    Returns:
+        str: The data admin group for the specified facility or None if a group is not found.
+    """
+    facility = await Facility.find_one(Facility.facility_id == facility_name)
+
+    if facility is None:
+        return None
+
+    return facility.data_admin_group
+
+
+async def update_data_admins(facility_id: str, data_admins: list[str]):
+    """
+    Update the data admins for a given facility.
+
+    Args:
+        facility_id (str): The name/ID of the facility (e.g. nsls2, lbms, cfn, etc.).
+        data_admins (list[str]): A list of usernames to set as data admins for the facility.
+    """
+    await Facility.find_one(Facility.facility_id == facility_id.lower()).update(
+        Set(
+            {
+                Facility.data_admins: data_admins,
+                Facility.last_updated: datetime.datetime.now(),
+            }
+        )
+    )
 
 
 async def current_operating_cycle(facility: str) -> Optional[str]:
@@ -133,6 +176,27 @@ async def set_current_operating_cycle(facility: str, cycle: str) -> Optional[str
     return expected_current_cycle
 
 
+async def cycle_year(
+    cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
+) -> Optional[str]:
+    """
+    Cycle Year
+
+    This method retrieves the year for a given cycle.
+
+    :param cycle_name: The cycle name (str).
+    :param facility_name: The facility name (FacilityName).
+    :return: The year (str) or None if no year is found.
+    """
+    cycle = await Cycle.find_one(
+        Cycle.name == cycle_name, Cycle.facility == facility_name
+    )
+    if cycle is None:
+        return None
+
+    return cycle.year
+
+
 async def is_healthy(facility: str) -> bool:
     """
     Database Health Check
@@ -164,62 +228,3 @@ async def is_healthy(facility: str) -> bool:
         health_status = False
 
     return health_status
-
-
-async def worker_synchronize_cycles_from_pass(
-    facility_name: FacilityName = FacilityName.nsls2,
-) -> None:
-    """
-    This method synchronizes the cycles for a facility from PASS.
-
-    :param facility: The facility name (FacilityName).
-    """
-    start_time = datetime.datetime.now()
-
-    try:
-        pass_cycles: PassCycle = await pass_service.get_cycles(facility_name)
-    except pass_service.PassException as error:
-        error_message = f"Error retrieving cycle information from PASS for {facility_name} facility."
-        logger.exception(error_message)
-        raise Exception(error_message) from error
-
-    for pass_cycle in pass_cycles:
-        facility = await facility_service.facility_by_pass_id(
-            pass_cycle.User_Facility_ID
-        )
-
-        logger.info(f"Processing cycle: {pass_cycle.Name} for {facility.name}.")
-
-        cycle = Cycle(
-            name=pass_cycle.Name,
-            accepting_proposals=pass_cycle.Active,
-            facility=facility.facility_id,
-            year=str(pass_cycle.Year),
-            start_date=pass_cycle.Start_Date,
-            end_date=pass_cycle.End_Date,
-            pass_description=pass_cycle.Description,
-            pass_id=str(pass_cycle.ID),
-        )
-
-        response = await Cycle.find_one(Cycle.name == pass_cycle.Name).upsert(
-            Set(
-                {
-                    Cycle.accepting_proposals: cycle.accepting_proposals,
-                    Cycle.facility: cycle.facility,
-                    Cycle.pass_description: cycle.pass_description,
-                    Cycle.pass_id: cycle.pass_id,
-                    Cycle.year: cycle.year,
-                    Cycle.start_date: cycle.start_date,
-                    Cycle.end_date: cycle.end_date,
-                    Cycle.last_updated: datetime.datetime.now(),
-                }
-            ),
-            on_insert=cycle,
-            response_type=UpdateResponse.UPDATE_RESULT,
-        )
-
-    time_taken = datetime.datetime.now() - start_time
-    logger.info(f"Response: {response}")
-    logger.info(
-        f"Cycle information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
-    )

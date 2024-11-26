@@ -4,22 +4,38 @@ from typing import Optional
 import pydantic
 
 from nsls2api.models.proposals import Proposal, User
-from nsls2api.api.models.beamline_model import AssetDirectoryGranularity
+from nsls2api.models.beamlines import DirectoryGranularity
 
 
 class UsernamesList(pydantic.BaseModel):
     usernames: list[str]
+    groupname: str
     proposal_id: Optional[str]
     count: int
 
     model_config = {
-        "json_schema_extra": {"examples": [{"usernames": ["rdeckard", "rbatty"]}]}
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "groupname": "pass-314159",
+                    "usernames": ["rdeckard", "rbatty"],
+                    "proposal_id": "666666",
+                    "count": 2,
+                }
+            ]
+        }
     }
 
 
 class CommissioningProposalsList(pydantic.BaseModel):
     count: int
     commissioning_proposals: list[str]
+
+
+class CycleProposalList(pydantic.BaseModel):
+    cycle: str
+    count: int
+    proposals: list[str]
 
 
 class RecentProposal(pydantic.BaseModel):
@@ -37,6 +53,7 @@ class RecentProposalsList(pydantic.BaseModel):
 class ProposalSummary(pydantic.BaseModel):
     proposal_id: str
     title: str
+
 
 class SingleProposal(pydantic.BaseModel):
     proposal: Proposal
@@ -61,7 +78,9 @@ class ProposalDirectories(pydantic.BaseModel):
     cycle: str | None = None
     users: list[dict[str, str]]
     groups: list[dict[str, str]]
-    directory_most_granular_level: AssetDirectoryGranularity | None = None
+    directory_most_granular_level: DirectoryGranularity | None = (
+        DirectoryGranularity.day
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -87,26 +106,6 @@ class ProposalDirectories(pydantic.BaseModel):
     }
 
 
-# Not used - may remove
-class ACL(pydantic.BaseModel):
-    entity: str
-    permissions: str
-
-
-# Not used - may remove
-class Directory(pydantic.BaseModel):
-    path: str
-    is_aboslute: bool
-    owner: str
-    group: str
-    acls: list[ACL] | None = []
-
-
-# Not used - may remove
-class ProposalDirectorySkeleton(pydantic.BaseModel):
-    asset_directories: list[Directory]
-
-
 class ProposalDirectoriesList(pydantic.BaseModel):
     directory_count: int
     directories: list[ProposalDirectories]
@@ -121,15 +120,16 @@ class ProposalFullDetailsList(pydantic.BaseModel):
     count: int
     page_size: int | None = None
     page: int | None = None
-    
+
+
 class ProposalDiagnostics(pydantic.BaseModel):
     proposal_id: str
     proposal_type: Optional[str]
     pi: Optional[User]
     users: Optional[list[User]]
-    title: str 
+    title: str
     data_session: Optional[str]
     beamlines: Optional[list[str]]
     cycles: Optional[list[str]]
+    safs: Optional[list[str]]
     updated: datetime.datetime
-
