@@ -323,7 +323,8 @@ async def worker_synchronize_proposal_from_pass(proposal_id: str) -> None:
     )
 
 
-async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str) -> None:
+async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str,
+                                                           facility_name: FacilityName = FacilityName.nsls2) -> None:
     start_time = datetime.datetime.now()
 
     cycle_year = await facility_service.cycle_year(cycle)
