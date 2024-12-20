@@ -338,7 +338,7 @@ async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str,
 
     commissioning_proposals: list[
         PassProposal
-    ] = await pass_service.get_commissioning_proposals_by_year(cycle_year)
+    ] = await pass_service.get_commissioning_proposals_by_year(cycle_year, facility_name=facility_name)
     logger.info(
         f"Synchronizing {len(proposals)} commissioning proposals for the year {cycle_year}."
     )
@@ -347,7 +347,7 @@ async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str,
         await synchronize_proposal_from_pass(str(proposal.Proposal_ID))
 
     # Now update the cycle information for each proposal
-    await update_proposals_with_cycle(cycle)
+    await update_proposals_with_cycle(cycle, facility_name=facility_name)
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
