@@ -128,7 +128,7 @@ async def get_commissioning_proposals_by_year(year: str, facility_name: Facility
         error_message: str = f"Facility {facility_name} does not have a PASS ID."
         logger.error(error_message)
         raise PassException(error_message)
-    
+
     # The PASS ID for commissioning proposals is 300005
     url = f"{base_url}/Proposal/GetProposalsByType/{api_key}/{pass_facility}/{year}/300005/NULL"
 
@@ -137,7 +137,9 @@ async def get_commissioning_proposals_by_year(year: str, facility_name: Facility
         commissioning_proposal_list = []
         if pass_commissioning_proposals and len(pass_commissioning_proposals) > 0:
             for commissioning_proposal in pass_commissioning_proposals:
-                commissioning_proposal_list.append(PassProposal(**commissioning_proposal))
+                commissioning_proposal_list.append(
+                    PassProposal(**commissioning_proposal)
+                )
     except ValidationError as error:
         error_message = f"Error validating commissioning proposal data received from PASS for year {str(year)} at {facility_name} facility."
         logger.error(error_message)

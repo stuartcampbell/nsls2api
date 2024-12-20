@@ -11,7 +11,7 @@ from nsls2api.services import sync_service
 
 
 async def create_background_job(
-        action: JobActions, sync_parameters: JobSyncParameters = None
+    action: JobActions, sync_parameters: JobSyncParameters = None
 ) -> BackgroundJob:
     job = BackgroundJob(action=action, sync_parameters=sync_parameters)
     await job.save()
@@ -50,7 +50,7 @@ async def start_job(job_id: bson.ObjectId) -> Optional[BackgroundJob]:
 
 
 async def complete_job(
-        job_id: bson.ObjectId, processing_status: JobStatus, log_message: str = None
+    job_id: bson.ObjectId, processing_status: JobStatus, log_message: str = None
 ) -> Optional[BackgroundJob]:
     job = await job_by_id(job_id)
     if not job:

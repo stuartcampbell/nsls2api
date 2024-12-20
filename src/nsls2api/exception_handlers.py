@@ -5,7 +5,7 @@ from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import JSONResponse
 
 
-# This is to make sure we add the request ID to the response headers for the case 
+# This is to make sure we add the request ID to the response headers for the case
 # of unhandled server errors.
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:

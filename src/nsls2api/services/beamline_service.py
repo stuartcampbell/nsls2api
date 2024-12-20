@@ -10,7 +10,6 @@ from nsls2api.models.beamlines import DirectoryGranularity
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.beamlines import (
     Beamline,
-    BeamlineService,
     Detector,
     DetectorView,
     ServicesOnly,
@@ -89,12 +88,12 @@ async def detectors(name: str) -> Optional[list[Detector]]:
 
 
 async def add_detector(
-        beamline_name: str,
-        detector_name: str,
-        directory_name: str,
-        granularity: DirectoryGranularity,
-        description: str,
-        manufacturer: str,
+    beamline_name: str,
+    detector_name: str,
+    directory_name: str,
+    granularity: DirectoryGranularity,
+    description: str,
+    manufacturer: str,
 ) -> Optional[Detector]:
     """
     Add a new detector to a beamline.
@@ -143,8 +142,8 @@ async def add_detector(
 
 
 async def delete_detector(
-        beamline_name: str,
-        detector_name: str,
+    beamline_name: str,
+    detector_name: str,
 ) -> Optional[Detector]:
     """
     Delete a detector from a beamline.

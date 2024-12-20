@@ -2,6 +2,7 @@
 This is a VERY rough local cli app that needs completely replacing.
 It is just here for now to test some functionality before I add the API and use a better CLI framework.
 """
+
 import asyncio
 
 from nsls2api.infrastructure import mongodb_setup

@@ -8,8 +8,14 @@ from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.person_model import ActiveDirectoryUser
 from nsls2api.models.beamlines import Beamline
 from nsls2api.models.pass_models import PassCycle, PassProposalType
-from nsls2api.services import beamline_service, bnlpeople_service, facility_service, n2sn_service, pass_service, \
-    proposal_service
+from nsls2api.services import (
+    beamline_service,
+    bnlpeople_service,
+    facility_service,
+    n2sn_service,
+    pass_service,
+    proposal_service,
+)
 
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -29,33 +35,52 @@ async def worker_synchronize_dataadmins(skip_beamlines=False) -> None:
     facility_list = await facility_service.all_facilities()
     for facility in facility_list:
         logger.info(f"Synchronizing data admins for facility {facility.facility_id}.")
-        data_admin_group_name = await facility_service.data_admin_group(facility.facility_id)
+        data_admin_group_name = await facility_service.data_admin_group(
+            facility.facility_id
+        )
         if data_admin_group_name:
-            ad_users: list[ActiveDirectoryUser] = await n2sn_service.get_users_in_group(data_admin_group_name)
-            username_list = [u['sAMAccountName'] for u in ad_users if u['sAMAccountName'] is not None]
+            ad_users: list[ActiveDirectoryUser] = await n2sn_service.get_users_in_group(
+                data_admin_group_name
+            )
+            username_list = [
+                u["sAMAccountName"] for u in ad_users if u["sAMAccountName"] is not None
+            ]
             logger.info(f"Setting user list = {username_list} ")
-            await facility_service.update_data_admins(facility.facility_id, username_list)
+            await facility_service.update_data_admins(
+                facility.facility_id, username_list
+            )
         else:
             logger.warning(
-                f"There is no 'data_admin_group' for facility_id={facility.facility_id} defined in the database.")
+                f"There is no 'data_admin_group' for facility_id={facility.facility_id} defined in the database."
+            )
     time_taken = datetime.datetime.now() - start_time
-    logger.info(f"Facility Data Admin permissions synchronized in {time_taken.total_seconds():,.2f} seconds")
+    logger.info(
+        f"Facility Data Admin permissions synchronized in {time_taken.total_seconds():,.2f} seconds"
+    )
 
     if skip_beamlines is False:
         beamline_list: list[Beamline] = await beamline_service.all_beamlines()
         for beamline in beamline_list:
             logger.info(f"Synchronizing data admins for beamline {beamline.name}.")
-            data_admin_group_name = await beamline_service.data_admin_group(beamline.name)
-            ad_users: list[ActiveDirectoryUser] = await n2sn_service.get_users_in_group(data_admin_group_name)
-            username_list = [u['sAMAccountName'] for u in ad_users if u['sAMAccountName'] is not None]
+            data_admin_group_name = await beamline_service.data_admin_group(
+                beamline.name
+            )
+            ad_users: list[ActiveDirectoryUser] = await n2sn_service.get_users_in_group(
+                data_admin_group_name
+            )
+            username_list = [
+                u["sAMAccountName"] for u in ad_users if u["sAMAccountName"] is not None
+            ]
             await beamline_service.update_data_admins(beamline.name, username_list)
 
         time_taken = datetime.datetime.now() - start_time
-        logger.info(f"Beamline Data Admin permissions synchronized in {time_taken.total_seconds():,.2f} seconds")
+        logger.info(
+            f"Beamline Data Admin permissions synchronized in {time_taken.total_seconds():,.2f} seconds"
+        )
 
 
 async def worker_synchronize_cycles_from_pass(
-        facility_name: FacilityName = FacilityName.nsls2,
+    facility_name: FacilityName = FacilityName.nsls2,
 ) -> None:
     """
     This method synchronizes the cycles for a facility from PASS.
@@ -122,14 +147,14 @@ async def worker_synchronize_cycles_from_pass(
 
 
 async def worker_synchronize_proposal_types_from_pass(
-        facility_name: FacilityName = FacilityName.nsls2,
+    facility_name: FacilityName = FacilityName.nsls2,
 ) -> None:
     start_time = datetime.datetime.now()
 
     try:
-        pass_proposal_types: list[PassProposalType] = await pass_service.get_proposal_types(
-            facility_name
-        )
+        pass_proposal_types: list[
+            PassProposalType
+        ] = await pass_service.get_proposal_types(facility_name)
     except pass_service.PassException as error:
         error_message = (
             f"Error retrieving proposal types from PASS for {facility_name} facility."
@@ -196,7 +221,9 @@ async def synchronize_proposal_from_pass(proposal_id: str) -> None:
 
         saf_list.append(
             SafetyForm(
-                saf_id=str(saf.SAF_ID), status=saf.Status, instruments=set(saf_beamline_list)
+                saf_id=str(saf.SAF_ID),
+                status=saf.Status,
+                instruments=set(saf_beamline_list),
             )
         )
 
@@ -221,7 +248,9 @@ async def synchronize_proposal_from_pass(proposal_id: str) -> None:
                 user_is_pi = True
                 pi_found_in_experimenters = True
         try:
-            logger.debug(f"Looking up username for employee/life number = {user.BNL_ID}")
+            logger.debug(
+                f"Looking up username for employee/life number = {user.BNL_ID}"
+            )
             bnl_username = await bnlpeople_service.get_username_by_id(user.BNL_ID)
             logger.debug(f"     ---> {bnl_username}")
         except HTTPStatusError as error:
@@ -356,8 +385,8 @@ async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str,
 
 
 async def worker_update_proposal_to_cycle_mapping(
-        facility: FacilityName = FacilityName.nsls2,
-        sync_source: JobSyncSource = JobSyncSource.PASS,
+    facility: FacilityName = FacilityName.nsls2,
+    sync_source: JobSyncSource = JobSyncSource.PASS,
 ) -> None:
     start_time = datetime.datetime.now()
 

@@ -29,8 +29,11 @@ async def get_person_from_username(username: str):
             username=bnl_person.ActiveDirectoryName,
             cyber_agreement_signed=bnl_person.CyberAgreementSigned,
         )
-         # If the person is an Employee then set their institution to BNL
-        if bnl_person.EmployeeStatus == "Active" and bnl_person.EmployeeType == "Employee":
+        # If the person is an Employee then set their institution to BNL
+        if (
+            bnl_person.EmployeeStatus == "Active"
+            and bnl_person.EmployeeType == "Employee"
+        ):
             person.bnl_employee = True
             person.institution = "Brookhaven National Laboratory"
         return person
@@ -61,12 +64,14 @@ async def get_person_from_email(email: str):
             status_code=404,
         )
 
+
 # TODO: Add back into schema if we decide to use this endpoint.
 @router.get("/person/department/{department}", include_in_schema=False)
 async def get_person_by_department(department_code: str = "PS"):
     bnl_people = await bnlpeople_service.get_people_by_department(department_code)
     if bnl_people:
         return bnl_people
+
 
 # TODO: Add back into schema if we decide to use this endpoint.
 @router.get("/person/me", response_model=str, include_in_schema=False)
