@@ -121,11 +121,11 @@ async def get_saf_from_proposal(
     return saf_list
 
 
-async def get_commissioning_proposals_by_year(year: str, facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassProposal]]:
+async def get_commissioning_proposals_by_year(year: str, facility_name: FacilityName = FacilityName.nsls2) -> Optional[list[PassProposal]]:
 
-    pass_facility = await facility_service.pass_id_for_facility(facility)
+    pass_facility = await facility_service.pass_id_for_facility(facility_name)
     if not pass_facility:
-        error_message: str = f"Facility {facility} does not have a PASS ID."
+        error_message: str = f"Facility {facility_name} does not have a PASS ID."
         logger.error(error_message)
         raise PassException(error_message)
     
@@ -139,11 +139,11 @@ async def get_commissioning_proposals_by_year(year: str, facility: FacilityName 
             for commissioning_proposal in pass_commissioning_proposals:
                 commissioning_proposal_list.append(PassProposal(**commissioning_proposal))
     except ValidationError as error:
-        error_message = f"Error validating commissioning proposal data received from PASS for year {str(year)} at {facility} facility."
+        error_message = f"Error validating commissioning proposal data received from PASS for year {str(year)} at {facility_name} facility."
         logger.error(error_message)
         raise PassException(error_message) from error
     except Exception as error:
-        error_message = f"Error retrieving commissioning proposal information from PASS for year {str(year)} at {facility} facility."
+        error_message = f"Error retrieving commissioning proposal information from PASS for year {str(year)} at {facility_name} facility."
         logger.exception(error_message)
         raise PassException(error_message) from error
 
