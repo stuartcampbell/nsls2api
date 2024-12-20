@@ -288,7 +288,7 @@ async def synchronize_proposal_from_pass(proposal_id: str) -> None:
     logger.debug(f"Response: {response}")
 
 
-async def update_proposals_with_cycle(cycle_name: str) -> None:
+async def update_proposals_with_cycle(cycle_name: str, facility_name: FacilityName = FacilityName.nsls2) -> None:
     """
     Update the cycle <-> proposals mapping for the given cycle.
 
@@ -296,9 +296,9 @@ async def update_proposals_with_cycle(cycle_name: str) -> None:
     :type cycle_name: str
     """
 
-    proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle_name)
+    proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle_name, facility_name=facility_name)
 
-    logger.info(f"Found {len(proposal_list)} proposals for cycle {cycle_name}.")
+    logger.info(f"Found {len(proposal_list)} proposals for {facility_name} cycle {cycle_name}.")
 
     for proposal_id in proposal_list:
         # Add the cycle to the Proposal object
@@ -327,10 +327,10 @@ async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str,
                                                            facility_name: FacilityName = FacilityName.nsls2) -> None:
     start_time = datetime.datetime.now()
 
-    cycle_year = await facility_service.cycle_year(cycle)
+    cycle_year = await facility_service.cycle_year(cycle, facility_name=facility_name)
 
-    proposals = await proposal_service.fetch_proposals_for_cycle(cycle)
-    logger.info(f"Synchronizing {len(proposals)} proposals for {cycle} cycle.")
+    proposals = await proposal_service.fetch_proposals_for_cycle(cycle, facility_name=facility_name)
+    logger.info(f"Synchronizing {len(proposals)} proposals for facility {facility_name} in {cycle} cycle.")
 
     for proposal_id in proposals:
         logger.info(f"Synchronizing proposal {proposal_id}.")
