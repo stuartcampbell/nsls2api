@@ -73,8 +73,9 @@ async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
     include_in_schema=SYNC_ROUTES_IN_SCHEMA,
     tags=["sync"],
 )
-async def sync_proposals_for_cycle(request: Request, cycle: str) -> BackgroundJob:
-    sync_params = JobSyncParameters(cycle=cycle)
+async def sync_proposals_for_cycle(request: Request, cycle: str,
+                                   facility: FacilityName = FacilityName.nsls2) -> BackgroundJob:
+    sync_params = JobSyncParameters(cycle=cycle, facility=facility)
     job = await background_service.create_background_job(
         JobActions.synchronize_proposals_for_cycle,
         sync_parameters=sync_params,
@@ -94,9 +95,9 @@ async def sync_cycles(facility: FacilityName = FacilityName.nsls2):
 
 @router.get("/sync/update-cycles/{facility}", include_in_schema=SYNC_ROUTES_IN_SCHEMA, tags=["sync"])
 async def sync_update_cycles(
-    request: fastapi.Request,
-    facility: FacilityName = FacilityName.nsls2,
-    cycle: Optional[str] = None,
+        request: fastapi.Request,
+        facility: FacilityName = FacilityName.nsls2,
+        cycle: Optional[str] = None,
 ):
     sync_params = JobSyncParameters(
         facility=facility, sync_source=JobSyncSource.PASS
