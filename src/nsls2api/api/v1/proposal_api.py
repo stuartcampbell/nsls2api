@@ -1,4 +1,3 @@
-from http.client import HTTPException
 from typing import Annotated
 
 import fastapi

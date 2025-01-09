@@ -74,8 +74,12 @@ async def recently_updated(count=5, beamline: str | None = None):
 #     return result
 
 
-async def fetch_proposals_for_cycle(cycle_name: str) -> list[str]:
-    cycle = await Cycle.find_one(Cycle.name == cycle_name)
+async def fetch_proposals_for_cycle(
+    cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
+) -> list[str]:
+    cycle = await Cycle.find_one(
+        Cycle.name == cycle_name, Cycle.facility == facility_name
+    )
     if cycle is None:
         raise LookupError(f"Cycle {cycle} not found in local database.")
     return cycle.proposals

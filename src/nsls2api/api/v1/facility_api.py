@@ -62,17 +62,12 @@ async def get_facility_cycles(facility: FacilityName):
     include_in_schema=True,
 )
 async def get_proposals_for_cycle(facility: FacilityName, cycle: str):
-    if facility.name != "nsls2":
-        # TODO: Add other facilities
-        return fastapi.responses.JSONResponse(
-            {"message": f"Not implemented for the {facility.name} facility."},
-            status_code=501,
-        )
-
-    proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
+    proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle, facility)
     if proposal_list is None:
         return fastapi.responses.JSONResponse(
-            {"error": f"No proposals were found for cycle {cycle}"},
+            {
+                "error": f"No proposals were found for cycle {cycle} for facility {facility.name}"
+            },
             status_code=404,
         )
     model = CycleProposalList(

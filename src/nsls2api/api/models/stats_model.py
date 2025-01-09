@@ -13,7 +13,8 @@ class StatsModel(pydantic.BaseModel):
     beamline_count: int
     commissioning_proposal_count: int
     facility_data_health: bool
-    nsls2_proposals_per_cycle: Optional[list[ProposalsPerCycleModel]] = []
+    nsls2_proposals_per_cycle: Optional[list[ProposalsPerCycleModel]]
+    lbms_proposals_per_cycle: Optional[list[ProposalsPerCycleModel]]
 
 
 class AboutModel(pydantic.BaseModel):
