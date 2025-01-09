@@ -8,13 +8,16 @@ This is the repository for the NSLS-II Facility API codebase.
 
 ## Developer Notes 
 
+
+
 ### Updating Dependencies
 
-The project uses `pip-compile` to manage the `requirements.txt` and `requirements-dev.txt`. 
-In order to upgrade the packages you will need to install `pip-tools`.  Then to upgrade simply run 
+The project uses `uv pip compile` to manage the `requirements.txt` and `requirements-dev.txt` files. 
+
+In order to upgrade the packages you will need to simply run 
 
 ```
-pip-compile requirements-dev.in --upgrade
-pip-compile requirements.in --upgrade
+uv pip compile requirements-dev.in --upgrade -o requirements-dev.txt
+uv pip compile requirements.in --upgrade -o requirements.txt
 ```
 
