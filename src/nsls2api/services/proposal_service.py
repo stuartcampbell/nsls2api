@@ -74,8 +74,12 @@ async def recently_updated(count=5, beamline: str | None = None):
 #     return result
 
 
-async def fetch_proposals_for_cycle(cycle_name: str, facility_name: FacilityName = FacilityName.nsls2) -> list[str]:
-    cycle = await Cycle.find_one(Cycle.name == cycle_name, Cycle.facility == facility_name)
+async def fetch_proposals_for_cycle(
+    cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
+) -> list[str]:
+    cycle = await Cycle.find_one(
+        Cycle.name == cycle_name, Cycle.facility == facility_name
+    )
     if cycle is None:
         raise LookupError(f"Cycle {cycle} not found in local database.")
     return cycle.proposals
@@ -151,13 +155,13 @@ async def search_proposals(search_text: str) -> Optional[list[Proposal]]:
 
 # Get a list of proposals that match the given criteria
 async def fetch_proposals(
-        proposal_id: list[str] | None = None,
-        beamline: list[str] | None = None,
-        cycle: list[str] | None = None,
-        facility: list[str] | None = None,
-        page_size: int = 10,
-        page: int = 1,
-        include_directories: bool = False,
+    proposal_id: list[str] | None = None,
+    beamline: list[str] | None = None,
+    cycle: list[str] | None = None,
+    facility: list[str] | None = None,
+    page_size: int = 10,
+    page: int = 1,
+    include_directories: bool = False,
 ) -> Optional[list[ProposalFullDetails]]:
     query = []
 
@@ -202,7 +206,7 @@ async def fetch_proposals(
 
 
 async def proposal_type_description_from_pass_type_id(
-        pass_type_id: int,
+    pass_type_id: int,
 ) -> Optional[str]:
     proposal_type = await ProposalType.find_one(
         ProposalType.pass_id == str(pass_type_id)
@@ -245,7 +249,7 @@ async def fetch_users_on_proposal(proposal_id: str) -> Optional[list[User]]:
 
 
 async def fetch_usernames_from_proposal(
-        proposal_id: str,
+    proposal_id: str,
 ) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
 
@@ -304,18 +308,18 @@ async def has_valid_cycle(proposal: Proposal):
     # If we don't have any cycles listed and this is not a commissioning
     # proposal then the cycle information is invalid
     return not (
-            (len(proposal.cycles) == 0)
-            and (
-                    proposal.pass_type_id != 300005
-                    or proposal.type == "Beamline Commissioning (beamline staff only)"
-            )
+        (len(proposal.cycles) == 0)
+        and (
+            proposal.pass_type_id != 300005
+            or proposal.type == "Beamline Commissioning (beamline staff only)"
+        )
     )
 
 
 async def is_commissioning(proposal: Proposal):
     return (
-            proposal.pass_type_id == "300005"
-            or proposal.type == "Beamline Commissioning (beamline staff only)"
+        proposal.pass_type_id == "300005"
+        or proposal.type == "Beamline Commissioning (beamline staff only)"
     )
 
 
@@ -439,7 +443,7 @@ async def generate_fake_proposal_id() -> int:
 
 
 async def generate_fake_test_proposal(
-        facility_name: FacilityName = FacilityName.nsls2, add_specific_user=None
+    facility_name: FacilityName = FacilityName.nsls2, add_specific_user=None
 ) -> Optional[Proposal]:
     """
     Generates a fake test proposal.

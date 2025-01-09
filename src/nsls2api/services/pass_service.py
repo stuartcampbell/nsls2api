@@ -121,8 +121,9 @@ async def get_saf_from_proposal(
     return saf_list
 
 
-async def get_commissioning_proposals_by_year(year: str, facility_name: FacilityName = FacilityName.nsls2) -> Optional[list[PassProposal]]:
-
+async def get_commissioning_proposals_by_year(
+    year: str, facility_name: FacilityName = FacilityName.nsls2
+) -> Optional[list[PassProposal]]:
     pass_facility = await facility_service.pass_id_for_facility(facility_name)
     if not pass_facility:
         error_message: str = f"Facility {facility_name} does not have a PASS ID."

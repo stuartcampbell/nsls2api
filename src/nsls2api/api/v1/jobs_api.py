@@ -82,10 +82,12 @@ async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
     "/sync/proposals/cycle/{cycle}",
     dependencies=[Depends(get_current_user)],
     include_in_schema=SYNC_ROUTES_IN_SCHEMA,
-    tags=["sync"], deprecated=True,
+    tags=["sync"],
+    deprecated=True,
 )
-async def sync_proposals_for_cycle(request: Request, cycle: str,
-                                   facility: FacilityName = FacilityName.nsls2) -> BackgroundJob:
+async def sync_proposals_for_cycle(
+    request: Request, cycle: str, facility: FacilityName = FacilityName.nsls2
+) -> BackgroundJob:
     sync_params = JobSyncParameters(cycle=cycle, facility=facility)
     job = await background_service.create_background_job(
         JobActions.synchronize_proposals_for_cycle,
@@ -100,8 +102,9 @@ async def sync_proposals_for_cycle(request: Request, cycle: str,
     include_in_schema=SYNC_ROUTES_IN_SCHEMA,
     tags=["sync"],
 )
-async def sync_proposals_for_facility_cycle(request: Request,
-                                            facility: FacilityName, cycle: str) -> BackgroundJob:
+async def sync_proposals_for_facility_cycle(
+    request: Request, facility: FacilityName, cycle: str
+) -> BackgroundJob:
     sync_params = JobSyncParameters(cycle=cycle, facility=facility)
     job = await background_service.create_background_job(
         JobActions.synchronize_proposals_for_cycle,
@@ -125,12 +128,13 @@ async def sync_cycles(facility: FacilityName = FacilityName.nsls2):
 @router.get(
     "/sync/update-cycles/{facility}",
     include_in_schema=SYNC_ROUTES_IN_SCHEMA,
-    tags=["sync"], summary="Updates the local (nsls2core DB) cycle <-> proposal mapping"
+    tags=["sync"],
+    summary="Updates the local (nsls2core DB) cycle <-> proposal mapping",
 )
 async def sync_update_cycles(
-        request: fastapi.Request,
-        facility: FacilityName = FacilityName.nsls2,
-        cycle: Optional[str] = None,
+    request: fastapi.Request,
+    facility: FacilityName = FacilityName.nsls2,
+    cycle: Optional[str] = None,
 ):
     sync_params = JobSyncParameters(facility=facility, sync_source=JobSyncSource.PASS)
 

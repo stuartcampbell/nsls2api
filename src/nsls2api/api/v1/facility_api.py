@@ -65,7 +65,9 @@ async def get_proposals_for_cycle(facility: FacilityName, cycle: str):
     proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle, facility)
     if proposal_list is None:
         return fastapi.responses.JSONResponse(
-            {"error": f"No proposals were found for cycle {cycle} for facility {facility.name}"},
+            {
+                "error": f"No proposals were found for cycle {cycle} for facility {facility.name}"
+            },
             status_code=404,
         )
     model = CycleProposalList(
