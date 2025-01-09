@@ -133,7 +133,7 @@ async def worker_function():
                         f"Processing job {job.id} to synchronize proposals for the {job.sync_parameters.facility} facility's cycle {job.sync_parameters.cycle} (from {job.sync_parameters.sync_source})."
                     )
                     await sync_service.worker_synchronize_proposals_for_cycle_from_pass(
-                        job.sync_parameters.cycle, job.sync_paramters.facility
+                        job.sync_parameters.cycle, job.sync_parameters.facility
                     )
                 case JobActions.synchronize_proposal_types:
                     logger.info(
