@@ -132,7 +132,7 @@ async def worker_synchronize_cycles_from_pass(
         )
 
         # Now let's update the list of proposals for this cycle
-        proposals_list = await pass_service.get_proposals_allocated_by_cycle(cycle.name, cycle.facility)
+        proposals_list = await pass_service.get_proposals_allocated_by_cycle(cycle.name, facility=facility_name)
         for proposal in proposals_list:
             await updated_cycle.update(
                 AddToSet({Cycle.proposals: str(proposal.Proposal_ID)})
