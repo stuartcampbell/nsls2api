@@ -199,7 +199,7 @@ async def get_proposals_allocated_by_cycle(
         logger.error(error_message)
         raise PassException(error_message)
 
-    cycle = await Cycle.find_one(Cycle.name == cycle_name)
+    cycle = await Cycle.find_one(Cycle.name == cycle_name, Cycle.facility == facility)
     if not cycle:
         error_message: str = f"Could not find a cycle with the name {cycle_name}."
         logger.error(error_message)
