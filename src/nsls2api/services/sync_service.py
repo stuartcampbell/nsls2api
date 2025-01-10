@@ -114,7 +114,7 @@ async def worker_synchronize_cycles_from_pass(
             pass_id=str(pass_cycle.ID),
         )
 
-        updated_cycle = await Cycle.find_one(Cycle.name == pass_cycle.Name, Cycle.facility == facility.facility_name).upsert(
+        updated_cycle = await Cycle.find_one(Cycle.name == pass_cycle.Name, Cycle.facility == facility.facility_id).upsert(
             Set(
                 {
                     Cycle.accepting_proposals: cycle.accepting_proposals,
