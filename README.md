@@ -6,6 +6,8 @@ This is the repository for the NSLS-II Facility API codebase.
 
 [![Integration Tests for Deployed API](https://github.com/NSLS2/nsls2api/actions/workflows/test-production-deployment.yml/badge.svg)](https://github.com/NSLS2/nsls2api/actions/workflows/test-production-deployment.yml)
 
+[![Integration Tests for DEV API](https://github.com/NSLS2/nsls2api/actions/workflows/test-dev-deployment.yml/badge.svg)](https://github.com/NSLS2/nsls2api/actions/workflows/test-dev-deployment.yml)
+
 ## Developer Notes
 
 In order to develop locally you will need to have a local MongoDB running.  
