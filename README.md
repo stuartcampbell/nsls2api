@@ -42,10 +42,16 @@ directory as the json files).
 
 The project uses `uv pip compile` to manage the `requirements.txt` and `requirements-dev.txt` files.
 
-In order to upgrade the packages you will need to simply run
+In order to upgrade the packages versions you will need to simply run
 
 ```
 uv pip compile requirements-dev.in --upgrade -o requirements-dev.txt
 uv pip compile requirements.in --upgrade -o requirements.txt
 ```
 
+Then in order to actually upgrade the packages 
+```
+uv pip install -r requirements-dev.txt
+uv pip install -r requirements.txt
+```
+Of course, you can drop the `uv` from these last commands if you want to wait longer. 
