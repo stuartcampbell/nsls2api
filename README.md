@@ -9,17 +9,23 @@ This is the repository for the NSLS-II Facility API codebase.
 ## Developer Notes 
 
 In order to develop locally you will need to have a local MongoDB running.  
-This can be installed using your preferred method, a native install or running a container work perfectly fine.
+This can be installed using your preferred method, a native install or [running a container](https://hub.docker.com/_/mongo) work perfectly fine.
 
 Once you have MongoDB up and running you then need to 'seed' the facility and beamline information that 
-does not get pulled from any other source.  The json files for the collections can be found at `/nsls2/software/dssi/nsls2core`
+does not get pulled from any other source.  
 
-1. Copy the `beamlines.json` and `facilities.json` to your development machine
+The files for the collections can be found within the `/nsls2/software/dssi/nsls2core/nsls2core-development.tgz`
 
-2. Import facility information into the local mongodb  
-`mongoimport --db=nsls2core-development --collection=facilities --file=nsls2core.facilities.json`
+1. Copy and unpack the archive into a directory (e.g. `nsls2core-development`) to your development machine
+
+2. Import facility information into the local mongodb```
+   ```bash
+   mongorestore --uri="mongodb://localhost:27017" --nsFrom=nsls2core-development.facilities --nsTo=nsls2core-development.facilities ./nsls2core-development/facilities.bson
+   ```
 3. Import beamline information into the local mongodb  
-`mongoimport --db=nsls2core-development --collection=beamlines --file=nsls2core.beamlines.json`
+   ```bash
+   mongorestore --uri="mongodb://localhost:27017" --nsFrom=nsls2core-development.beamlines --nsTo=nsls2core-development.beamlines ./nsls2core-development/beamlines.bson
+   ```
 
 You will then need to create a `.env` file that contains the configuration (an example can also be found in the same 
 directory as the json files).
