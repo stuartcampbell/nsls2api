@@ -126,7 +126,7 @@ async def worker_function():
                         f"Processing job {job.id} to synchronize proposal {job.sync_parameters.proposal_id} (from {job.sync_parameters.sync_source})."
                     )
                     await sync_service.worker_synchronize_proposal_from_pass(
-                        job.sync_parameters.proposal_id
+                        job.sync_parameters.proposal_id, job.sync_parameters.facility
                     )
                 case JobActions.synchronize_proposals_for_cycle:
                     logger.info(
