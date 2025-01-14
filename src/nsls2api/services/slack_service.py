@@ -265,7 +265,7 @@ def lookup_username_by_email(email: str) -> str | None:
 def add_users_to_channel(channel_id: str, user_ids: list[str]):
     try:
         userlist = ",".join(user_ids)
-        app.client.conversations_invite(channel=channel_id, users=userlist)
+        get_boring_app().client.conversations_invite(channel=channel_id, users=userlist)
     except SlackApiError as error:
         if error.response["error"] == "failed_for_some_users":
             channel_members = get_channel_members(channel_id)
