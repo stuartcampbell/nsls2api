@@ -170,13 +170,15 @@ async def validate_admin_role(
     if api_key is not None:
         try:
             valid_key = await verify_api_key(api_key)
+            if valid_key is None:
+                return None
             key = await lookup_api_key(api_key)
             # await key.fetch_all_links()
             if key.user.role == ApiUserRole.admin:
                 return key.user
             else:
                 return None
-        except LookupError as lookup_err:
+        except LookupError:
             return None
     else:
         raise HTTPException(

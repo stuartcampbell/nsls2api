@@ -1,6 +1,6 @@
 import datetime
 from enum import StrEnum
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID, uuid4
 
 import beanie
@@ -19,6 +19,7 @@ class ApiUserRole(StrEnum):
     user = "user"
     staff = "staff"
     admin = "admin"
+
 
 class ApiUserResponseModel(pydantic.BaseModel):
     id: UUID

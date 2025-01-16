@@ -13,7 +13,8 @@ from nsls2api.models.jobs import (
 )
 from nsls2api.services import background_service
 
-SYNC_ROUTES_IN_SCHEMA = False
+# TODO: This flag should be automatically set to be True for development but False for production.
+SYNC_ROUTES_IN_SCHEMA = True
 
 router = fastapi.APIRouter(tags=["jobs"])
 
@@ -37,19 +38,28 @@ async def check_job_status(request: Request, job_id: str):
         return job.processing_status
 
 
-@router.get("/sync/dataadmins", dependencies=[Depends(get_current_user)], include_in_schema=SYNC_ROUTES_IN_SCHEMA, tags=["sync"])
+@router.get(
+    "/sync/dataadmins",
+    dependencies=[Depends(get_current_user)],
+    include_in_schema=SYNC_ROUTES_IN_SCHEMA,
+    tags=["sync"],
+)
 async def sync_dataadmins(request: Request) -> BackgroundJob:
     job = await background_service.create_background_job(JobActions.synchronize_admins)
     return job
+
 
 @router.get(
     "/sync/proposal/{proposal_id}",
     dependencies=[Depends(get_current_user)],
     include_in_schema=SYNC_ROUTES_IN_SCHEMA,
     tags=["sync"],
+    deprecated=True
 )
-async def sync_proposal(request: Request, proposal_id: str) -> BackgroundJob:
-    sync_params = JobSyncParameters(proposal_id=proposal_id)
+async def sync_proposal(
+    request: Request, proposal_id: str, facility: FacilityName = FacilityName.nsls2
+) -> BackgroundJob:
+    sync_params = JobSyncParameters(proposal_id=proposal_id, facility=facility)
     job = await background_service.create_background_job(
         JobActions.synchronize_proposal,
         sync_parameters=sync_params,
@@ -57,7 +67,27 @@ async def sync_proposal(request: Request, proposal_id: str) -> BackgroundJob:
     return job
 
 
-@router.get("/sync/proposal/types/{facility}", include_in_schema=SYNC_ROUTES_IN_SCHEMA, tags=["sync"])
+@router.get(
+    "/sync/facility/{facility}/proposal/{proposal_id}",
+    dependencies=[Depends(get_current_user)],
+    include_in_schema=SYNC_ROUTES_IN_SCHEMA,
+    tags=["sync"],
+)
+async def sync_facility_proposal(
+    request: Request, facility: FacilityName, proposal_id: str
+) -> BackgroundJob:
+    sync_params = JobSyncParameters(proposal_id=proposal_id, facility=facility)
+    job = await background_service.create_background_job(
+        JobActions.synchronize_proposal,
+        sync_parameters=sync_params,
+    )
+    return job
+
+@router.get(
+    "/sync/proposal/types/{facility}",
+    include_in_schema=SYNC_ROUTES_IN_SCHEMA,
+    tags=["sync"],
+)
 async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
     sync_params = JobSyncParameters(facility=facility)
     job = await background_service.create_background_job(
@@ -72,9 +102,12 @@ async def sync_proposal_types(facility: FacilityName = FacilityName.nsls2):
     dependencies=[Depends(get_current_user)],
     include_in_schema=SYNC_ROUTES_IN_SCHEMA,
     tags=["sync"],
+    deprecated=True,
 )
-async def sync_proposals_for_cycle(request: Request, cycle: str) -> BackgroundJob:
-    sync_params = JobSyncParameters(cycle=cycle)
+async def sync_proposals_for_cycle(
+    request: Request, cycle: str, facility: FacilityName = FacilityName.nsls2
+) -> BackgroundJob:
+    sync_params = JobSyncParameters(cycle=cycle, facility=facility)
     job = await background_service.create_background_job(
         JobActions.synchronize_proposals_for_cycle,
         sync_parameters=sync_params,
@@ -82,7 +115,26 @@ async def sync_proposals_for_cycle(request: Request, cycle: str) -> BackgroundJo
     return job
 
 
-@router.get("/sync/cycles/{facility}", include_in_schema=SYNC_ROUTES_IN_SCHEMA, tags=["sync"])
+@router.get(
+    "/sync/facility/{facility}/cycle/{cycle}/proposals",
+    dependencies=[Depends(get_current_user)],
+    include_in_schema=SYNC_ROUTES_IN_SCHEMA,
+    tags=["sync"],
+)
+async def sync_proposals_for_facility_cycle(
+    request: Request, facility: FacilityName, cycle: str
+) -> BackgroundJob:
+    sync_params = JobSyncParameters(cycle=cycle, facility=facility)
+    job = await background_service.create_background_job(
+        JobActions.synchronize_proposals_for_cycle,
+        sync_parameters=sync_params,
+    )
+    return job
+
+
+@router.get(
+    "/sync/cycles/{facility}", include_in_schema=SYNC_ROUTES_IN_SCHEMA, tags=["sync"]
+)
 async def sync_cycles(facility: FacilityName = FacilityName.nsls2):
     sync_params = JobSyncParameters(facility=facility)
     job = await background_service.create_background_job(
@@ -92,15 +144,18 @@ async def sync_cycles(facility: FacilityName = FacilityName.nsls2):
     return job
 
 
-@router.get("/sync/update-cycles/{facility}", include_in_schema=SYNC_ROUTES_IN_SCHEMA, tags=["sync"])
+@router.get(
+    "/sync/update-cycles/{facility}",
+    include_in_schema=SYNC_ROUTES_IN_SCHEMA,
+    tags=["sync"],
+    summary="Updates the local (nsls2core DB) cycle <-> proposal mapping",
+)
 async def sync_update_cycles(
     request: fastapi.Request,
     facility: FacilityName = FacilityName.nsls2,
     cycle: Optional[str] = None,
 ):
-    sync_params = JobSyncParameters(
-        facility=facility, sync_source=JobSyncSource.PASS
-    )
+    sync_params = JobSyncParameters(facility=facility, sync_source=JobSyncSource.PASS)
 
     job = await background_service.create_background_job(
         JobActions.update_cycle_information,

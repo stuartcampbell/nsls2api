@@ -121,14 +121,15 @@ async def get_saf_from_proposal(
     return saf_list
 
 
-async def get_commissioning_proposals_by_year(year: str, facility: FacilityName = FacilityName.nsls2) -> Optional[list[PassProposal]]:
-
-    pass_facility = await facility_service.pass_id_for_facility(facility)
+async def get_commissioning_proposals_by_year(
+    year: str, facility_name: FacilityName = FacilityName.nsls2
+) -> Optional[list[PassProposal]]:
+    pass_facility = await facility_service.pass_id_for_facility(facility_name)
     if not pass_facility:
-        error_message: str = f"Facility {facility} does not have a PASS ID."
+        error_message: str = f"Facility {facility_name} does not have a PASS ID."
         logger.error(error_message)
         raise PassException(error_message)
-    
+
     # The PASS ID for commissioning proposals is 300005
     url = f"{base_url}/Proposal/GetProposalsByType/{api_key}/{pass_facility}/{year}/300005/NULL"
 
@@ -137,13 +138,15 @@ async def get_commissioning_proposals_by_year(year: str, facility: FacilityName 
         commissioning_proposal_list = []
         if pass_commissioning_proposals and len(pass_commissioning_proposals) > 0:
             for commissioning_proposal in pass_commissioning_proposals:
-                commissioning_proposal_list.append(PassProposal(**commissioning_proposal))
+                commissioning_proposal_list.append(
+                    PassProposal(**commissioning_proposal)
+                )
     except ValidationError as error:
-        error_message = f"Error validating commissioning proposal data received from PASS for year {str(year)} at {facility} facility."
+        error_message = f"Error validating commissioning proposal data received from PASS for year {str(year)} at {facility_name} facility."
         logger.error(error_message)
         raise PassException(error_message) from error
     except Exception as error:
-        error_message = f"Error retrieving commissioning proposal information from PASS for year {str(year)} at {facility} facility."
+        error_message = f"Error retrieving commissioning proposal information from PASS for year {str(year)} at {facility_name} facility."
         logger.exception(error_message)
         raise PassException(error_message) from error
 
@@ -196,7 +199,7 @@ async def get_proposals_allocated_by_cycle(
         logger.error(error_message)
         raise PassException(error_message)
 
-    cycle = await Cycle.find_one(Cycle.name == cycle_name)
+    cycle = await Cycle.find_one(Cycle.name == cycle_name, Cycle.facility == facility)
     if not cycle:
         error_message: str = f"Could not find a cycle with the name {cycle_name}."
         logger.error(error_message)

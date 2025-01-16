@@ -62,6 +62,7 @@ async def test_get_beamline_directory_skeleton():
         response = await ac.get("/v1/beamline/zzz/directory-skeleton")
     response_json = response.json()
     assert response.status_code == 200
+    assert response_json["directory_count"] == 2
 
 
 @pytest.mark.anyio

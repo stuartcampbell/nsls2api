@@ -1,5 +1,4 @@
 import asyncio
-import os
 from contextlib import asynccontextmanager
 
 from nsls2api.infrastructure import mongodb_setup
@@ -11,9 +10,9 @@ settings = get_settings()
 
 local_development_mode = False
 
+
 @asynccontextmanager
 async def app_lifespan(_):
-
     # Initialize the MongoDB connection
     await mongodb_setup.init_connection(settings.mongodb_dsn)
 

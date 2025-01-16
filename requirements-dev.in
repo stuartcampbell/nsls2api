@@ -3,6 +3,10 @@ asyncer
 black
 bunnet
 coverage
+hatch
+hatchling
+hatch-requirements-txt
+hatch-vcs
 ipython
 locust
 pyright
@@ -10,3 +14,4 @@ pytest
 pytest-asyncio
 ruff
 textual-dev
+uv

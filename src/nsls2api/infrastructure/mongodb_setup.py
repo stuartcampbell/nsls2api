@@ -10,7 +10,7 @@ from nsls2api.infrastructure.logging import logger
 
 
 def create_connection_string(
-        host: str, port: int, db_name: str, username: str, password: str
+    host: str, port: int, db_name: str, username: str, password: str
 ) -> MongoDsn:
     return MongoDsn.build(
         scheme="mongodb",
@@ -37,4 +37,6 @@ async def init_connection(mongodb_dsn: MongoDsn):
         document_models=models.all_models,
     )
 
-    logger.info(f"Connected to {click.style(client.get_default_database().name, fg='green')} database.")
+    logger.info(
+        f"Connected to {click.style(client.get_default_database().name, fg='green')} database."
+    )
