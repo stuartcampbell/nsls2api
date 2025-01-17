@@ -38,6 +38,20 @@ directory as the json files).
 3. Ensure that you have the `bnlroot.crt` file (which is deployed to all BNL managed machines) in the location specified
    within the `.env` file.
 
+### Code Style
+
+This project uses `ruff` to format the code - in order to run the formatter simply type:
+```bash
+   uvx ruff format
+```
+### Code Linting
+
+This project uses `ruff` to check the code - in order to run the linter simply type:
+```bash
+   uvx ruff check
+```
+
+
 ### Updating Dependencies
 
 The project uses `uv pip compile` to manage the `requirements.txt` and `requirements-dev.txt` files.
