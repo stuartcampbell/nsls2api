@@ -38,7 +38,8 @@ async def get_username_by_id(lifenumber: str) -> Optional[str]:
     try:
         person = await _call_bnlpeople_webservice(url)
     except Exception as error:
-        logger.exception(error)
+        message = f"BNL People API query failed for lifenumber {lifenumber}"
+        logger.exception(message)
         return None
     logger.debug(person)
     if len(person) == 0 or len(person) > 1:
