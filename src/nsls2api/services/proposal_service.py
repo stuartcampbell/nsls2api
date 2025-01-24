@@ -377,16 +377,16 @@ async def directories(proposal_id: str):
             users_acl.append({f"{service_accounts.workflow}": "rw"})
             users_acl.append({f"{service_accounts.ioc}": "rw"})
 
+            if service_accounts.bluesky is not None:
+                users_acl.append({f"{service_accounts.bluesky}": "r"})
             # If beamline uses SynchWeb then add access for synchweb user
             if beamline_service.uses_synchweb(beamline_tla):
                 users_acl.append({"synchweb": "r"})
-
-            groups_acl.append({str(proposal.data_session): "rw"})
-
             # Add LSDC beamline users for the appropriate beamlines (i.e. if the account is defined)
             if service_accounts.lsdc:
                 users_acl.append({f"{service_accounts.lsdc}": "rw"})
 
+            groups_acl.append({str(proposal.data_session): "rw"})
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
             groups_acl.append(
                 {f"{await beamline_service.data_admin_group(beamline_tla)}": "rw"}
