@@ -378,7 +378,7 @@ async def directories(proposal_id: str):
             users_acl.append({f"{service_accounts.ioc}": "rw"})
 
             # If beamline uses SynchWeb then add access for synchweb user
-            if beamline_service.uses_synchweb(beamline_tla):
+            if await beamline_service.uses_synchweb(beamline_tla):
                 users_acl.append({"synchweb": "r"})
 
             groups_acl.append({str(proposal.data_session): "rw"})
