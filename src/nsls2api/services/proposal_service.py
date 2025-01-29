@@ -380,7 +380,7 @@ async def directories(proposal_id: str):
             if service_accounts.bluesky is not None:
                 users_acl.append({f"{service_accounts.bluesky}": "r"})
             # If beamline uses SynchWeb then add access for synchweb user
-            if beamline_service.uses_synchweb(beamline_tla):
+            if await beamline_service.uses_synchweb(beamline_tla):
                 users_acl.append({"synchweb": "r"})
             # Add LSDC beamline users for the appropriate beamlines (i.e. if the account is defined)
             if service_accounts.lsdc:
