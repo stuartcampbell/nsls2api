@@ -13,11 +13,16 @@ class HTTPXClientWrapper:
     async_client = None
 
     def start(self):
+        trasnport = None
+        if settings.use_socks_proxy:
+            transport = httpx_socks.AsyncProxyTransport.from_url(settings.socks_proxy)
         timeouts = httpx.Timeout(
             None, connect=30.0
         )  # 30s timeout on connect, no other timeouts.
         limits = httpx.Limits(max_keepalive_connections=5, max_connections=10)
-        self.async_client = httpx.AsyncClient(limits=limits, timeout=timeouts)
+        self.async_client = httpx.AsyncClient(
+            limits=limits, timeout=timeouts, transport=transport
+        )
         logger.info(
             f"HTTPXClientWrapper [{click.style(str(id(self.async_client)), fg='cyan')}] started."
         )
