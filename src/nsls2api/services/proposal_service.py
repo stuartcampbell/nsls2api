@@ -320,6 +320,8 @@ async def is_commissioning(proposal: Proposal):
     return (
         proposal.pass_type_id == "300005"
         or proposal.type == "Beamline Commissioning (beamline staff only)"
+        or proposal.pass_type_id == "300042"
+        or proposal.type == "Commissioning (staff only)"
     )
 
 
