@@ -13,7 +13,7 @@ class HTTPXClientWrapper:
     async_client = None
 
     def start(self):
-        trasnport = None
+        transport = None
         if settings.use_socks_proxy:
             transport = httpx_socks.AsyncProxyTransport.from_url(settings.socks_proxy)
         timeouts = httpx.Timeout(
