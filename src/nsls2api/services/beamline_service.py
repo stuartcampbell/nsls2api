@@ -337,21 +337,15 @@ async def directory_skeleton(name: str):
 
     service_usernames = await service_accounts(name)
 
-    if service_usernames.ioc is not None:
-        users_acl.append({f"{service_usernames.ioc}": "r"})
-
-    users_acl.append({"softioc": "r"})
+    users_acl.append({"nsls2data": "rw"})
+    users_acl.append({f"{service_usernames.workflow}": "r"})
+    users_acl.append({f"{service_usernames.ioc}": "r"})
 
     if service_usernames.bluesky is not None:
         users_acl.append({f"{service_usernames.bluesky}": "rw"})
 
-    if service_usernames.workflow is not None:
-        users_acl.append({f"{service_usernames.workflow}": "r"})
-
-    users_acl.append({"nsls2data": "rw"})
-
-    groups_acl.append({f"{await data_admin_group(name)}": "r"})
     groups_acl.append({"n2sn-right-dataadmin": "r"})
+    groups_acl.append({f"{await data_admin_group(name)}": "r"})
 
     # Add the asset directory so this has the same permissions as the detector directories
     # and not just inherit from the parent (i.e. proposal) directory.
@@ -368,18 +362,12 @@ async def directory_skeleton(name: str):
 
     users_acl: list[dict[str, str]] = []
 
-    if service_usernames.ioc is not None:
-        users_acl.append({f"{service_usernames.ioc}": "rw"})
-
-    users_acl.append({"softioc": "rw"})
+    users_acl.append({"nsls2data": "rw"})
+    users_acl.append({f"{service_usernames.workflow}": "r"})
+    users_acl.append({f"{service_usernames.ioc}": "rw"})
 
     if service_usernames.bluesky is not None:
         users_acl.append({f"{service_usernames.bluesky}": "rw"})
-
-    if service_usernames.workflow is not None:
-        users_acl.append({f"{service_usernames.workflow}": "r"})
-
-    users_acl.append({"nsls2data": "rw"})
 
     # Add the detector subdirectories
     if detector_list:
