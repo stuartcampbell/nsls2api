@@ -149,9 +149,8 @@ async def get_commissioning_proposals_by_year(
         error_message: str = f"Facility {facility_name} does not have a PASS ID."
         logger.error(error_message)
         raise PassException(error_message)
-
-    # The PASS ID for commissioning proposals is 300005
-    url = f"{base_url}/Proposal/GetProposalsByType/{api_key}/{pass_facility}/{year}/300005/NULL"
+    pass_commissioning_type = await get_commissioning_proposal_type(facility_name)
+    url = f"{base_url}/Proposal/GetProposalsByType/{api_key}/{pass_facility}/{year}/{pass_commissioning_type.pass_id}/NULL"
 
     try:
         pass_commissioning_proposals = await _call_pass_webservice(url)
