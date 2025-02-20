@@ -69,6 +69,10 @@ async def test_get_beamline_directory_skeleton():
     directory_skeleton = DirectoryList(**response_json)
     assert directory_skeleton.directory_count == 2
 
+    # Make sure we can create a DirectorySkeleton object from the response
+    directory_skeleton = DirectoryList(**response_json)
+    assert directory_skeleton.directory_count == 2
+
 
 @pytest.mark.anyio
 async def test_get_nonexistent_beamline():
