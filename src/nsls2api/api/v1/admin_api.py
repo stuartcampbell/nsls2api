@@ -28,7 +28,7 @@ router = fastapi.APIRouter(
 
 @router.get("/admin/settings")
 async def info(settings: Annotated[config.Settings, Depends(config.get_settings)]):
-    return settings
+    return settings.model_dump_json()
 
 
 @router.get("/admin/validate", response_model=str)
