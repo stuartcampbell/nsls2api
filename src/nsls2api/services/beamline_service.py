@@ -314,7 +314,8 @@ async def update_data_admins(beamline_name: str, data_admins: list[str]):
         data_admins (list[str]): A list of usernames to set as data admins for the beamline.
     """
     await Beamline.find_one(Beamline.name == beamline_name.upper()).update(
-        Set({Beamline.data_admins: data_admins})
+        Set({Beamline.data_admins: data_admins,
+             Beamline.last_updated : datetime.datetime.now()})
     )
 
 
