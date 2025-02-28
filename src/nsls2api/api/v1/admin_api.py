@@ -17,7 +17,7 @@ from nsls2api.models.apikeys import (
     ApiUserResponseModel,
     ApiUserType,
 )
-from nsls2api.models.slack_models import SlackChannelCreationResponseModel
+from nsls2api.models.slack_models import SlackChannelResponseModel, SlackChannelResponseModelList
 from nsls2api.services import beamline_service, proposal_service, slack_service
 
 # router = fastapi.APIRouter()
@@ -76,9 +76,16 @@ async def generate_fake_proposal(
 
     return SingleProposal(proposal=proposal)
 
+@router.post("/admin/proposal/{proposal_id}/slack-channels")
+async def create_slack_channels_for_proposal(proposal_id: str) -> [SlackChannelResponseModel]:
+    pass
+
+@route.get("/admin/proposal/{proposal_id}/slack-channels")
+async def get_slack_channels_for_proposal(proposal_id: str) -> SlackChannelResponseModelList:
+    pass
 
 @router.post("/admin/slack/create-proposal-channel/{proposal_id}")
-async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponseModel:
+async def create_slack_channel(proposal_id: str) -> SlackChannelResponseModel:
     proposal = await proposal_service.proposal_by_id(proposal_id)
 
     if proposal is None:
@@ -87,7 +94,7 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
             detail=f"Proposal {proposal_id} not found",
         )
 
-    channel_name = proposal_service.slack_channel_name_for_proposal(proposal_id)
+    channel_name = proposal_service.slack_channels_for_proposal(proposal_id)
 
     if channel_name is None:
         raise HTTPException(
@@ -146,7 +153,7 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelCreationResponse
     # TODO: Uncomment to actually add the users when we are sure!!
     # slack_service.add_users_to_channel(channel_id=channel_id, user_ids=proposal_user_ids)
 
-    response_model = SlackChannelCreationResponseModel(
+    response_model = SlackChannelResponseModel(
         channel_id=channel_id,
         channel_name=channel_name,
         beamline_slack_managers=slack_managers_added,

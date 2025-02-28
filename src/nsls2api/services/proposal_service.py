@@ -99,10 +99,9 @@ def generate_data_session_for_proposal(proposal_id: str) -> str:
     return f"pass-{str(proposal_id)}"
 
 
-def slack_channel_name_for_proposal(proposal_id: str) -> str:
+def slack_channels_for_proposal(proposal_id: str) -> str:
     # TODO: Actually make this configurable and more sensible
     return f"test-sic-{str(proposal_id)}"
-
 
 async def proposal_by_id(proposal_id: str) -> Optional[Proposal]:
     """
