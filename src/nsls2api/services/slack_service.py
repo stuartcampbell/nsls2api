@@ -1,25 +1,42 @@
-from slack_bolt import App
 from slack_sdk import WebClient
+from slack_sdk.web.slack_response import SlackResponse
 from slack_sdk.errors import SlackApiError
 
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.logging import logger
-from nsls2api.models.slack_models import SlackBot
+from nsls2api.models.slack_models import SlackBot, SlackUser
+from nsls2api.services import proposal_service
 
 settings = get_settings()
 
-# def get_super_app() -> App:
-#     return App(
-#     token=settings.superadmin_slack_user_token,
-#     signing_secret=settings.slack_signing_secret,
-# )
+class ChannelAlreadyExistsError(Exception):
+    pass
 
+def create_conversation(name: str, is_private: bool = True) -> str | None:
+    """
+    Creates a new Slack conversation with the given name and privacy setting.
 
-def get_boring_app() -> App:
-    return App(
-        token=settings.slack_bot_token,
-        signing_secret=settings.slack_signing_secret,
-    )
+    Args:
+        name (str): The name of the conversation to be created.
+        is_private (bool, optional): Whether the conversation should be private. Defaults to True.
+
+    Returns:
+        str | None: The ID of the created conversation if successful, None otherwise.
+
+    Raises:
+        ChannelAlreadyExistsError: If a channel with the given name already exists.
+    """
+    client = WebClient(token=settings.slack_bot_token)
+    try:
+        response = client.conversations_create(name=name, is_private=is_private)
+        if response.get("ok"):
+            return response.get("channel").get("id")
+    except SlackApiError as error:
+        if error.response["error"] == "name_taken":
+            raise ChannelAlreadyExistsError(f"Channel '{name}' already exists.")
+        else:
+            logger.exception(error)
+    return None
 
 
 def get_bot_details() -> SlackBot:
@@ -29,12 +46,13 @@ def get_bot_details() -> SlackBot:
     Returns:
         SlackBot: An instance of the SlackBot class containing the bot details.
     """
-    response = get_boring_app().client.auth_test()
+    client = WebClient(token=settings.slack_bot_token)
+    response = client.auth_test()
 
     return SlackBot(
-        username=response.data["user"],
-        user_id=response.data["user_id"],
-        bot_id=response.data["bot_id"],
+        username=response.get("user"),
+        user_id=response.get("user_id"),
+        bot_id=response.get("bot_id"),
     )
 
 
@@ -51,11 +69,12 @@ def get_channel_members(channel_id: str) -> list[str]:
         list[str]: A list of member IDs in the channel.
     """
     try:
-        response = get_boring_app().client.conversations_members(channel=channel_id)
+        client = WebClient(token=settings.slack_bot_token)
+        response = client.conversations_members(channel=channel_id)
     except SlackApiError as error:
         logger.exception(error)
         return []
-    return response.data["members"]
+    return response.get("members", [])
 
 
 def add_bot_to_channel(channel_id: str):
@@ -106,8 +125,9 @@ async def is_channel_private(channel_id: str) -> bool:
     Returns:
         bool: True if the channel is private, False otherwise.
     """
-    response = get_boring_app().client.conversations_info(channel=channel_id)
-    return response.data["channel"]["is_private"]
+    client = WebClient(token=settings.slack_bot_token)
+    response = client.conversations_info(channel=channel_id)
+    return response.get("channel").get("is_private")
 
 
 async def create_channel(
@@ -163,6 +183,7 @@ async def create_channel(
                     return None
 
     else:
+        # No pre-existing channel, so create a new one
         try:
             logger.info(f"Trying to create channel called '{name}'.")
             response = super_client.admin_conversations_create(
@@ -182,9 +203,9 @@ async def create_channel(
     return channel_id
 
 
-def channel_id_from_name(name: str) -> str | None:
+def retrieve_private_channel_id(name: str) -> str | None:
     """
-    Retrieves the channel ID for a given channel name.
+    Retrieves the channel ID for a given private channel name.
 
     Args:
         name (str): The name of the channel.
@@ -192,74 +213,43 @@ def channel_id_from_name(name: str) -> str | None:
     Returns:
         str | None: The ID of the channel if found, None otherwise.
     """
-    client = WebClient(token=settings.superadmin_slack_user_token)
-    response = client.admin_conversations_search(query=name)
+    client = WebClient(token=settings.slack_bot_token)
+    response = client.conversations_list(types="private_channel")
     # This returns a list of channels, find the one with the exact name (just in case we get more than one returned)
-    for channel in response["conversations"]:
-        if channel["name"] == name:
-            return channel["id"]
+    for channel in response.get("channels"):
+        print(f"Channel: {channel.get('name')}")
+        if channel.get("name") == name:
+            logger.info(f"Found existing channel '{name}' with ID {channel['id']}")
+            return channel.get("id")
+    return None
 
 
-def rename_channel(name: str, new_name: str) -> str | None:
+def lookup_user_by_email(email: str) -> SlackUser | None:
     """
-    Renames a Slack channel.
-
-    Args:
-        name (str): The current name of the channel.
-        new_name (str): The new name for the channel.
-
-    Returns:
-        str | None: The ID of the renamed channel, or None if the channel was not found.
-
-    Raises:
-        Exception: If the channel with the given name is not found.
-        Exception: If the channel renaming fails.
-    """
-    channel_id = channel_id_from_name(name)
-    if channel_id is None:
-        raise Exception(f"Channel {name} not found.")
-
-    response = get_boring_app().client.conversations_rename(
-        channel=channel_id, name=new_name
-    )
-
-    if response.data["ok"] is not True:
-        raise Exception(f"Failed to rename channel {name} to {new_name}")
-
-    if channel_id is None:
-        return None
-
-    return channel_id
-
-
-def lookup_userid_by_email(email: str) -> str | None:
-    """
-    Looks up the user ID associated with the given email address.
+    Looks up the user associated with the given email address.
 
     Args:
         email (str): The email address of the user.
 
     Returns:
-        str | None: The user ID if found, None otherwise.
+        SlackUser | None: An instance of the SlackUser class containing
+                          the user details if found, None otherwise.
     """
-    response = get_boring_app().client.users_lookupByEmail(email=email)
-    if response.data["ok"] is True:
-        return response.data["user"]["id"]
+    try:
+        client = WebClient(token=settings.slack_bot_token)
+        response = client.users_lookupByEmail(email=email)
+    if response.get("ok"):
+        return SlackUser(
+            user_id=response.get("user", {}).get("id", ""),
+            username=response.get("user", {}).get("name", ""),
+            email=email,
+        )
+    return None
 
+def create_proposal_channel(proposal_id: str) -> str | None:
 
-def lookup_username_by_email(email: str) -> str | None:
-    """
-    Looks up the username associated with the given email address.
-
-    Args:
-        email (str): The email address to look up.
-
-    Returns:
-        str | None: The username associated with the email address, or None if not found.
-    """
-    response = get_boring_app().client.users_lookupByEmail(email=email)
-    if response.data["ok"] is True:
-        return str(response.data["user"]["name"])
+    # What is the name of the channel(s) associated with this proposal?
+    channels_to_create = proposal_service.slack_channels_for_proposal(proposal_id)
 
 
 def add_users_to_channel(channel_id: str, user_ids: list[str]):
@@ -282,3 +272,6 @@ def add_users_to_channel(channel_id: str, user_ids: list[str]):
         else:
             logger.exception(error)
             raise Exception(error) from error
+
+
+

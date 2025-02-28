@@ -12,10 +12,13 @@ class SlackUser(pydantic.BaseModel):
     username: str
     email: str
 
-
-class SlackChannelCreationResponseModel(pydantic.BaseModel):
+class SlackChannelResponseModel(pydantic.BaseModel):
     channel_id: str
     channel_name: str
     beamline_slack_managers: list[str] | None = []
     user_ids: list[str] | None = []
     message: str | None = None
+
+class SlackChannelResponseModelList(pydantic.BaseModel):
+    slack_channels: list[SlackChannelResponseModel]
+    count: int
