@@ -1,3 +1,5 @@
+from typing import List
+
 import pydantic
 
 
@@ -11,6 +13,13 @@ class SlackUser(pydantic.BaseModel):
     user_id: str
     username: str
     email: str
+
+class SlackChannel(pydantic.BaseModel):
+    channel_id: str
+    channel_name: str
+    users: List[SlackUser]
+    created: bool
+    is_private: bool
 
 class SlackChannelResponseModel(pydantic.BaseModel):
     channel_id: str
