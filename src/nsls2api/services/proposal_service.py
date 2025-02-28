@@ -99,7 +99,7 @@ def generate_data_session_for_proposal(proposal_id: str) -> str:
     return f"pass-{str(proposal_id)}"
 
 
-def slack_channels_for_proposal(proposal_id: str) -> str:
+def legacy_generate_slack_channel_name_for_proposal(proposal_id: str) -> str:
     # TODO: Actually make this configurable and more sensible
     return f"test-sic-{str(proposal_id)}"
 

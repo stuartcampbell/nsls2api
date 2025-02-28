@@ -94,7 +94,7 @@ async def create_slack_channel(proposal_id: str) -> SlackChannelResponseModel:
             detail=f"Proposal {proposal_id} not found",
         )
 
-    channel_name = proposal_service.slack_channels_for_proposal(proposal_id)
+    channel_name = proposal_service.legacy_generate_slack_channel_name_for_proposal(proposal_id)
 
     if channel_name is None:
         raise HTTPException(
