@@ -94,10 +94,14 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
     data_sessions = [p.data_session for p in proposals if p.data_session is not None]
     return data_sessions
 
+def get_slack_channels_for_proposal(proposal_id: str) -> list[str]:
+    # TODO: If we decide to make separate channels for "chat" and "automated messages"
+    # then we will need to return a list of channel names here.
+    # For now just return a single channel name that has the same name as the data session.
+    return [generate_data_session_for_proposal(proposal_id)]
 
 def generate_data_session_for_proposal(proposal_id: str) -> str:
     return f"pass-{str(proposal_id)}"
-
 
 def legacy_generate_slack_channel_name_for_proposal(proposal_id: str) -> str:
     # TODO: Actually make this configurable and more sensible
