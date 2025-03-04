@@ -24,7 +24,12 @@ jobs:
 
     - name: Download Wiz CLI
       run: curl -o wizcli https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64 && chmod +x wizcli
-
+      
+    - name: Test secret
+      run: echo "My super secret is $STUART"
+      env:
+        STUART: ${{secrets.STUART }}
+    
     - name: Authenticate to Wiz
       run: WIZ_ENV="$WIZ_ENV" ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
       env:
