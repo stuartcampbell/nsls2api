@@ -1,6 +1,9 @@
 name: 'wiz-cli'
 on: [pull_request, workflow_dispatch]
 
+env:
+  WIZ_ENV: 'fedramp'
+
 jobs:
   wiz-cli-iac-scan:
     name: 'Wiz-cli IaC Scan'
@@ -25,7 +28,6 @@ jobs:
     - name: Authenticate to Wiz
       run: ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
       env:
-        WIZ_ENV: "fedramp"
         WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
         WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
 
