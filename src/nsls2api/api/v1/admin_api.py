@@ -77,10 +77,10 @@ async def generate_fake_proposal(
     return SingleProposal(proposal=proposal)
 
 @router.post("/admin/proposal/{proposal_id}/slack-channels")
-async def create_slack_channels_for_proposal(proposal_id: str) -> [SlackChannelResponseModel]:
+async def create_slack_channels_for_proposal(proposal_id: str) -> list[SlackChannelResponseModel]:
     pass
 
-@route.get("/admin/proposal/{proposal_id}/slack-channels")
+@router.get("/admin/proposal/{proposal_id}/slack-channels")
 async def get_slack_channels_for_proposal(proposal_id: str) -> SlackChannelResponseModelList:
     pass
 
