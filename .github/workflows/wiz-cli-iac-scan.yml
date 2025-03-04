@@ -25,7 +25,7 @@ jobs:
     - name: Authenticate to Wiz
       run: ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
       env:
-        WIZ_ENV: fedramp
+        WIZ_ENV: "fedramp"
         WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
         WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
 
