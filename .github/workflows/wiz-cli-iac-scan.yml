@@ -3,6 +3,8 @@ on: [pull_request, workflow_dispatch]
 
 env:
   WIZ_ENV: 'fedramp'
+  WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+  WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
 
 jobs:
   wiz-cli-iac-scan:
@@ -29,10 +31,9 @@ jobs:
       run: echo "My wiz environment is $WIZ_ENV"
 
     - name: Authenticate to Wiz
-      run: WIZ_ENV="$WIZ_ENV" ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
-      env:
-        WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
-        WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+      run: ./wizcli auth
+      # run: WIZ_ENV="$WIZ_ENV" ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+
 
     - name: Run wiz CLI IaC scan
       run: ./wizcli iac scan --path $SCAN_PATH --policy "$POLICY"
