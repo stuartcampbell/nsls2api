@@ -2,29 +2,29 @@ import datetime
 from pathlib import Path
 from typing import Optional
 
-from beanie.odm.operators.find.comparison import In
 from beanie.odm.operators.find.array import ElemMatch
+from beanie.odm.operators.find.comparison import In
 from beanie.odm.operators.update.general import Set
 
-from nsls2api.models.beamlines import DirectoryGranularity
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.beamlines import (
     Beamline,
+    BlueskyServiceAccountView,
+    DataRootDirectoryView,
     Detector,
     DetectorView,
-    ServicesOnly,
+    DirectoryGranularity,
+    EpicsServicesServiceAccountView,
+    IOCServiceAccountView,
+    LsdcServiceAccountView,
+    OperatorServiceAccountView,
     ServiceAccounts,
     ServiceAccountsView,
+    ServicesOnly,
+    SlackBeamlineBotUserIdView,
     SlackChannelManagersView,
     WorkflowServiceAccountView,
-    IOCServiceAccountView,
-    EpicsServicesServiceAccountView,
-    BlueskyServiceAccountView,
-    OperatorServiceAccountView,
-    DataRootDirectoryView,
-    LsdcServiceAccountView,
 )
-from nsls2api.services import slack_service
 
 
 async def beamline_count() -> int:
@@ -314,8 +314,12 @@ async def update_data_admins(beamline_name: str, data_admins: list[str]):
         data_admins (list[str]): A list of usernames to set as data admins for the beamline.
     """
     await Beamline.find_one(Beamline.name == beamline_name.upper()).update(
-        Set({Beamline.data_admins: data_admins,
-             Beamline.last_updated : datetime.datetime.now()})
+        Set(
+            {
+                Beamline.data_admins: data_admins,
+                Beamline.last_updated: datetime.datetime.now(),
+            }
+        )
     )
 
 
@@ -464,13 +468,33 @@ async def slack_channel_managers(beamline_name: str) -> Optional[list[str]]:
     )
     if beamline is None:
         return None
+    #
+    # slack_ids = []
+    # for user in beamline.slack_channel_managers:
+    #     # Staff have to have a BNL email account
+    #     email = f"{user}@bnl.gov"
+    #     user: SlackUser = slack_service.lookup_user_by_email(email=email)
+    #     if user:
+    #         slack_ids.append(user.user_id)
 
-    slack_ids = []
-    for user in beamline.slack_channel_managers:
-        # Staff have to have a BNL email account
-        email = f"{user}@bnl.gov"
-        user_id = slack_service.lookup_userid_by_email(email=email)
-        if user_id:
-            slack_ids.append(user_id)
+    return beamline.slack_channel_managers
 
-    return slack_ids
+
+async def slack_beamline_bot_user_id(beamline_name: str) -> Optional[str]:
+    """
+    Retrieves the Slack user ID of the beamline bot for a given beamline.
+
+    Args:
+        beamline_name (str): The name of the beamline.
+
+    Returns:
+        str: The Slack user ID of the beamline bot.
+    """
+    beamline = await Beamline.find_one(Beamline.name == beamline_name.upper()).project(
+        SlackBeamlineBotUserIdView
+    )
+    if beamline is None:
+        return None
+
+    bot_user_id = beamline.slack_beamline_bot_user_id
+    return bot_user_id
