@@ -30,7 +30,7 @@ class ProposalSlackChannel(SlackChannel):
     topic: str | None = None
     users: list[SlackUser] | None = None
     managers: list[SlackUser] | None = None
-    bots: list[str] | None = None
+    bots: list[SlackBot] | None = None
     is_private: bool
 
 
