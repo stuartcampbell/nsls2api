@@ -1,4 +1,3 @@
-
 import pydantic
 
 
@@ -6,21 +5,26 @@ class SlackUser(pydantic.BaseModel):
     user_id: str
     username: str
 
+
 class SlackPerson(SlackUser):
     email: str
+
 
 class SlackBot(SlackUser):
     bot_id: str
 
+
 class SlackChannel(pydantic.BaseModel):
     channel_id: str
     channel_name: str
+
 
 class SlackChannelToCreate(pydantic.BaseModel):
     channel_name: str
     proposal_id: str
     beamlines: list[str] | None = None
     topic: str | None = None
+
 
 class ProposalSlackChannel(SlackChannel):
     topic: str | None = None
