@@ -18,7 +18,7 @@ from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
-from nsls2api.models.slack_models import SlackChannelToCreate
+from nsls2api.models.slack_models import SlackChannel, SlackChannelToCreate
 from nsls2api.services import (
     beamline_service,
     bnlpeople_service,
@@ -96,6 +96,19 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
     return data_sessions
 
 
+def generate_data_session_for_proposal(proposal_id: str) -> str:
+    """
+    Generate a data session name for a given proposal ID.
+
+    Args:
+        proposal_id (str): The ID of the proposal.
+
+    Returns:
+        str: The generated data session name.
+    """
+    return f"pass-{str(proposal_id)}"
+
+
 async def get_beamline_specific_slack_channel_for_proposal(
     proposal_id: str,
 ) -> list[str]:
@@ -149,15 +162,6 @@ async def get_slack_channels_to_create_for_proposal(
             channel_list.append(beamline_channel)
 
     return channel_list
-
-
-def generate_data_session_for_proposal(proposal_id: str) -> str:
-    return f"pass-{str(proposal_id)}"
-
-
-def legacy_generate_slack_channel_name_for_proposal(proposal_id: str) -> str:
-    # TODO: Actually make this configurable and more sensible
-    return f"test-sic-{str(proposal_id)}"
 
 
 async def proposal_by_id(proposal_id: str) -> Optional[Proposal]:
@@ -290,6 +294,11 @@ async def beamlines_for_proposal(proposal_id: str) -> Optional[list[str]]:
 async def cycles_for_proposal(proposal_id: str) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
     return proposal.cycles
+
+
+async def slack_channels_for_proposal(proposal_id: str) -> Optional[list[SlackChannel]]:
+    proposal = await proposal_by_id(proposal_id)
+    return proposal.slack_channels
 
 
 async def fetch_users_on_proposal(proposal_id: str) -> Optional[list[User]]:
