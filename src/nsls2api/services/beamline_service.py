@@ -432,17 +432,17 @@ async def check_service_exists(beamline_name: str, service_name: str) -> bool:
         return True
 
 
-async def uses_synchweb(name: str) -> bool:
+async def uses_synchweb(beamline_name: str) -> bool:
     """
     Check if the specified beamline uses the SynchWeb service.
 
     Args:
-        name (str): The name of the beamline.
+        beamline_name (str): The name of the beamline.
 
     Returns:
         bool: True if the beamline uses SynchWeb, False otherwise.
     """
-    if await check_service_exists(name, "synchweb"):
+    if await check_service_exists(beamline_name, "synchweb"):
         return True
     else:
         return False
