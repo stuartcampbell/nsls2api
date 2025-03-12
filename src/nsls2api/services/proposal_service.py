@@ -424,10 +424,7 @@ async def commissioning_proposals(
 async def has_valid_cycle(proposal: Proposal):
     # If we don't have any cycles listed and this is not a commissioning
     # proposal then the cycle information is invalid
-    return not (
-        (len(proposal.cycles) == 0)
-        and (proposal.pass_type_id != "300005" or proposal.pass_type_id != "300042")
-    )
+    return (len(proposal.cycles) > 0) or (await is_commissioning(proposal))
 
 
 async def is_commissioning(proposal: Proposal):
