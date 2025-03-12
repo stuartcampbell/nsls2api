@@ -161,7 +161,6 @@ typer==0.15.1
     # via -r requirements.in
 typing-extensions==4.12.2
     # via
-    #   anyio
     #   beanie
     #   fastapi
     #   pydantic
