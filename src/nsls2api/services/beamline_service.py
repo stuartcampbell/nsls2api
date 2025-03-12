@@ -201,16 +201,13 @@ async def data_root_directory(name: str) -> str:
         DataRootDirectoryView
     )
 
-    # print(f"data_root: {data_root} ")
+    logger.debug("Default data root directory: %s", data_root)
 
     if data_root.data_root is None:
         data_root_prefix = default_root / name.lower()
     else:
         data_root_prefix = default_root / data_root.data_root
     return data_root_prefix
-
-
-# TODO: Not sure if I really need any of the following methods, or just use the generic `service_accounts()` above.
 
 
 async def workflow_username(name: str) -> str:
@@ -468,14 +465,6 @@ async def slack_channel_managers(beamline_name: str) -> Optional[list[str]]:
     )
     if beamline is None:
         return None
-    #
-    # slack_ids = []
-    # for user in beamline.slack_channel_managers:
-    #     # Staff have to have a BNL email account
-    #     email = f"{user}@bnl.gov"
-    #     user: SlackUser = slack_service.lookup_user_by_email(email=email)
-    #     if user:
-    #         slack_ids.append(user.user_id)
 
     return beamline.slack_channel_managers
 
