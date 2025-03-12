@@ -9,6 +9,7 @@ from nsls2api.models.beamlines import Beamline, ServiceAccounts
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
 from nsls2api.models.proposal_types import ProposalType
+from nsls2api.models.proposals import Proposal
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
@@ -67,6 +68,24 @@ async def db():
         pass_description="Proposal Type X",
     )
     await proposal_type.insert()
+
+    # Insert a proposal into the database
+    test_proposal_id = "314159"
+    proposal = Proposal(
+        proposal_id=test_proposal_id,
+        data_session=f"pass-{test_proposal_id}",
+        title="Test Proposal",
+        type=proposal_type.description,
+        pass_type_id=proposal_type.pass_id,
+        instruments=["ZZZ"],
+        cycles=[cycle.name],
+        users=[],
+        safs=[],
+        slack_channels=[],
+        created_on=datetime.datetime.fromisoformat("1999-01-01"),
+        last_updated=datetime.datetime.now(),
+    )
+    await proposal.insert()
 
     yield
 
