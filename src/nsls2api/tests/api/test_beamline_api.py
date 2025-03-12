@@ -2,7 +2,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from nsls2api.main import app
-from nsls2api.models.beamlines import Beamline, ServiceAccounts, DirectoryList
+from nsls2api.models.beamlines import Beamline, DirectoryList, ServiceAccounts
 
 
 @pytest.mark.anyio
