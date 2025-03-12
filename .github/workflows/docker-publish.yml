@@ -14,8 +14,7 @@ on:
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch:
-    
+
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
@@ -95,29 +94,3 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
-
-      - name: Download Wiz CLI
-        run: curl -o wizcli https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64 && chmod +x wizcli
-
-      - name: Test secret
-        run: echo "My super secret is $STUART"
-        env:
-          STUART: ${{secrets.STUART }}
-
-      - name: Authenticate to Wiz
-        run: ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
-        env:
-          WIZ_ENV: 'fedramp'
-          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
-          WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
-
-      - name: Run wiz-cli docker image scan
-        run: ./wizcli docker scan --image $TAG --policy "$POLICY"
-        env:
-          TAG: ${{ steps.meta.outputs.tags }}
-          POLICY: "Default vulnerabilities policy" # Set the desired Wiz CLI policy to use
-
-      - name: Fetch digest of Docker image for Graph enrichment
-        run: ./wizcli docker tag --image $TAG
-        env:
-          TAG: ${{ steps.meta.outputs.tags }}
