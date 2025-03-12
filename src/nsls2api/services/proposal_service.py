@@ -114,7 +114,7 @@ async def get_beamline_specific_slack_channel_for_proposal(
 ) -> list[str]:
     beamline_channels = []
     for beamline in await beamlines_for_proposal(proposal_id):
-        channel_name = f"{generate_data_session_for_proposal(proposal_id)}-{beamline}"
+        channel_name = f"{generate_data_session_for_proposal(proposal_id)}-{beamline.lower()}"
         beamline_channels.append(channel_name)
     return beamline_channels
 
@@ -131,7 +131,12 @@ async def get_slack_channels_to_create_for_proposal(
 
     # Set the channel purpose to include the PI and proposal title
     # (if we have multiple PIs, just use the first one)
-    proposal_pi: list[User] = await pi_from_proposal(proposal_id)
+    try:
+        proposal_pi: list[User] = await pi_from_proposal(proposal_id)
+    except LookupError:
+        # If no PI exists then just use insert an "Unknown" one.
+        proposal_pi = [User(first_name="Unknown", last_name="Unknown", email="unknown@example.com")]
+
     proposal_title = (await proposal_by_id(proposal_id)).title
     common_topic_text = (
         f"for proposal {proposal_id}"
@@ -281,7 +286,7 @@ async def proposal_type_description_from_pass_type_id(
         return proposal_type.description
 
 
-async def data_session_for_proposal(proposal_id: str) -> Optional[str]:
+async def   data_session_for_proposal(proposal_id: str) -> Optional[str]:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
     return proposal.data_session
 
