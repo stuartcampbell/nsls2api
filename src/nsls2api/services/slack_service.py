@@ -296,7 +296,7 @@ def lookup_user_by_email(email: str) -> SlackPerson | None:
     return None
 
 
-async def create_proposal_channel(
+async def create_proposal_channels(
     proposal_id: str,
 ) -> list[ProposalSlackChannel] | None:
     channels_created = []

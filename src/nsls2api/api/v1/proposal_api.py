@@ -293,7 +293,7 @@ async def create_slack_channels_for_proposal(
             detail=f"Proposal {proposal_id} not found",
         )
 
-    channels = await slack_service.create_proposal_channel(proposal_id)
+    channels = await slack_service.create_proposal_channels(proposal_id)
 
     slack_channels = [
         SlackChannel(
