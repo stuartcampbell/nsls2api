@@ -2,7 +2,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, MongoDsn, HttpUrl
+from pydantic import MongoDsn, HttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -69,7 +69,7 @@ class Settings(BaseSettings):
         "https://ups.servicenowservices.com/api"
     )
     universal_proposal_system_api_user: str | None = ""
-    universal_proposal_system_api_password: str | None = Field(exclude=True)
+    universal_proposal_system_api_password: str | None = ""
 
     model_config = SettingsConfigDict(
         env_file=str(Path(__file__).parent.parent / ".env"),
@@ -85,9 +85,9 @@ def get_settings() -> Settings:
     :returns: The dictionary of current settings.
     """
     if os.environ.get("PYTEST_VERSION") is not None:
-        proj_src_path = Path(__file__).parent.parent
-        test_env_file = str(proj_src_path / "pytest.env")
-        settings = Settings(_env_file=test_env_file)  # noqa
+        PROJ_SRC_PATH = Path(__file__).parent.parent
+        test_env_file = str(PROJ_SRC_PATH / "pytest.env")
+        settings = Settings(_env_file=test_env_file)
     else:
         settings = Settings()
 
