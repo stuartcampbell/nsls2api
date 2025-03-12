@@ -39,6 +39,8 @@ certifi==2025.1.31
     #   httpcore
     #   httpx
     #   requests
+cffi==1.17.1
+    # via cryptography
 cfgv==3.4.0
     # via pre-commit
 charset-normalizer==3.4.1
@@ -55,6 +57,8 @@ configargparse==1.7
     # via locust
 coverage==7.6.12
     # via -r requirements-dev.in
+cryptography==44.0.2
+    # via secretstorage
 decorator==5.1.1
     # via ipython
 distlib==0.3.9
@@ -79,9 +83,7 @@ frozenlist==1.5.0
     #   aiohttp
     #   aiosignal
 gevent==24.11.1
-    # via
-    #   geventhttpclient
-    #   locust
+    # via geventhttpclient
 geventhttpclient==2.3.3
     # via locust
 greenlet==3.1.1
@@ -129,7 +131,11 @@ jaraco-functools==4.1.0
     # via keyring
 jedi==0.19.2
     # via ipython
-jinja2==3.1.5
+jeepney==0.9.0
+    # via
+    #   keyring
+    #   secretstorage
+jinja2==3.1.6
     # via
     #   aiohttp-jinja2
     #   flask
@@ -142,7 +148,7 @@ linkify-it-py==2.0.3
     # via markdown-it-py
 locust==2.32.10
     # via -r requirements-dev.in
-markdown-it-py==3.0.0
+markdown-it-py[linkify,plugins]==3.0.0
     # via
     #   mdit-py-plugins
     #   rich
@@ -219,6 +225,8 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
+pycparser==2.22
+    # via cffi
 pydantic==2.10.6
     # via
     #   bunnet
@@ -252,12 +260,8 @@ rich==13.9.4
     #   textual-serve
 ruff==0.9.7
     # via -r requirements-dev.in
-setuptools==75.8.0
-    # via
-    #   locust
-    #   setuptools-scm
-    #   zope-event
-    #   zope-interface
+secretstorage==3.3.3
+    # via keyring
 setuptools-scm==8.1.0
     # via hatch-vcs
 shellingham==1.5.4
@@ -290,7 +294,6 @@ trove-classifiers==2025.2.18.16
     # via hatchling
 typing-extensions==4.12.2
     # via
-    #   anyio
     #   pydantic
     #   pydantic-core
     #   pyright
