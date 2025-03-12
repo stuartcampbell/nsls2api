@@ -11,13 +11,19 @@ from nsls2api.viewmodels.proposals.search_viewmodel import SearchViewModel
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 jinja_partials.register_starlette_extensions(templates)
 
-router = fastapi.APIRouter()
+router = fastapi.APIRouter(include_in_schema=False)
 
 
 @router.get("/", include_in_schema=False)
 def index(request: Request):
     data = {"request": request}
     return templates.TemplateResponse("home/index.html", data)
+
+
+@router.get("/default", include_in_schema=False)
+def default(request: Request):
+    data = {"request": request}
+    return templates.TemplateResponse("home/default.html", data)
 
 
 # This is a test endpoint to make sure the server is running
@@ -27,12 +33,6 @@ async def healthy():
     return fastapi.responses.PlainTextResponse(
         "OK", status_code=fastapi.status.HTTP_200_OK
     )
-
-
-@router.get("/default", include_in_schema=False)
-def index(request: Request):
-    data = {"request": request}
-    return templates.TemplateResponse("home/default.html", data)
 
 
 @router.get("/search/proposals", include_in_schema=False)
@@ -49,9 +49,9 @@ async def search_proposals(request: Request):
     return templates.TemplateResponse("home/proposals_search.html", vm.to_dict())
 
 
-@router.get("/proposal-details", include_in_schema=False)
-async def proposals(request: Request):
-    vm = DetailsViewModel(311130, request)
+@router.get("/proposal-details/{proposal_id}", include_in_schema=False)
+async def proposals(proposal_id: str, request: Request):
+    vm = DetailsViewModel(proposal_id, request)
     await vm.load()
 
     print(vm.to_dict())

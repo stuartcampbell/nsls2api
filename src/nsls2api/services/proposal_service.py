@@ -1,15 +1,16 @@
 import datetime
-from pathlib import Path
-from faker import Faker
-from faker.providers import person, python, date_time
 import random
+from pathlib import Path
 from typing import Optional
 
 from beanie.odm.operators.find.array import ElemMatch
-from beanie.operators import And, In, RegEx, Text
+from beanie.operators import And, In, Or, RegEx, Text
+from faker import Faker
+from faker.providers import date_time, python
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
+    CommissioningProposalsList,
     ProposalDiagnostics,
     ProposalFullDetails,
 )
@@ -17,10 +18,12 @@ from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal, ProposalIdView, User
+from nsls2api.models.slack_models import SlackChannel, SlackChannelToCreate
 from nsls2api.services import (
-    bnlpeople_service,
     beamline_service,
+    bnlpeople_service,
     facility_service,
+    pass_service,
 )
 
 
@@ -74,8 +77,12 @@ async def recently_updated(count=5, beamline: str | None = None):
 #     return result
 
 
-async def fetch_proposals_for_cycle(cycle_name: str) -> list[str]:
-    cycle = await Cycle.find_one(Cycle.name == cycle_name)
+async def fetch_proposals_for_cycle(
+    cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
+) -> list[str]:
+    cycle = await Cycle.find_one(
+        Cycle.name == cycle_name, Cycle.facility == facility_name
+    )
     if cycle is None:
         raise LookupError(f"Cycle {cycle} not found in local database.")
 
@@ -92,12 +99,80 @@ async def fetch_data_sessions_for_username(username: str) -> list[str]:
 
 
 def generate_data_session_for_proposal(proposal_id: str) -> str:
+    """
+    Generate a data session name for a given proposal ID.
+
+    Args:
+        proposal_id (str): The ID of the proposal.
+
+    Returns:
+        str: The generated data session name.
+    """
     return f"pass-{str(proposal_id)}"
 
 
-def slack_channel_name_for_proposal(proposal_id: str) -> str:
-    # TODO: Actually make this configurable and more sensible
-    return f"test-sic-{str(proposal_id)}"
+async def get_beamline_specific_slack_channel_for_proposal(
+    proposal_id: str,
+) -> list[str]:
+    beamline_channels = []
+    for beamline in await beamlines_for_proposal(proposal_id):
+        channel_name = (
+            f"{generate_data_session_for_proposal(proposal_id)}-{beamline.lower()}"
+        )
+        beamline_channels.append(channel_name)
+    return beamline_channels
+
+
+async def get_slack_channels_to_create_for_proposal(
+    proposal_id: str, separate_chat_channel=True
+) -> list[SlackChannelToCreate]:
+    channel_list = []
+
+    beamline_list = await beamlines_for_proposal(proposal_id)
+    channel_base_name = generate_data_session_for_proposal(proposal_id).lower()
+
+    common_topic_text = f"Discussion channel for proposal {proposal_id}"
+
+    # Set the channel purpose to include the PI and proposal title
+    # (if we have multiple PIs, just use the first one)
+    try:
+        proposal_pi: list[User] = await pi_from_proposal(proposal_id)
+    except LookupError:
+        # If no PI exists then just use insert an "Unknown" one.
+        proposal_pi = [
+            User(first_name="Unknown", last_name="Unknown", email="unknown@example.com")
+        ]
+
+    proposal_title = (await proposal_by_id(proposal_id)).title
+    common_topic_text = (
+        f"for proposal {proposal_id}"
+        f" - PI: {proposal_pi[0].first_name} {proposal_pi[0].last_name}"
+        f" - Title: {proposal_title}"
+    )
+
+    # The generic channel is the one that all beamlines (staff and bots) can post to
+    generic_channel = SlackChannelToCreate(
+        channel_name=channel_base_name,
+        proposal_id=proposal_id,
+        beamlines=beamline_list,
+        topic=f"Discussion channel {common_topic_text}",
+    )
+    channel_list.append(generic_channel)
+
+    # If we want a separate chat channel, then we need to create channels
+    # for each beamline to post their messages.
+    if separate_chat_channel:
+        for beamline in beamline_list:
+            channel_name = f"{channel_base_name}-{beamline}".lower()
+            beamline_channel = SlackChannelToCreate(
+                channel_name=channel_name,
+                proposal_id=proposal_id,
+                beamlines=[beamline],
+                topic=f"{beamline.upper()} Beamline notifications {common_topic_text}",
+            )
+            channel_list.append(beamline_channel)
+
+    return channel_list
 
 
 async def proposal_by_id(proposal_id: str) -> Optional[Proposal]:
@@ -232,6 +307,11 @@ async def cycles_for_proposal(proposal_id: str) -> Optional[list[str]]:
     return proposal.cycles
 
 
+async def slack_channels_for_proposal(proposal_id: str) -> Optional[list[SlackChannel]]:
+    proposal = await proposal_by_id(proposal_id)
+    return proposal.slack_channels
+
+
 async def fetch_users_on_proposal(proposal_id: str) -> Optional[list[User]]:
     """
     Fetches the users associated with a given proposal.
@@ -258,12 +338,22 @@ async def fetch_usernames_from_proposal(
     return usernames
 
 
+async def fetch_emails_from_proposal(
+    proposal_id: str,
+) -> Optional[list[str]]:
+    proposal = await proposal_by_id(proposal_id)
+
+    if proposal is None:
+        raise LookupError(f"Proposal {proposal_id} not found")
+
+    emails = [u.email for u in proposal.users if u.email is not None]
+    return emails
+
+
 async def safs_from_proposal(proposal_id: str) -> Optional[list[str]]:
     proposal = await proposal_by_id(proposal_id)
 
     safs = [s.saf_id for s in proposal.safs if s.saf_id is not None]
-
-    # data_sessions = [p.data_session for p in proposals if p.data_session is not None]
 
     return safs
 
@@ -282,43 +372,76 @@ async def pi_from_proposal(proposal_id: str) -> Optional[list[User]]:
 
 
 # TODO: There seems to be a data integrity issue that not all commissioning proposals have a beamline listed.
-async def commissioning_proposals(beamline: str | None = None):
+async def commissioning_proposals(
+    beamline: str | None = None, facility: FacilityName | None = None
+) -> CommissioningProposalsList:
+    commissioning_proposal_list = []
+    proposals = None
+    query_on_facility = None
+    query_on_beamline = None
+
+    commissioning_proposal_types = (
+        await pass_service.get_all_commissioning_proposal_type_ids()
+    )
+
+    query = Or(
+        *[
+            Proposal.pass_type_id == proposal_type
+            for proposal_type in commissioning_proposal_types
+        ]
+    )
+
+    # if there is a beamline specified then this will take precedence
     if beamline:
         # Ensure we match the case in the database for the beamline name
-        beamline = beamline.upper()
-
-        proposals = Proposal.find(In(Proposal.instruments, [beamline])).find(
-            Proposal.pass_type_id == "300005"
+        query_on_beamline = beamline.upper()
+        proposals = Proposal.find(In(Proposal.instruments, [query_on_beamline])).find(
+            query, projection_model=ProposalIdView
         )
+
+    elif facility:
+        # look up the pass proposal type id for commissioning proposals for this facility
+        query_on_facility = facility
+        proposal_type: ProposalType = (
+            await pass_service.get_commissioning_proposal_type(query_on_facility)
+        )
+        print(f"Found proposal type {proposal_type}")
+        if proposal_type:
+            proposals = Proposal.find(
+                Proposal.pass_type_id == proposal_type.pass_id,
+                projection_model=ProposalIdView,
+            )
     else:
-        proposals = Proposal.find(
-            Proposal.pass_type_id == "300005", projection_model=ProposalIdView
-        )
+        proposals = Proposal.find(query, projection_model=ProposalIdView)
 
-    commissioning_proposal_list = [
-        p.proposal_id for p in await proposals.to_list() if p.proposal_id is not None
-    ]
+    if proposals:
+        commissioning_proposal_list = [
+            p.proposal_id
+            for p in await proposals.to_list()
+            if p.proposal_id is not None
+        ]
 
-    return commissioning_proposal_list
+    model = CommissioningProposalsList(
+        count=len(commissioning_proposal_list),
+        commissioning_proposals=commissioning_proposal_list,
+        beamline=query_on_beamline,
+        facility=query_on_facility,
+    )
+
+    return model
 
 
 async def has_valid_cycle(proposal: Proposal):
     # If we don't have any cycles listed and this is not a commissioning
     # proposal then the cycle information is invalid
-    return not (
-        (len(proposal.cycles) == 0)
-        and (
-            proposal.pass_type_id != 300005
-            or proposal.type == "Beamline Commissioning (beamline staff only)"
-        )
-    )
+    return (len(proposal.cycles) > 0) or (await is_commissioning(proposal))
 
 
-async def is_commissioning(proposal: Proposal):
-    return (
-        proposal.pass_type_id == "300005"
-        or proposal.type == "Beamline Commissioning (beamline staff only)"
+async def is_commissioning(proposal: Proposal) -> bool:
+    commissioning_proposal_types = (
+        await pass_service.get_all_commissioning_proposal_type_ids()
     )
+    return proposal.pass_type_id in commissioning_proposal_types
 
 
 # Return the directories and permissions that should be present for a given proposal
@@ -375,16 +498,16 @@ async def directories(proposal_id: str):
             users_acl.append({f"{service_accounts.workflow}": "rw"})
             users_acl.append({f"{service_accounts.ioc}": "rw"})
 
+            if service_accounts.bluesky is not None:
+                users_acl.append({f"{service_accounts.bluesky}": "r"})
             # If beamline uses SynchWeb then add access for synchweb user
-            if beamline_service.uses_synchweb(beamline_tla):
+            if await beamline_service.uses_synchweb(beamline_tla):
                 users_acl.append({"synchweb": "r"})
-
-            groups_acl.append({str(proposal.data_session): "rw"})
-
             # Add LSDC beamline users for the appropriate beamlines (i.e. if the account is defined)
             if service_accounts.lsdc:
                 users_acl.append({f"{service_accounts.lsdc}": "rw"})
 
+            groups_acl.append({str(proposal.data_session): "rw"})
             groups_acl.append({"n2sn-right-dataadmin": "rw"})
             groups_acl.append(
                 {f"{await beamline_service.data_admin_group(beamline_tla)}": "rw"}
@@ -459,7 +582,6 @@ async def generate_fake_test_proposal(
     user_list = []
 
     fake = Faker()
-    fake.add_provider(person)
     fake.add_provider(python)
     fake.add_provider(date_time)
 

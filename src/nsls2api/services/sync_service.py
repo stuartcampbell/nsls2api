@@ -114,7 +114,9 @@ async def worker_synchronize_cycles_from_pass(
             pass_id=str(pass_cycle.ID),
         )
 
-        updated_cycle = await Cycle.find_one(Cycle.name == pass_cycle.Name).upsert(
+        updated_cycle = await Cycle.find_one(
+            Cycle.name == pass_cycle.Name, Cycle.facility == facility.facility_id
+        ).upsert(
             Set(
                 {
                     Cycle.accepting_proposals: cycle.accepting_proposals,
@@ -132,7 +134,9 @@ async def worker_synchronize_cycles_from_pass(
         )
 
         # Now let's update the list of proposals for this cycle
-        proposals_list = await pass_service.get_proposals_allocated_by_cycle(cycle.name)
+        proposals_list = await pass_service.get_proposals_allocated_by_cycle(
+            cycle.name, facility=facility_name
+        )
         for proposal in proposals_list:
             await updated_cycle.update(
                 AddToSet({Cycle.proposals: str(proposal.Proposal_ID)})
@@ -198,20 +202,26 @@ async def worker_synchronize_proposal_types_from_pass(
     )
 
 
-async def synchronize_proposal_from_pass(proposal_id: str) -> None:
+async def synchronize_proposal_from_pass(
+    proposal_id: str, facility_name: FacilityName = FacilityName.nsls2
+) -> None:
     beamline_list = []
     user_list = []
     saf_list = []
 
     try:
-        pass_proposal: PassProposal = await pass_service.get_proposal(proposal_id)
+        pass_proposal: PassProposal = await pass_service.get_proposal(
+            proposal_id, facility_name
+        )
     except pass_service.PassException as error:
         error_message = f"Error retrieving proposal {proposal_id} from PASS"
         logger.exception(error_message)
         raise Exception(error_message) from error
 
     # Get the SAFs for this proposal
-    pass_saf_list: list[PassSaf] = await pass_service.get_saf_from_proposal(proposal_id)
+    pass_saf_list: list[PassSaf] = await pass_service.get_saf_from_proposal(
+        proposal_id, facility_name
+    )
     for saf in pass_saf_list:
         saf_beamline_list = []
         for resource in saf.Resources:
@@ -317,7 +327,9 @@ async def synchronize_proposal_from_pass(proposal_id: str) -> None:
     logger.debug(f"Response: {response}")
 
 
-async def update_proposals_with_cycle(cycle_name: str) -> None:
+async def update_proposals_with_cycle(
+    cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
+) -> None:
     """
     Update the cycle <-> proposals mapping for the given cycle.
 
@@ -325,9 +337,13 @@ async def update_proposals_with_cycle(cycle_name: str) -> None:
     :type cycle_name: str
     """
 
-    proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle_name)
+    proposal_list = await proposal_service.fetch_proposals_for_cycle(
+        cycle_name, facility_name=facility_name
+    )
 
-    logger.info(f"Found {len(proposal_list)} proposals for cycle {cycle_name}.")
+    logger.info(
+        f"Found {len(proposal_list)} proposals for {facility_name} cycle {cycle_name}."
+    )
 
     for proposal_id in proposal_list:
         # Add the cycle to the Proposal object
@@ -341,10 +357,12 @@ async def update_proposals_with_cycle(cycle_name: str) -> None:
             logger.warning(error)
 
 
-async def worker_synchronize_proposal_from_pass(proposal_id: str) -> None:
+async def worker_synchronize_proposal_from_pass(
+    proposal_id: str, facility: FacilityName = FacilityName.nsls2
+) -> None:
     start_time = datetime.datetime.now()
 
-    await synchronize_proposal_from_pass(proposal_id)
+    await synchronize_proposal_from_pass(proposal_id, facility)
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(
@@ -352,30 +370,38 @@ async def worker_synchronize_proposal_from_pass(proposal_id: str) -> None:
     )
 
 
-async def worker_synchronize_proposals_for_cycle_from_pass(cycle: str) -> None:
+async def worker_synchronize_proposals_for_cycle_from_pass(
+    cycle: str, facility_name: FacilityName = FacilityName.nsls2
+) -> None:
     start_time = datetime.datetime.now()
 
-    cycle_year = await facility_service.cycle_year(cycle)
+    cycle_year = await facility_service.cycle_year(cycle, facility_name=facility_name)
 
-    proposals = await proposal_service.fetch_proposals_for_cycle(cycle)
-    logger.info(f"Synchronizing {len(proposals)} proposals for {cycle} cycle.")
+    proposals = await proposal_service.fetch_proposals_for_cycle(
+        cycle, facility_name=facility_name
+    )
+    logger.info(
+        f"Synchronizing {len(proposals)} proposals for facility {facility_name} in {cycle} cycle."
+    )
 
     for proposal_id in proposals:
         logger.info(f"Synchronizing proposal {proposal_id}.")
-        await synchronize_proposal_from_pass(proposal_id)
+        await synchronize_proposal_from_pass(proposal_id, facility_name)
 
     commissioning_proposals: list[
         PassProposal
-    ] = await pass_service.get_commissioning_proposals_by_year(cycle_year)
+    ] = await pass_service.get_commissioning_proposals_by_year(
+        cycle_year, facility_name=facility_name
+    )
     logger.info(
         f"Synchronizing {len(proposals)} commissioning proposals for the year {cycle_year}."
     )
     for proposal in commissioning_proposals:
         logger.info(f"Synchronizing commissioning proposal {proposal.Proposal_ID}.")
-        await synchronize_proposal_from_pass(str(proposal.Proposal_ID))
+        await synchronize_proposal_from_pass(str(proposal.Proposal_ID), facility_name)
 
     # Now update the cycle information for each proposal
-    await update_proposals_with_cycle(cycle)
+    await update_proposals_with_cycle(cycle, facility_name=facility_name)
 
     time_taken = datetime.datetime.now() - start_time
     logger.info(

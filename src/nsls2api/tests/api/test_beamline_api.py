@@ -2,7 +2,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from nsls2api.main import app
-from nsls2api.models.beamlines import Beamline, ServiceAccounts
+from nsls2api.models.beamlines import Beamline, DirectoryList, ServiceAccounts
 
 
 @pytest.mark.anyio
@@ -61,7 +61,17 @@ async def test_get_beamline_directory_skeleton():
     ) as ac:
         response = await ac.get("/v1/beamline/zzz/directory-skeleton")
     response_json = response.json()
+
     assert response.status_code == 200
+    assert response_json["directory_count"] == 2
+
+    # Make sure we can create a DirectorySkeleton object from the response
+    directory_skeleton = DirectoryList(**response_json)
+    assert directory_skeleton.directory_count == 2
+
+    # Make sure we can create a DirectorySkeleton object from the response
+    directory_skeleton = DirectoryList(**response_json)
+    assert directory_skeleton.directory_count == 2
 
 
 @pytest.mark.anyio
