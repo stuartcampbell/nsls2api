@@ -344,8 +344,6 @@ async def safs_from_proposal(proposal_id: str) -> Optional[list[str]]:
 
     safs = [s.saf_id for s in proposal.safs if s.saf_id is not None]
 
-    # data_sessions = [p.data_session for p in proposals if p.data_session is not None]
-
     return safs
 
 
@@ -371,8 +369,9 @@ async def commissioning_proposals(
     query_on_facility = None
     query_on_beamline = None
 
-    # TODO: replace this with a function call that will return all the commissioning proposal types
-    commissioning_proposal_types = ["300005", "300042"]
+    commissioning_proposal_types = (
+        await pass_service.get_all_commissioning_proposal_type_ids()
+    )
 
     query = Or(
         *[
@@ -427,8 +426,11 @@ async def has_valid_cycle(proposal: Proposal):
     return (len(proposal.cycles) > 0) or (await is_commissioning(proposal))
 
 
-async def is_commissioning(proposal: Proposal):
-    return proposal.pass_type_id == "300005" or proposal.pass_type_id == "300042"
+async def is_commissioning(proposal: Proposal) -> bool:
+    commissioning_proposal_types = (
+        await pass_service.get_all_commissioning_proposal_type_ids()
+    )
+    return proposal.pass_type_id in commissioning_proposal_types
 
 
 # Return the directories and permissions that should be present for a given proposal
