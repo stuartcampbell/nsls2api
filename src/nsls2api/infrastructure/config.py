@@ -87,8 +87,8 @@ def get_settings() -> Settings:
     if os.environ.get("PYTEST_VERSION") is not None:
         proj_src_path = Path(__file__).parent.parent
         test_env_file = str(proj_src_path / "pytest.env")
-        settings = Settings(_env_file=test_env_file) # noqa
+        settings = Settings(_env_file=test_env_file)  # noqa
     else:
-        settings = Settings() # noqa
+        settings = Settings()  # noqa
 
     return settings
