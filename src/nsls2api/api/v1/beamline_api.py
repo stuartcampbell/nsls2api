@@ -17,7 +17,7 @@ from nsls2api.models.beamlines import (
     DetectorList,
     DirectoryList,
 )
-from nsls2api.services import beamline_service
+from nsls2api.services import beamline_service, slack_service
 
 router = fastapi.APIRouter()
 
@@ -48,7 +48,9 @@ async def get_beamline_accounts(name: str, api_key: APIKey = Depends(get_current
 async def get_beamline_slack_channel_managers(
     name: str, api_key: APIKey = Depends(get_current_user)
 ):
-    slack_channel_managers = await beamline_service.slack_channel_managers(name)
+    slack_channel_managers = slack_service.verify_slack_users(
+        await beamline_service.slack_channel_managers(name)
+    )
     if slack_channel_managers is None:
         raise HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND,

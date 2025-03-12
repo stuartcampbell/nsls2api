@@ -33,7 +33,7 @@ decorator==5.1.1
     # via gssapi
 dnspython==2.7.0
     # via pymongo
-faker==35.2.0
+faker==36.1.1
     # via -r requirements.in
 fastapi==0.115.8
     # via -r requirements.in
@@ -85,7 +85,9 @@ mdit-py-plugins==0.4.2
 mdurl==0.1.2
     # via markdown-it-py
 motor==3.7.0
-    # via beanie
+    # via
+    #   -r requirements.in
+    #   beanie
 n2snusertools==0.3.7
     # via -r requirements.in
 packaging==24.2
@@ -115,14 +117,14 @@ pydantic==2.10.6
     #   pydantic-settings
 pydantic-core==2.27.2
     # via pydantic
-pydantic-settings==2.7.1
+pydantic-settings==2.8.0
     # via -r requirements.in
 pygments==2.19.1
     # via rich
-pymongo==4.11
-    # via motor
-python-dateutil==2.9.0.post0
-    # via faker
+pymongo==4.11.1
+    # via
+    #   -r requirements.in
+    #   motor
 python-dotenv==1.0.1
     # via pydantic-settings
 python-multipart==0.0.20
@@ -138,8 +140,6 @@ rich==13.9.4
     #   typer
 shellingham==1.5.4
     # via typer
-six==1.17.0
-    # via python-dateutil
 slack-bolt==1.22.0
     # via -r requirements.in
 slack-sdk==3.34.0
@@ -153,7 +153,7 @@ starlette==0.45.3
     #   asgi-correlation-id
     #   fastapi
     #   prometheus-fastapi-instrumentator
-textual==1.0.0
+textual==2.1.0
     # via -r requirements.in
 toml==0.10.2
     # via beanie
@@ -163,12 +163,13 @@ typing-extensions==4.12.2
     # via
     #   anyio
     #   beanie
-    #   faker
     #   fastapi
     #   pydantic
     #   pydantic-core
     #   textual
     #   typer
+tzdata==2025.1
+    # via faker
 uc-micro-py==1.0.3
     # via linkify-it-py
 uuid==1.30

@@ -9,6 +9,7 @@ hatch-requirements-txt
 hatch-vcs
 ipython
 locust
+pre-commit-uv
 pyright
 pytest
 pytest-asyncio
