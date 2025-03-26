@@ -72,6 +72,7 @@ def conversation_invite(channel_id: str, user_ids: list[str]):
         # If the error is that the user is already in the channel, we can ignore it
         if error.response["error"] == "already_in_channel":
             return
+        logger.exception(error)
 
 
 def get_conversation_topic(channel_id: str) -> str | None:
@@ -291,9 +292,36 @@ def lookup_user_by_email(email: str) -> SlackPerson | None:
                 email=email,
             )
     except SlackApiError as error:
+        if error.response["error"] == "users_not_found":
+            logger.info(f"Slack User with an email of '{email}' not found.")
+            return None
         logger.exception(error)
 
     return None
+
+
+def invite_newuser_to_channel(channel: str, email: str):
+    """
+    Invites a user to the workspace/channel.
+    Args:
+        channel (str): The channel ID of the Slack channel.
+        email (str): The email address of the user.
+
+    Returns:
+
+    """
+    try:
+        client = WebClient(token=settings.slack_admin_user_token)
+        response = client.admin_users_invite(
+            team_id=settings.nsls2_workspace_team_id, email=email, channel_ids=channel
+        )
+        if response.get("ok"):
+            return response
+    except SlackApiError as error:
+        if error.response["error"] == "already_in_team_invited_user":
+            # We've already invited this user - so we are good.
+            return
+        logger.exception(error)
 
 
 async def create_proposal_channels(
@@ -393,8 +421,16 @@ async def create_proposal_channels(
             if user:
                 user_ids.append(user.user_id)
                 proposal_channel.users.append(user)
+            else:
+                # We need to invite user into the channels (and workspace)
+                logger.info(
+                    f"Inviting user {email} to channel '{channel_name}' (ID: {channel_id})"
+                )
+                invite_newuser_to_channel(channel_id, email)
 
-        logger.info(f"Found {len(user_ids)} users to invite: {user_ids}.")
+        logger.info(
+            f"Found {len(user_ids)} users to invite: {user_ids} to channel '{channel_name}' (ID: {channel_id})"
+        )
         conversation_invite(channel_id, user_ids)
 
         channels_created.append(proposal_channel)
