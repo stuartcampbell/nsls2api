@@ -56,7 +56,7 @@ class Settings(BaseSettings):
 
     # Slack settings
     slack_bot_token: str | None = ""
-    superadmin_slack_user_token: str | None = ""
+    slack_admin_user_token: str | None = ""
     slack_signing_secret: str | None = ""
     nsls2_workspace_team_id: str | None = ""
 
