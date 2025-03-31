@@ -431,7 +431,9 @@ async def create_proposal_channels(
         logger.info(
             f"Found {len(user_ids)} users to invite: {user_ids} to channel '{channel_name}' (ID: {channel_id})"
         )
-        conversation_invite(channel_id, user_ids)
+        if len(user_ids) > 0:
+            # If we don't have any users to invite - then don't invite them.
+            conversation_invite(channel_id, user_ids)
 
         channels_created.append(proposal_channel)
 
