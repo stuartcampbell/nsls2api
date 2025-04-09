@@ -5,6 +5,8 @@ import beanie
 import pydantic
 import pymongo
 
+from nsls2api.models.slack_models import SlackChannel
+
 
 class SafetyForm(pydantic.BaseModel):
     saf_id: str
@@ -31,7 +33,7 @@ class Proposal(beanie.Document):
     cycles: Optional[list[str]] = []
     users: Optional[list[User]] = []
     safs: Optional[list[SafetyForm]] = []
-    slack_channel_id: Optional[str] = None
+    slack_channels: Optional[list[SlackChannel]] = []
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )

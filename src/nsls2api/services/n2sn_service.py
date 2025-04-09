@@ -7,6 +7,7 @@ from nsls2api.api.models.person_model import (
     ActiveDirectoryUserGroups,
 )
 from nsls2api.infrastructure.config import get_settings
+from nsls2api.infrastructure.logging import logger
 
 settings = get_settings()
 
@@ -94,7 +95,11 @@ async def get_users_in_group(group: str) -> list[ActiveDirectoryUser]:
         authenticate=False,
         ca_certs_file=settings.bnlroot_ca_certs_file,
     ) as ad:
-        users = ad.get_group_members(group)
+        try:
+            users = ad.get_group_members(group)
+        except RuntimeError as e:
+            logger.exception(e)
+            return []
     return users
 
 

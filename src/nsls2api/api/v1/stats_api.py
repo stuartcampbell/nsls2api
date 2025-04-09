@@ -3,8 +3,8 @@ import fastapi
 from nsls2api._version import version as api_version
 from nsls2api.api.models.stats_model import (
     AboutModel,
-    StatsModel,
     ProposalsPerCycleModel,
+    StatsModel,
 )
 from nsls2api.services import (
     beamline_service,
@@ -20,7 +20,7 @@ async def stats():
     total_proposals = await proposal_service.proposal_count()
     beamlines = await beamline_service.beamline_count()
     facilities = await facility_service.facilities_count()
-    commissioning = len(await proposal_service.commissioning_proposals())
+    commissioning_proposals = await proposal_service.commissioning_proposals()
 
     nsls2_data_health = await facility_service.is_healthy("nsls2")
 
@@ -52,7 +52,7 @@ async def stats():
         facility_count=facilities,
         beamline_count=beamlines,
         proposal_count=total_proposals,
-        commissioning_proposal_count=commissioning,
+        commissioning_proposal_count=commissioning_proposals.count,
         nsls2_data_health=nsls2_data_health,
         lbms_data_health=lbms_data_health,
         nsls2_proposals_per_cycle=nsls2_proposals_per_cycle,

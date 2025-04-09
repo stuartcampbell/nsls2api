@@ -1,7 +1,8 @@
+import datetime
 from typing import Annotated
 
 import fastapi
-from fastapi import Depends, Query, HTTPException
+from fastapi import Depends, HTTPException, Query
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
@@ -13,10 +14,11 @@ from nsls2api.api.models.proposal_model import (
     RecentProposal,
     RecentProposalsList,
     SingleProposal,
+    UsernamesList,
 )
-from nsls2api.api.models.proposal_model import UsernamesList
-from nsls2api.infrastructure.security import get_current_user
-from nsls2api.services import proposal_service
+from nsls2api.infrastructure.security import get_current_user, validate_admin_role
+from nsls2api.models.slack_models import ProposalSlackChannel, SlackChannel
+from nsls2api.services import proposal_service, slack_service
 
 router = fastapi.APIRouter(dependencies=[Depends(get_current_user)])
 
@@ -42,9 +44,27 @@ async def get_recent_proposals(count: int, beamline: str | None = None):
 
 
 @router.get("/proposals/commissioning", response_model=CommissioningProposalsList)
-async def get_commissioning_proposals(beamline: str | None = None):
+async def get_commissioning_proposals(
+    beamline: str | None = None, facility: FacilityName | None = None
+):
+    """
+    Get a list of commissioning proposals.  If a beamline is provided, only proposals
+    for that beamline will be returned and the facility will be ignored.
+
+    Args:
+        beamline (str optional): The beamline to filter proposals by.
+        facility (FacilityName optional): The facility to filter proposals by.
+
+    Returns:
+        CommissioningProposalsList: A list of commissioning proposals.
+
+    Raises:
+        HTTPException: If no commissioning proposals are found or an error occurs.
+    """
     try:
-        proposals = await proposal_service.commissioning_proposals(beamline=beamline)
+        proposals = await proposal_service.commissioning_proposals(
+            beamline=beamline, facility=facility
+        )
         if proposals is None:
             raise HTTPException(
                 status_code=fastapi.status.HTTP_404_NOT_FOUND,
@@ -60,15 +80,13 @@ async def get_commissioning_proposals(beamline: str | None = None):
             detail=f"An error occurred: {e}",
         )
 
-    model = CommissioningProposalsList(
-        count=len(proposals), commissioning_proposals=proposals
-    )
-    return model
+    return proposals
 
 
 @router.get(
     "/proposals/",
     response_model=ProposalFullDetailsList,
+    dependencies=[Depends(validate_admin_role)],
     description="Not fully functional yet.",
 )
 async def get_proposals(
@@ -237,3 +255,58 @@ async def get_proposal_directories(proposal_id: str) -> ProposalDirectoriesList:
         directory_count=len(directories),
     )
     return response_model
+
+
+@router.get("/proposal/{proposal_id}/slack-channels")
+async def get_slack_channels_for_proposal(
+    proposal_id: str,
+) -> list[SlackChannel]:
+    try:
+        channels = await proposal_service.slack_channels_for_proposal(proposal_id)
+        if channels is None:
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Slack channels not found for proposal {proposal_id}",
+            )
+    except LookupError as e:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
+        )
+
+    return channels
+
+
+@router.post(
+    "/proposal/{proposal_id}/slack-channels",
+    dependencies=[Depends(validate_admin_role)],
+)
+async def create_slack_channels_for_proposal(
+    proposal_id: str,
+) -> list[ProposalSlackChannel]:
+    # Let's check that the proposal actually exists first
+    proposal = await proposal_service.proposal_by_id(proposal_id)
+    if proposal is None:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Proposal {proposal_id} not found",
+        )
+
+    channels = await slack_service.create_proposal_channels(proposal_id)
+
+    slack_channels = [
+        SlackChannel(
+            channel_id=proposal_channel.channel_id,
+            channel_name=proposal_channel.channel_name,
+        )
+        for proposal_channel in channels
+    ]
+    proposal.slack_channels = slack_channels
+    proposal.last_updated = datetime.datetime.now()
+    await proposal.save()  # noqa - we don't need to specify any args here
+
+    return channels

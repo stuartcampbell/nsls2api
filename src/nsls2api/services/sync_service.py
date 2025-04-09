@@ -6,8 +6,18 @@ from httpx import HTTPStatusError
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.person_model import ActiveDirectoryUser
+from nsls2api.infrastructure.logging import logger
 from nsls2api.models.beamlines import Beamline
-from nsls2api.models.pass_models import PassCycle, PassProposalType
+from nsls2api.models.cycles import Cycle
+from nsls2api.models.jobs import JobSyncSource
+from nsls2api.models.pass_models import (
+    PassCycle,
+    PassProposal,
+    PassProposalType,
+    PassSaf,
+)
+from nsls2api.models.proposal_types import ProposalType
+from nsls2api.models.proposals import Proposal, SafetyForm, User
 from nsls2api.services import (
     beamline_service,
     bnlpeople_service,
@@ -16,13 +26,6 @@ from nsls2api.services import (
     pass_service,
     proposal_service,
 )
-
-from nsls2api.infrastructure.logging import logger
-from nsls2api.models.cycles import Cycle
-from nsls2api.models.jobs import JobSyncSource
-from nsls2api.models.pass_models import PassProposal, PassSaf
-from nsls2api.models.proposal_types import ProposalType
-from nsls2api.models.proposals import Proposal, SafetyForm, User
 
 
 async def worker_synchronize_dataadmins(skip_beamlines=False) -> None:
@@ -202,20 +205,26 @@ async def worker_synchronize_proposal_types_from_pass(
     )
 
 
-async def synchronize_proposal_from_pass(proposal_id: str, facility_name: FacilityName = FacilityName.nsls2) -> None:
+async def synchronize_proposal_from_pass(
+    proposal_id: str, facility_name: FacilityName = FacilityName.nsls2
+) -> None:
     beamline_list = []
     user_list = []
     saf_list = []
 
     try:
-        pass_proposal: PassProposal = await pass_service.get_proposal(proposal_id, facility_name)
+        pass_proposal: PassProposal = await pass_service.get_proposal(
+            proposal_id, facility_name
+        )
     except pass_service.PassException as error:
         error_message = f"Error retrieving proposal {proposal_id} from PASS"
         logger.exception(error_message)
         raise Exception(error_message) from error
 
     # Get the SAFs for this proposal
-    pass_saf_list: list[PassSaf] = await pass_service.get_saf_from_proposal(proposal_id, facility_name)
+    pass_saf_list: list[PassSaf] = await pass_service.get_saf_from_proposal(
+        proposal_id, facility_name
+    )
     for saf in pass_saf_list:
         saf_beamline_list = []
         for resource in saf.Resources:
@@ -351,7 +360,9 @@ async def update_proposals_with_cycle(
             logger.warning(error)
 
 
-async def worker_synchronize_proposal_from_pass(proposal_id: str, facility: FacilityName = FacilityName.nsls2) -> None:
+async def worker_synchronize_proposal_from_pass(
+    proposal_id: str, facility: FacilityName = FacilityName.nsls2
+) -> None:
     start_time = datetime.datetime.now()
 
     await synchronize_proposal_from_pass(proposal_id, facility)

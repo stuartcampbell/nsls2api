@@ -13,11 +13,16 @@ class HTTPXClientWrapper:
     async_client = None
 
     def start(self):
+        transport = None
+        if settings.use_socks_proxy:
+            transport = httpx_socks.AsyncProxyTransport.from_url(settings.socks_proxy)
         timeouts = httpx.Timeout(
             None, connect=30.0
         )  # 30s timeout on connect, no other timeouts.
         limits = httpx.Limits(max_keepalive_connections=5, max_connections=10)
-        self.async_client = httpx.AsyncClient(limits=limits, timeout=timeouts)
+        self.async_client = httpx.AsyncClient(
+            limits=limits, timeout=timeouts, transport=transport
+        )
         logger.info(
             f"HTTPXClientWrapper [{click.style(str(id(self.async_client)), fg='cyan')}] started."
         )
@@ -36,6 +41,7 @@ class HTTPXClientWrapper:
 
 async def _call_async_webservice(
     url: str,
+    auth: tuple = None,
     headers: dict = None,
 ) -> Response:
     transport = None
@@ -47,6 +53,8 @@ async def _call_async_webservice(
         timeout=httpx.Timeout(None, connect=30.0),
         transport=transport,
         limits=httpx.Limits(max_keepalive_connections=5, max_connections=5),
+        auth=auth,
+        headers=headers,
     ) as client:
         logger.logger(f"Calling {url} using unshared client.")
         resp: Response = await client.get(url)
@@ -58,13 +66,13 @@ async def _call_async_webservice(
 
 
 async def _call_async_webservice_with_client(
-    url: str, headers: dict = None, client: httpx.AsyncClient = None
+    url: str, auth: tuple = None, headers: dict = None, client: httpx.AsyncClient = None
 ) -> Response:
     if client is None:
         # Then just use the general method that creates a client each time
-        return await _call_async_webservice(url, headers)
+        return await _call_async_webservice(url, auth, headers)
     else:
-        resp: Response = await client.get(url, timeout=90.0)
+        resp: Response = await client.get(url, timeout=90.0, auth=auth, headers=headers)
         resp.raise_for_status()
         results = resp.json()
         return results

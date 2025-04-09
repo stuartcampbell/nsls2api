@@ -5,7 +5,6 @@ from pydantic import ValidationError
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.logging import logger
-from nsls2api.services.helpers import httpx_client_wrapper
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.pass_models import (
     PassAllocation,
@@ -14,8 +13,12 @@ from nsls2api.models.pass_models import (
     PassProposalType,
     PassSaf,
 )
+from nsls2api.models.proposal_types import ProposalType
 from nsls2api.services import facility_service
-from nsls2api.services.helpers import _call_async_webservice_with_client
+from nsls2api.services.helpers import (
+    _call_async_webservice_with_client,
+    httpx_client_wrapper,
+)
 
 settings = config.get_settings()
 
@@ -90,6 +93,35 @@ async def get_proposal_types(
     return proposal_types
 
 
+async def get_commissioning_proposal_type(
+    facility: FacilityName = FacilityName.nsls2,
+) -> Optional[ProposalType]:
+    match facility:
+        case FacilityName.nsls2:
+            # The PASS ID for NSLS-II commissioning proposals is 300005
+            proposal = await ProposalType.find_one(ProposalType.pass_id == "300005")
+            return proposal
+        case FacilityName.lbms:
+            # The PASS ID for LBMS commissioning proposals is 300042
+            proposal = await ProposalType.find_one(ProposalType.pass_id == "300042")
+            return proposal
+        case FacilityName.cfn:
+            return None
+            # We don't have a commissioning proposal type for CFN
+        case _:
+            raise ValueError(f"Unknown facility: {facility}")
+
+
+async def get_all_commissioning_proposal_type_ids() -> list[str]:
+    """
+    Get all the PASS IDs for commissioning proposal types for all facilities.
+    Returns:
+        list[str]: List of PASS IDs for commissioning proposal types
+    """
+    commissioning_proposal_types = ["300005", "300042"]
+    return commissioning_proposal_types
+
+
 async def get_saf_from_proposal(
     proposal_id: str, facility: FacilityName = FacilityName.nsls2
 ) -> Optional[list[PassSaf]]:
@@ -129,9 +161,8 @@ async def get_commissioning_proposals_by_year(
         error_message: str = f"Facility {facility_name} does not have a PASS ID."
         logger.error(error_message)
         raise PassException(error_message)
-
-    # The PASS ID for commissioning proposals is 300005
-    url = f"{base_url}/Proposal/GetProposalsByType/{api_key}/{pass_facility}/{year}/300005/NULL"
+    pass_commissioning_type = await get_commissioning_proposal_type(facility_name)
+    url = f"{base_url}/Proposal/GetProposalsByType/{api_key}/{pass_facility}/{year}/{pass_commissioning_type.pass_id}/NULL"
 
     try:
         pass_commissioning_proposals = await _call_pass_webservice(url)
