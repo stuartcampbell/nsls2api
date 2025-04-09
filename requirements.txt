@@ -108,20 +108,20 @@ pyasn1==0.6.1
     # via ldap3
 pycparser==2.22
     # via cffi
-pydantic==2.11.1
+pydantic==2.11.3
     # via
     #   -r requirements.in
     #   beanie
     #   fastapi
     #   lazy-model
     #   pydantic-settings
-pydantic-core==2.33.0
+pydantic-core==2.33.1
     # via pydantic
 pydantic-settings==2.8.1
     # via -r requirements.in
 pygments==2.19.1
     # via rich
-pymongo==4.11.3
+pymongo==4.12.0
     # via
     #   -r requirements.in
     #   motor
@@ -159,7 +159,7 @@ toml==0.10.2
     # via beanie
 typer==0.15.2
     # via -r requirements.in
-typing-extensions==4.13.0
+typing-extensions==4.13.1
     # via
     #   anyio
     #   beanie
