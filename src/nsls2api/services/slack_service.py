@@ -300,7 +300,7 @@ def lookup_user_by_email(email: str) -> SlackPerson | None:
     return None
 
 
-def invite_newuser_to_channel(channel: str, email: str):
+def invite_user_to_workspace(channel: str, email: str):
     """
     Invites a user to the workspace/channel.
     Args:
@@ -320,8 +320,10 @@ def invite_newuser_to_channel(channel: str, email: str):
     except SlackApiError as error:
         if error.response["error"] == "already_in_team_invited_user":
             # We've already invited this user - so we are good.
-            return
+            return None
         logger.exception(error)
+    return None
+
 
 
 async def create_proposal_channels(
@@ -379,11 +381,11 @@ async def create_proposal_channels(
             verified_managers = verify_slack_users(beamline_slack_managers)
 
             if len(beamline_slack_managers) != len(verified_managers):
+                verified_manager_ids = {manager.user_id for manager in verified_managers}
+                difference = set(beamline_slack_managers) - verified_manager_ids
                 logger.warning(
-                    f"Failed to verify Slack accounts for all managers for beamline {beamline}"
+                    f"Failed to verify Slack accounts the following defined managers {difference} for beamline {beamline}"
                 )
-                logger.warning(f"\tVerified managers: {verified_managers}")
-                logger.warning(f"\tSpecified managers: {beamline_slack_managers}")
 
             # Proceed with the verified managers
             verified_manager_ids = [manager.user_id for manager in verified_managers]
@@ -426,7 +428,7 @@ async def create_proposal_channels(
                 logger.info(
                     f"Inviting user {email} to channel '{channel_name}' (ID: {channel_id})"
                 )
-                invite_newuser_to_channel(channel_id, email)
+                invite_user_to_workspace(channel_id, email)
 
         logger.info(
             f"Found {len(user_ids)} users to invite: {user_ids} to channel '{channel_name}' (ID: {channel_id})"
@@ -437,4 +439,7 @@ async def create_proposal_channels(
 
         channels_created.append(proposal_channel)
 
+
+
     return channels_created
+
