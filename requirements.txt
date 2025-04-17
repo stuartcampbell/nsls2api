@@ -45,7 +45,7 @@ h11==0.14.0
     # via
     #   httpcore
     #   uvicorn
-httpcore==1.0.7
+httpcore==1.0.8
     # via
     #   httpx
     #   httpx-socks
@@ -148,18 +148,18 @@ slack-sdk==3.35.0
     #   slack-bolt
 sniffio==1.3.1
     # via anyio
-starlette==0.46.1
+starlette==0.46.2
     # via
     #   asgi-correlation-id
     #   fastapi
     #   prometheus-fastapi-instrumentator
-textual==3.0.1
+textual==3.1.0
     # via -r requirements.in
 toml==0.10.2
     # via beanie
 typer==0.15.2
     # via -r requirements.in
-typing-extensions==4.13.1
+typing-extensions==4.13.2
     # via
     #   anyio
     #   beanie
@@ -177,7 +177,7 @@ uc-micro-py==1.0.3
     # via linkify-it-py
 uuid==1.30
     # via -r requirements.in
-uvicorn==0.34.0
+uvicorn==0.34.1
     # via -r requirements.in
 wcwidth==0.2.13
     # via prettytable

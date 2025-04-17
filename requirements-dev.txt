@@ -84,7 +84,7 @@ gevent==24.11.1
     #   locust
 geventhttpclient==2.3.3
     # via locust
-greenlet==3.1.1
+greenlet==3.2.0
     # via gevent
 h11==0.14.0
     # via httpcore
@@ -100,7 +100,7 @@ hatchling==1.27.0
     #   hatch
     #   hatch-requirements-txt
     #   hatch-vcs
-httpcore==1.0.7
+httpcore==1.0.8
     # via httpx
 httpx==0.28.1
     # via hatch
@@ -142,7 +142,7 @@ lazy-model==0.2.0
     # via bunnet
 linkify-it-py==2.0.3
     # via markdown-it-py
-locust==2.34.1
+locust==2.35.0
     # via -r requirements-dev.in
 markdown-it-py==3.0.0
     # via
@@ -167,7 +167,7 @@ msgpack==1.1.0
     # via
     #   locust
     #   textual-dev
-multidict==6.2.0
+multidict==6.4.3
     # via
     #   aiohttp
     #   yarl
@@ -209,7 +209,7 @@ pre-commit==4.2.0
     # via pre-commit-uv
 pre-commit-uv==4.1.4
     # via -r requirements-dev.in
-prompt-toolkit==3.0.50
+prompt-toolkit==3.0.51
     # via ipython
 propcache==0.3.1
     # via
@@ -234,7 +234,7 @@ pygments==2.19.1
     #   rich
 pymongo==4.12.0
     # via bunnet
-pyright==1.1.398
+pyright==1.1.399
     # via -r requirements-dev.in
 pytest==8.3.5
     # via
@@ -253,7 +253,7 @@ rich==14.0.0
     #   hatch
     #   textual
     #   textual-serve
-ruff==0.11.4
+ruff==0.11.5
     # via -r requirements-dev.in
 setuptools==78.1.0
     # via
@@ -271,13 +271,13 @@ sniffio==1.3.1
     #   asgi-lifespan
 stack-data==0.6.3
     # via ipython
-textual==3.0.1
+textual==3.1.0
     # via
     #   textual-dev
     #   textual-serve
 textual-dev==1.7.0
     # via -r requirements-dev.in
-textual-serve==1.1.1
+textual-serve==1.1.2
     # via textual-dev
 toml==0.10.2
     # via bunnet
@@ -289,9 +289,9 @@ traitlets==5.14.3
     # via
     #   ipython
     #   matplotlib-inline
-trove-classifiers==2025.3.19.19
+trove-classifiers==2025.4.11.15
     # via hatchling
-typing-extensions==4.13.1
+typing-extensions==4.13.2
     # via
     #   anyio
     #   pydantic
@@ -304,13 +304,13 @@ typing-inspection==0.4.0
     # via pydantic
 uc-micro-py==1.0.3
     # via linkify-it-py
-urllib3==2.3.0
+urllib3==2.4.0
     # via
     #   geventhttpclient
     #   requests
 userpath==1.9.2
     # via hatch
-uv==0.6.13
+uv==0.6.14
     # via
     #   -r requirements-dev.in
     #   hatch
@@ -327,7 +327,7 @@ werkzeug==3.1.3
     #   flask-cors
     #   flask-login
     #   locust
-yarl==1.19.0
+yarl==1.20.0
     # via aiohttp
 zope-event==5.0
     # via gevent
