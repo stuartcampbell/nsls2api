@@ -2,7 +2,7 @@ from typing import Optional
 
 import typer
 
-from nsls2api.cli import admin, api, auth, beamline, facility, proposal
+from nsls2api.cli import admin, api, auth, beamline, facility, proposal, environment
 
 __app_name__ = "nsls2api-cli"
 __version__ = "0.1.0"
@@ -14,6 +14,9 @@ app.add_typer(auth.app, name="auth", help="Stuff about security and fun")
 app.add_typer(beamline.app, name="beamline", help="Stuff about Beamlines")
 app.add_typer(facility.app, name="facility", help="Stuff about Facilities")
 app.add_typer(proposal.app, name="proposal", help="Stuff about Proposals")
+
+# Add the new environment management commands
+app.add_typer(environment.app, name="env")
 
 
 def _version_callback(value: bool) -> None:
