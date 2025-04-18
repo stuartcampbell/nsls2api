@@ -7,7 +7,7 @@ from typing import Optional, Any
 class ApiEnvironment(str, Enum):
     PRODUCTION = "https://api.nsls2.bnl.gov"
     DEVELOPMENT = "https://api-dev.nsls2.bnl.gov"
-    LOCAL = "http://localhost:8000"
+    LOCAL = "http://127.0.0.1:8000"
 
 class ConfigKey(str, Enum):
     """Enum for configuration keys to ensure consistency"""
