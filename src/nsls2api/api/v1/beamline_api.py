@@ -271,3 +271,16 @@ async def add_beamline_service(name: str, service: BeamlineService):
         )
 
     return new_service
+
+@router.get("/beamlines")
+async def get_all_beamlines():
+    """
+    Get all beamlines.
+    """
+    beamlines = await beamline_service.all_beamlines()
+    if not beamlines:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail="No beamlines found",
+        )
+    return beamlines
