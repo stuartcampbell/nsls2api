@@ -6,6 +6,7 @@ from nsls2api.api.models.stats_model import (
     ProposalsPerCycleModel,
     StatsModel,
 )
+from nsls2api.infrastructure.container_utils import get_container_info
 from nsls2api.services import (
     beamline_service,
     facility_service,
@@ -63,5 +64,10 @@ async def stats():
 
 @router.get("/about", response_model=AboutModel)
 async def about():
-    model = AboutModel(version=api_version, description="NSLS-II Facility API")
+    container_info = get_container_info()
+    model = AboutModel(
+        version=api_version, 
+        description="NSLS-II Facility API",
+        container_info=container_info
+    )
     return model
