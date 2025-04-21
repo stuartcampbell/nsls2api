@@ -1,23 +1,27 @@
 import httpx
 import typer
+from rich.box import ROUNDED
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
-from rich.box import ROUNDED
 
 from nsls2api.cli.settings import get_base_url, get_token
 
 app = typer.Typer()
-console = Console(theme=Theme({
-    "info": "cyan",
-    "warning": "yellow",
-    "error": "red bold",
-    "success": "green bold",
-    "health.good": "green bold",
-    "health.bad": "red bold",
-}))
+console = Console(
+    theme=Theme(
+        {
+            "info": "cyan",
+            "warning": "yellow",
+            "error": "red bold",
+            "success": "green bold",
+            "health.good": "green bold",
+            "health.bad": "red bold",
+        }
+    )
+)
 
 
 @app.command()
@@ -49,9 +53,7 @@ def status():
                     status_table.add_row("Container", about_data["container_info"])
 
                 panel = Panel(
-                    status_table,
-                    title="NSLS-II API Status",
-                    border_style="green"
+                    status_table, title="NSLS-II API Status", border_style="green"
                 )
                 console.print(panel)
 
@@ -59,14 +61,14 @@ def status():
             panel = Panel(
                 f"[error]HTTP Error: {exc.response.status_code} - {exc.response.reason_phrase}",
                 title="API Status Error",
-                border_style="red"
+                border_style="red",
             )
             console.print(panel)
         except httpx.RequestError as exc:
             panel = Panel(
                 f"[error]Request Error: {exc}",
                 title="API Status Error",
-                border_style="red"
+                border_style="red",
             )
             console.print(panel)
 
@@ -90,10 +92,19 @@ def metrics():
                 metrics_table.add_column("Key", style="cyan")
                 metrics_table.add_column("Value", style="green")
 
-                metrics_table.add_row("Facility Count", str(stats_data["facility_count"]))
-                metrics_table.add_row("Beamline Count", str(stats_data["beamline_count"]))
-                metrics_table.add_row("Proposal Count", str(stats_data["proposal_count"]))
-                metrics_table.add_row("Commissioning Proposal Count", str(stats_data["commissioning_proposal_count"]))
+                metrics_table.add_row(
+                    "Facility Count", str(stats_data["facility_count"])
+                )
+                metrics_table.add_row(
+                    "Beamline Count", str(stats_data["beamline_count"])
+                )
+                metrics_table.add_row(
+                    "Proposal Count", str(stats_data["proposal_count"])
+                )
+                metrics_table.add_row(
+                    "Commissioning Proposal Count",
+                    str(stats_data["commissioning_proposal_count"]),
+                )
 
                 # Create health status table
                 health_table = Table(title="Data Health Status", box=ROUNDED)
@@ -105,13 +116,17 @@ def metrics():
 
                 health_table.add_row(
                     "NSLS-II",
-                    Text("✓ Healthy" if nsls2_health else "✗ Unhealthy", 
-                         style="health.good" if nsls2_health else "health.bad")
+                    Text(
+                        "✓ Healthy" if nsls2_health else "✗ Unhealthy",
+                        style="health.good" if nsls2_health else "health.bad",
+                    ),
                 )
                 health_table.add_row(
                     "LBMS",
-                    Text("✓ Healthy" if lbms_health else "✗ Unhealthy", 
-                         style="health.good" if lbms_health else "health.bad")
+                    Text(
+                        "✓ Healthy" if lbms_health else "✗ Unhealthy",
+                        style="health.good" if lbms_health else "health.bad",
+                    ),
                 )
 
                 # Create NSLS-II proposals per cycle table
@@ -121,8 +136,7 @@ def metrics():
 
                 for cycle_data in stats_data["nsls2_proposals_per_cycle"]:
                     nsls2_table.add_row(
-                        cycle_data["cycle"],
-                        str(cycle_data["proposal_count"])
+                        cycle_data["cycle"], str(cycle_data["proposal_count"])
                     )
 
                 # Create LBMS proposals per cycle table
@@ -132,15 +146,12 @@ def metrics():
 
                 for cycle_data in stats_data["lbms_proposals_per_cycle"]:
                     lbms_table.add_row(
-                        cycle_data["cycle"],
-                        str(cycle_data["proposal_count"])
+                        cycle_data["cycle"], str(cycle_data["proposal_count"])
                     )
 
                 # Create main panel
                 main_panel = Panel(
-                    metrics_table,
-                    title="NSLS-II API Metrics",
-                    border_style="green"
+                    metrics_table, title="NSLS-II API Metrics", border_style="green"
                 )
 
                 # Print all panels and tables
@@ -153,13 +164,13 @@ def metrics():
             panel = Panel(
                 f"[error]HTTP Error: {exc.response.status_code} - {exc.response.reason_phrase}",
                 title="API Metrics Error",
-                border_style="red"
+                border_style="red",
             )
             console.print(panel)
         except httpx.RequestError as exc:
             panel = Panel(
                 f"[error]Request Error: {exc}",
                 title="API Metrics Error",
-                border_style="red"
+                border_style="red",
             )
             console.print(panel)
