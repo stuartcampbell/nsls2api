@@ -1,65 +1,11 @@
-from typing import Optional
-
-import httpx
 import typer
-from httpx import Response
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.theme import Theme
 
-from nsls2api.cli.settings import get_base_url, get_token
+from nsls2api.cli.utils.api import call_nsls2api_endpoint
+from nsls2api.cli.utils.console import console
 
 app = typer.Typer()
-console = Console(
-    theme=Theme(
-        {
-            "info": "cyan",
-            "warning": "yellow",
-            "error": "red bold",
-            "success": "green bold",
-        }
-    )
-)
-
-
-def call_nsls2api_endpoint(
-    endpoint: str, method: str = "GET", data: dict = None
-) -> Optional[Response]:
-    """
-    Call the NSLS-II API endpoint and return the response.
-    """
-    url = f"{get_base_url()}/{endpoint}"
-    try:
-        with httpx.Client() as client:
-            token = get_token()
-            headers = {"Authorization": f"{token}"} if token else {}
-            if method == "GET":
-                response = client.get(url, headers=headers)
-            elif method == "POST":
-                response = client.post(url, json=data, headers=headers)
-            response.raise_for_status()
-    except httpx.HTTPStatusError as exc:
-        if exc.response.status_code == 401:
-            console.print("[red]Invalid API token[/red]")
-            return None
-        elif exc.response.status_code == 403:
-            console.print("[red]Access denied[/red]")
-            return None
-        elif exc.response.status_code == 404:
-            console.print(f"[red]Endpoint not found: {url}[/red]")
-            return None
-        else:
-            console.print(
-                f"[red]An error occurred while trying to contact the API: {exc}[/red]"
-            )
-            return None
-    except httpx.RequestError as exc:
-        console.print(
-            f"[red]An error occurred while trying to contact the API: {exc}[/red]"
-        )
-        return None
-    return response
 
 
 @app.command("list")
