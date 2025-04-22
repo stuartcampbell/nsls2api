@@ -3,7 +3,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from nsls2api.cli.utils.api import call_nsls2api_endpoint
-from nsls2api.cli.utils.console import console
+from nsls2api.cli.utils.console import console, error
 
 app = typer.Typer()
 
@@ -18,7 +18,7 @@ def list_beamlines():
 
     # Expecting the API to return a list of beamlines
     if response is None:
-        console.print("[red]Failed to retrieve beamlines.[/red]")
+        error("ERROR: Failed to retrieve beamlines.")
         raise typer.Exit(code=1)
     beamlines = response.json()
     table = Table(title="Beamlines", show_header=True, header_style="bold green")
