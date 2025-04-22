@@ -1,10 +1,11 @@
 import typer
+from rich import box
 from rich.panel import Panel
 from rich.table import Table
 
 from nsls2api.cli.utils.api import call_nsls2api_endpoint
 from nsls2api.cli.utils.cli_helpers import auto_help_if_no_command
-from nsls2api.cli.utils.console import console
+from nsls2api.cli.utils.console import console, error
 from nsls2api.models.proposals import ProposalDisplay
 
 app = typer.Typer(invoke_without_command=True)
@@ -17,31 +18,41 @@ def proposal_callback(ctx: typer.Context):
 
 
 def display_proposal(proposal: ProposalDisplay):
-    # Header Panel
-    header_text = f"[bold cyan]Proposal ID:[/] {proposal.proposal_id}\n"
-    header_text += f"[bold cyan]Data Session:[/] {proposal.data_session}\n"
+    # --- Header Panel ---
+    header_table = Table.grid(padding=(0, 2))
+    header_table.add_column(justify="right", style="bold cyan")
+    header_table.add_column()
+
+    header_table.add_row("Proposal ID", proposal.proposal_id)
+    header_table.add_row("Data Session", proposal.data_session)
     if proposal.title:
-        header_text += f"[bold cyan]Title:[/] {proposal.title}\n"
+        header_table.add_row("Title", proposal.title)
     if proposal.type:
-        header_text += f"[bold cyan]Type:[/] {proposal.type}\n"
-    if proposal.pass_type_id:
-        header_text += f"[bold cyan]Pass Type ID:[/] {proposal.pass_type_id}"
+        header_table.add_row("Proposal Type", proposal.type)
 
-    console.print(Panel(header_text, title="Proposal Overview", expand=False))
+    console.print(
+        Panel(header_table, title="📋 Proposal Overview", expand=True, box=box.ROUNDED)
+    )
 
-    # Instruments and Cycles
+    # --- Instruments and Cycles ---
     if proposal.instruments or proposal.cycles:
-        table = Table(title="Instruments & Cycles", expand=True)
-        table.add_column("🔬Instruments", style="green")
-        table.add_column("Cycles", style="blue")
+        ic_table = Table(expand=True, box=box.SIMPLE_HEAVY)
+        ic_table.add_column("🔬 Instruments", style="green")
+        ic_table.add_column("🔁 Cycles", style="blue")
+
         max_len = max(len(proposal.instruments or []), len(proposal.cycles or []))
         for i in range(max_len):
             inst = (
                 proposal.instruments[i] if i < len(proposal.instruments or []) else ""
             )
             cyc = proposal.cycles[i] if i < len(proposal.cycles or []) else ""
-            table.add_row(inst, cyc)
-        console.print(table)
+            ic_table.add_row(inst, cyc)
+
+        console.print(
+            Panel(
+                ic_table, expand=True, title="🧪 Instruments & Cycles", box=box.ROUNDED
+            )
+        )
 
     # Users 👤
     if proposal.users:
@@ -97,28 +108,51 @@ def display_proposal(proposal: ProposalDisplay):
 
         console.print(Panel(slack_table, title="💬 Slack Integration", expand=True))
 
-    # Metadata
-    metadata_text = (
-        f"[dim]Created on:[/] {proposal.created_on.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        f"[dim]Last updated:[/] {proposal.last_updated.strftime('%Y-%m-%d %H:%M:%S')}"
+    # --- Metadata Panel ---
+    metadata_table = Table.grid(padding=(0, 2))
+    metadata_table.add_column(justify="right", style="dim")
+    metadata_table.add_column()
+
+    metadata_table.add_row(
+        "🕒 Created", proposal.created_on.strftime("%Y-%m-%d %H:%M:%S")
     )
-    console.print(Panel(metadata_text, title="Metadata", style="dim", expand=False))
+    metadata_table.add_row(
+        "📝 Last Updated", proposal.last_updated.strftime("%Y-%m-%d %H:%M:%S")
+    )
+
+    console.print(
+        Panel(
+            metadata_table,
+            title="📌 Metadata",
+            style="dim",
+            expand=False,
+            box=box.ROUNDED,
+        )
+    )
 
 
 @app.command()
-def view(proposal_id: int):
-    print(f"Viewing Proposal: {proposal_id}")
+def view(
+    identifier: str, saf: bool = typer.Option(False, help="Treat identifier as SAF ID")
+):
+    lookup_type = "SAF ID" if saf else "Proposal ID"
 
-    url = f"v1/proposal/{proposal_id}"
+    if saf:
+        url = f"v1/proposal/saf/{identifier}"
+        error("Lookup by SAF ID is not yet implemented.")
+        raise typer.Exit(code=1)
+    else:
+        url = f"v1/proposal/{identifier}"
+
     response = call_nsls2api_endpoint(url, method="GET")
 
     if response is None:
-        print(f"ERROR: Failed to retrieve proposal {proposal_id}.")
+        print(f"ERROR: Failed to retrieve proposal with {lookup_type} = {identifier}.")
         raise typer.Exit(code=1)
 
     proposal_data = response.json().get("proposal", {})
     if not proposal_data:
-        print(f"ERROR: No data found for proposal {proposal_id}.")
+        print(f"ERROR: No data found for proposal with {lookup_type} = {identifier}.")
         raise typer.Exit(code=1)
 
     # Assuming Proposal is a Pydantic model
