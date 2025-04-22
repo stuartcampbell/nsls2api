@@ -64,13 +64,13 @@ def display_proposal(proposal: ProposalDisplay):
         user_table.add_column("PI", style="bold yellow")
 
         for user in proposal.users:
-            full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+            full_name = f"👤 {user.first_name or ''} {user.last_name or ''}".strip()
             user_table.add_row(
                 full_name or "-",
                 user.email,
                 user.bnl_id or "-",
                 user.username or "-",
-                "⭐️ PI" if user.is_pi else "",
+                "✅" if user.is_pi else "",
             )
 
         console.print(Panel(user_table, title="👥 Proposal Users", expand=True))
