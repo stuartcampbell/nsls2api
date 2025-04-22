@@ -6,7 +6,7 @@ custom_theme = Theme(
     {
         "success": "bold green",
         "error": "bold red",
-        "info": "bold blue",
+        "info": "cyan",
         "warning": "bold yellow",
         "highlight": "bold magenta",
     }
