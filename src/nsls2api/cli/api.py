@@ -8,14 +8,15 @@ from rich.text import Text
 from rich.theme import Theme
 
 from nsls2api.cli.settings import get_base_url, get_token
+from nsls2api.cli.utils.cli_helpers import print_help_if_no_command
 
 app = typer.Typer(invoke_without_command=True)
 
+
 @app.callback()
-def users_callback(ctx: typer.Context):
-    if ctx.invoked_subcommand is None:
-        typer.echo(ctx.command.get_help(ctx))
-        raise typer.Exit()
+def main(ctx: typer.Context):
+    print_help_if_no_command(ctx)
+
 
 console = Console(
     theme=Theme(

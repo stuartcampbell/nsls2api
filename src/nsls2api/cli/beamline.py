@@ -3,15 +3,16 @@ from rich.panel import Panel
 from rich.table import Table
 
 from nsls2api.cli.utils.api import call_nsls2api_endpoint
+from nsls2api.cli.utils.cli_helpers import print_help_if_no_command
 from nsls2api.cli.utils.console import console, error
 
 app = typer.Typer(invoke_without_command=True)
 
+
 @app.callback()
-def users_callback(ctx: typer.Context):
-    if ctx.invoked_subcommand is None:
-        typer.echo(ctx.command.get_help(ctx))
-        raise typer.Exit()
+def main(ctx: typer.Context):
+    print_help_if_no_command(ctx)
+
 
 @app.command("list")
 def list_beamlines():
