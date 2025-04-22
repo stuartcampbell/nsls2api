@@ -12,14 +12,15 @@ from nsls2api.cli.settings import (
     ConfigKey,
     get_base_url,
 )
-from nsls2api.cli.utils.cli_helpers import print_help_if_no_command
+from nsls2api.cli.utils.cli_helpers import auto_help_if_no_command
 
 app = typer.Typer(invoke_without_command=True)
 
 
 @app.callback()
-def main(ctx: typer.Context):
-    print_help_if_no_command(ctx)
+@auto_help_if_no_command()
+def environment_callback(ctx: typer.Context):
+    pass  # No need to call anything manually
 
 
 console = Console(
