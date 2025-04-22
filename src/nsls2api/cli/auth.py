@@ -9,19 +9,15 @@ from rich.table import Table
 from rich.theme import Theme
 
 from nsls2api.cli.settings import get_base_url, get_token, remove_token, set_token
+from nsls2api.cli.utils.console import console
 
-app = typer.Typer()
-console = Console(
-    theme=Theme(
-        {
-            "info": "cyan",
-            "warning": "yellow",
-            "error": "red bold",
-            "success": "green bold",
-        }
-    )
-)
+app = typer.Typer(invoke_without_command=True)
 
+@app.callback()
+def users_callback(ctx: typer.Context):
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.command.get_help(ctx))
+        raise typer.Exit()
 
 def verify_token(token: str) -> Tuple[bool, Optional[str]]:
     """

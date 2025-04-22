@@ -5,8 +5,13 @@ from rich.table import Table
 from nsls2api.cli.utils.api import call_nsls2api_endpoint
 from nsls2api.cli.utils.console import console, error
 
-app = typer.Typer()
+app = typer.Typer(invoke_without_command=True)
 
+@app.callback()
+def users_callback(ctx: typer.Context):
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.command.get_help(ctx))
+        raise typer.Exit()
 
 @app.command("list")
 def list_beamlines():
