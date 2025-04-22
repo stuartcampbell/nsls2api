@@ -30,7 +30,7 @@ def call_nsls2api_endpoint(
             console.print("[red]Access denied[/red]")
             return None
         elif exc.response.status_code == 404:
-            console.print(f"[red]Endpoint not found: {url}[/red]")
+            console.print(f"[red]Not found: {url}[/red]")
             return None
         else:
             console.print(
