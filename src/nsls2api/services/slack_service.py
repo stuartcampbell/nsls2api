@@ -394,6 +394,7 @@ async def create_proposal_channels(
                 )
                 # Now let's add the beamline Slack channel managers to the channel
                 conversation_invite(channel_id, verified_manager_ids)
+                # And store the verified managers in the proposal channel object
                 proposal_channel.managers.extend(verified_managers)
 
             beamline_slack_bot = verify_slack_bot(
@@ -408,7 +409,9 @@ async def create_proposal_channels(
                 logger.info(
                     f"Adding these beamline bots to the channel: {beamline_slack_bot}"
                 )
+                # Now lets invite the beamline bot to the channel
                 conversation_invite(channel_id, [beamline_slack_bot.user_id])
+                # And store the verified bot in the proposal channel object
                 proposal_channel.bots.append(beamline_slack_bot)
             else:
                 logger.info(f"No slack bot found for beamline {beamline}")
@@ -420,6 +423,7 @@ async def create_proposal_channels(
             user = lookup_user_by_email(email)
             if user:
                 user_ids.append(user.user_id)
+                # Store the user in the proposal channel object
                 proposal_channel.users.append(user)
             else:
                 # We need to invite user into the channels (and workspace)
