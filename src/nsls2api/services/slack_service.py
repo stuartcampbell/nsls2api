@@ -310,6 +310,29 @@ def lookup_user_by_email(email: str) -> SlackPerson | None:
     return None
 
 
+def get_userid_by_username(username: str) -> Optional[str]:
+    """
+    Looks up the slack user_id associated with the given username.
+
+    Args:
+        username (str): The username of the user.
+
+    Returns:
+        str | None: A string containing the user_id of
+                          the user if found, None otherwise.
+    """
+    client = WebClient(token=settings.slack_bot_token)
+    response = client.users_list()
+    if not response["ok"]:
+        raise Exception("Failed to fetch users")
+
+    for member in response["members"]:
+        if member.get("name") == username:
+            return member["id"]
+
+    return None  # Not found
+
+
 def invite_newuser_to_channel(channel: str, email: str):
     """
     Invites a user to the workspace/channel.
