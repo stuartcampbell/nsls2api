@@ -167,6 +167,9 @@ def get_user_info(user_id: str) -> Optional[SlackUser]:
     """
     Retrieves the details of a Slack User .
 
+    Args:
+        user_id (str) : Slack user_id to lookup
+
     Returns:
         SlackUser: An instance of the SlackUser class containing the user details.
     """
