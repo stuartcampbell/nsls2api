@@ -21,15 +21,6 @@ settings = get_settings()
 class ChannelAlreadyExistsError(Exception):
     pass
 
-class AbstractSlackService(ABC):
-    """Abstract base class for Slack services."""
-    @abstractmethod
-    async def create_proposal_channels(self, proposal_id: str) -> list[ProposalSlackChannel] | None:
-        pass
-
-
-
-
 
 def create_conversation(name: str, is_private: bool = True) -> str | None:
     """
