@@ -84,7 +84,7 @@ def list_detectors(beamline: str):
     detectors = response.json().get("detectors", [])
     if not detectors:
         console.print(f"[warning]No detectors found for beamline: {beamline}[/warning]")
-        typer.Exit()
+        raise typer.Exit()
     table = Table(title=f"Detectors for Beamline: {beamline}")
     table.add_column("Name", style="cyan")
     table.add_column("Manufacturer", style="blue")
