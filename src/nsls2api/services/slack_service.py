@@ -326,13 +326,18 @@ def get_userid_by_username(username: str) -> Optional[str]:
                           the user if found, None otherwise.
     """
     client = WebClient(token=settings.slack_bot_token)
-    response = client.users_list()
-    if not response["ok"]:
-        raise SlackApiError(response=response)
+    try:
+        response = client.users_list()
+        if not response["ok"]:
+            logger.error(f"Slack API returned an error: {response}")
+            return None
 
-    for member in response["members"]:
-        if member.get("name") == username:
-            return member["id"]
+        for member in response["members"]:
+            if member.get("name") == username:
+                return member["id"]
+    except SlackApiError as error:
+        logger.exception(f"Failed to retrieve users list: {error}")
+        return None
 
     return None  # Not found
 
