@@ -330,7 +330,7 @@ def get_userid_by_username(username: str) -> Optional[str]:
     client = WebClient(token=settings.slack_bot_token)
     response = client.users_list()
     if not response["ok"]:
-        raise Exception("Failed to fetch users")
+        raise SlackApiError(response=response)
 
     for member in response["members"]:
         if member.get("name") == username:
