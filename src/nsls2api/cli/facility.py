@@ -31,7 +31,7 @@ def cycles(facility: FacilityName):
 
     # Expecting the API to return a list of beamlines
     if response is None:
-        error("ERROR: Failed to retrieve cycle list for '{facility}' facility.")
+        error(f"ERROR: Failed to retrieve cycle list for '{facility}' facility.")
         raise typer.Exit(code=1)
 
     cycles = response.json().get("cycles", [])
