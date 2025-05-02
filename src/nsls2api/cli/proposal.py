@@ -147,12 +147,12 @@ def view(
     response = call_nsls2api_endpoint(url, method="GET")
 
     if response is None:
-        print(f"ERROR: Failed to retrieve proposal with {lookup_type} = {identifier}.")
+        error(f"Failed to retrieve proposal with {lookup_type} = {identifier}.")
         raise typer.Exit(code=1)
 
     proposal_data = response.json().get("proposal", {})
     if not proposal_data:
-        print(f"ERROR: No data found for proposal with {lookup_type} = {identifier}.")
+        error(f"No data found for proposal with {lookup_type} = {identifier}.")
         raise typer.Exit(code=1)
 
     # Assuming Proposal is a Pydantic model
