@@ -272,6 +272,7 @@ async def add_beamline_service(name: str, service: BeamlineService):
 
     return new_service
 
+
 @router.get("/beamlines")
 async def get_all_beamlines():
     """

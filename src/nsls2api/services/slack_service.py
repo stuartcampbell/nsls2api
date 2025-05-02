@@ -13,6 +13,7 @@ from nsls2api.models.slack_models import (
     SlackUser,
 )
 from nsls2api.services import beamline_service, proposal_service
+
 settings = get_settings()
 
 
@@ -314,7 +315,6 @@ def lookup_user_by_email(email: str) -> SlackPerson | None:
     return None
 
 
-
 def get_userid_by_username(username: str) -> Optional[str]:
     """
     Looks up the slack user_id associated with the given username.
@@ -438,7 +438,9 @@ async def create_proposal_channels(
             verified_managers = verify_slack_users(beamline_slack_managers)
 
             if len(beamline_slack_managers) != len(verified_managers):
-                verified_manager_ids = {manager.user_id for manager in verified_managers}
+                verified_manager_ids = {
+                    manager.user_id for manager in verified_managers
+                }
                 difference = set(beamline_slack_managers) - verified_manager_ids
                 logger.warning(
                     f"Failed to verify Slack accounts the following defined managers {difference} for beamline {beamline}"
@@ -500,7 +502,4 @@ async def create_proposal_channels(
 
         channels_created.append(proposal_channel)
 
-
-
     return channels_created
-

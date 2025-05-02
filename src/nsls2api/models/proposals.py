@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional, List
+from typing import List, Optional
 
 import beanie
 import pydantic
@@ -22,6 +22,7 @@ class User(pydantic.BaseModel):
     username: Optional[str] = None
     is_pi: bool = False
 
+
 # -- Shared Base --
 class ProposalBase(pydantic.BaseModel):
     proposal_id: str
@@ -34,8 +35,13 @@ class ProposalBase(pydantic.BaseModel):
     users: Optional[List[User]] = []
     safs: Optional[List[SafetyForm]] = []
     slack_channels: Optional[List[SlackChannel]] = []
-    created_on: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.now)
-    last_updated: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.now)
+    created_on: datetime.datetime = pydantic.Field(
+        default_factory=datetime.datetime.now
+    )
+    last_updated: datetime.datetime = pydantic.Field(
+        default_factory=datetime.datetime.now
+    )
+
 
 # -- Pydantic Model for Display/Transport --
 class ProposalDisplay(ProposalBase):
@@ -43,9 +49,9 @@ class ProposalDisplay(ProposalBase):
     class Config:
         extra = "ignore"
 
+
 # -- Beanie Model for Database --
 class Proposal(ProposalBase, beanie.Document):
-
     class Settings:
         name = "proposals"
         indexes = [
