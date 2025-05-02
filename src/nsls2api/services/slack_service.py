@@ -293,7 +293,7 @@ def lookup_user_by_email(email: str) -> SlackPerson | None:
         email (str): The email address of the user.
 
     Returns:
-        SlackUser | None: An instance of the SlackUser class containing
+        SlackPerson | None: An instance of the SlackPerson class containing
                           the user details if found, None otherwise.
     """
     try:
@@ -337,7 +337,7 @@ def get_userid_by_username(username: str) -> Optional[str]:
     return None  # Not found
 
 
-def invite_newuser_to_channel(channel: str, email: str) -> Optional[str]:
+def invite_newuser_to_channel(channel: str, email: str) -> Optional[SlackPerson]:
     """
     Invites a user to the workspace/channel.
     Args:
@@ -345,7 +345,8 @@ def invite_newuser_to_channel(channel: str, email: str) -> Optional[str]:
         email (str): The email address of the user.
 
     Returns:
-        str | None: The user_id of the invited user if successful, None otherwise.
+        SlackPerson | None: An instance of the SlackPerson class containing
+                  the user details of the invited user if successful, None otherwise.
     """
     try:
         client = WebClient(token=settings.slack_admin_user_token)
@@ -358,13 +359,15 @@ def invite_newuser_to_channel(channel: str, email: str) -> Optional[str]:
             # If the user invite was ok, then lets look up the user_id of the newly invited user
             new_user = lookup_user_by_email(email)
             if new_user:
-                return new_user.user_id
-            return
+                return new_user
+            return None
+        return None
     except SlackApiError as error:
         if error.response["error"] == "already_in_team_invited_user":
             # We've already invited this user - so we are good.
-            return
+            return None
         logger.exception(error)
+        return None
 
 
 async def create_proposal_channels(
@@ -471,13 +474,10 @@ async def create_proposal_channels(
                 logger.info(
                     f"Inviting user {email} to channel '{channel_name}' (ID: {channel_id})"
                 )
-                new_user_id = invite_newuser_to_channel(channel_id, email)
-                if new_user_id:
-                    user_ids.append(new_user_id)
-
-            # Store the user in the proposal channel object
-            proposal_channel.users.append(user)
-
+                new_user = invite_newuser_to_channel(channel_id, email)
+                if new_user:
+                    user_ids.append(new_user.user_id)
+                    proposal_channel.users.append(new_user)
         logger.info(
             f"Found {len(user_ids)} users to invite: {user_ids} to channel '{channel_name}' (ID: {channel_id})"
         )
