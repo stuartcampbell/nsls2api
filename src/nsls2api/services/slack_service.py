@@ -13,8 +13,6 @@ from nsls2api.models.slack_models import (
     SlackUser,
 )
 from nsls2api.services import beamline_service, proposal_service
-from abc import ABC, abstractmethod
-
 settings = get_settings()
 
 
