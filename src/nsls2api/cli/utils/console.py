@@ -9,6 +9,8 @@ custom_theme = Theme(
         "info": "cyan",
         "warning": "bold yellow",
         "highlight": "bold magenta",
+        "health.good": "green bold",
+        "health.bad": "red bold",
     }
 )
 
