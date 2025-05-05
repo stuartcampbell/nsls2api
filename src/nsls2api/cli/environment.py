@@ -1,10 +1,8 @@
 import typer
 from rich.box import ROUNDED
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
-from rich.theme import Theme
 
 from nsls2api.cli.settings import (
     ApiEnvironment,
@@ -13,6 +11,7 @@ from nsls2api.cli.settings import (
     get_base_url,
 )
 from nsls2api.cli.utils.cli_helpers import auto_help_if_no_command
+from nsls2api.cli.utils.console import console
 
 app = typer.Typer(invoke_without_command=True)
 
@@ -21,23 +20,6 @@ app = typer.Typer(invoke_without_command=True)
 @auto_help_if_no_command()
 def environment_callback(ctx: typer.Context):
     pass  # No need to call anything manually
-
-
-console = Console(
-    theme=Theme(
-        {
-            "info": "cyan",
-            "warning": "yellow",
-            "error": "red bold",
-            "success": "green bold",
-            "url": "blue underline",
-            "env.prod": "red bold",
-            "env.dev": "yellow",
-            "env.local": "green",
-            "env.custom": "cyan",
-        }
-    )
-)
 
 
 def create_environment_table() -> Table:

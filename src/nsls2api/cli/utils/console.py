@@ -9,8 +9,13 @@ custom_theme = Theme(
         "info": "cyan",
         "warning": "bold yellow",
         "highlight": "bold magenta",
-        "health.good": "green bold",
-        "health.bad": "red bold",
+        "health.good": "bold green",
+        "health.bad": "bold red",
+        "url": "blue underline",
+        "env.prod": "bold red",
+        "env.dev": "yellow",
+        "env.local": "green",
+        "env.custom": "cyan",
     }
 )
 
