@@ -58,7 +58,7 @@ def status():
                 status_table.add_row("API URL", get_base_url())
 
                 # Add container info if available
-                if "container_info" in about_data and about_data["container_info"]:
+                if about_data.get("container_info"):
                     status_table.add_row("Container", about_data["container_info"])
 
                 panel = Panel(
