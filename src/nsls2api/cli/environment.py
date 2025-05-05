@@ -114,7 +114,9 @@ def switch(
     """Switch API environment"""
     env_map = {
         "prod": ApiEnvironment.PRODUCTION.value,
+        "production": ApiEnvironment.PRODUCTION.value,
         "dev": ApiEnvironment.DEVELOPMENT.value,
+        "development": ApiEnvironment.DEVELOPMENT.value,
         "local": ApiEnvironment.LOCAL.value,
     }
 
