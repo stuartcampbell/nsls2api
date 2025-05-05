@@ -158,16 +158,3 @@ def view(
     # Assuming Proposal is a Pydantic model
     proposal = ProposalDisplay(**proposal_data)
     display_proposal(proposal)
-
-
-# @app.command()
-# def search(proposal: int):
-#     print(f"Searching for Proposal: {proposal}")
-#     with Progress(
-#         SpinnerColumn(),
-#         TextColumn("[progress.description]{task.description}"),
-#         transient=True,
-#     ) as progress:
-#         progress.add_task(description="Searching...", total=None)
-#         time.sleep(3)
-#     print(f"Now showing all the awesome information about proposal {proposal}!")
