@@ -1,6 +1,8 @@
 import fastapi
 
 from nsls2api._version import version as api_version
+from nsls2api.infrastructure.logging import logger
+from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.stats_model import (
     AboutModel,
     ProposalsPerCycleModel,
@@ -29,25 +31,32 @@ async def stats():
     nsls2_proposals_per_cycle: list[ProposalsPerCycleModel] = []
     nsls2_cycle_list = await facility_service.facility_cycles("nsls2")
     for cycle in nsls2_cycle_list:
-        proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
-        if proposal_list is not None:
-            model = ProposalsPerCycleModel(
-                cycle=cycle, proposal_count=len(proposal_list)
-            )
-            nsls2_proposals_per_cycle.append(model)
+        try:
+            # Fetch proposals for the cycle
+            proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
+            if proposal_list is not None:
+                # Create a model for the cycle and proposal count
+                model = ProposalsPerCycleModel(cycle=cycle, proposal_count=len(proposal_list))
+                nsls2_proposals_per_cycle.append(model)
+        except LookupError as e:
+            # Handle the case where the cycle is not found
+            logger.error(f"Cycle {cycle} not found for NSLS-II facility.")
+            continue
 
     lbms_data_health = await facility_service.is_healthy("lbms")
-
     # Get the LBMS proposals per cycle
     lbms_proposals_per_cycle: list[ProposalsPerCycleModel] = []
     lbms_cycle_list = await facility_service.facility_cycles("lbms")
     for cycle in lbms_cycle_list:
-        proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
-        if proposal_list is not None:
-            model = ProposalsPerCycleModel(
-                cycle=cycle, proposal_count=len(proposal_list)
-            )
-            lbms_proposals_per_cycle.append(model)
+        try:
+            proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle, facility_name=FacilityName.lbms)
+            if proposal_list is not None:
+                model = ProposalsPerCycleModel(cycle=cycle, proposal_count=len(proposal_list))
+                lbms_proposals_per_cycle.append(model)
+        except LookupError as e:
+            # Handle the case where the cycle is not found
+            logger.error(f"Cycle {cycle} not found for LBMS facility.")
+            continue
 
     model = StatsModel(
         facility_count=facilities,
@@ -60,7 +69,6 @@ async def stats():
         lbms_proposals_per_cycle=lbms_proposals_per_cycle,
     )
     return model
-
 
 @router.get("/about", response_model=AboutModel)
 async def about():
