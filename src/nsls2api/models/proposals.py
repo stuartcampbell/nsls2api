@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import List, Optional
 
 import beanie
 import pydantic
@@ -23,17 +23,18 @@ class User(pydantic.BaseModel):
     is_pi: bool = False
 
 
-class Proposal(beanie.Document):
+# -- Shared Base --
+class ProposalBase(pydantic.BaseModel):
     proposal_id: str
     data_session: str
     title: Optional[str] = None
     type: Optional[str] = None
     pass_type_id: Optional[str] = None
-    instruments: Optional[list[str]] = []
-    cycles: Optional[list[str]] = []
-    users: Optional[list[User]] = []
-    safs: Optional[list[SafetyForm]] = []
-    slack_channels: Optional[list[SlackChannel]] = []
+    instruments: Optional[List[str]] = []
+    cycles: Optional[List[str]] = []
+    users: Optional[List[User]] = []
+    safs: Optional[List[SafetyForm]] = []
+    slack_channels: Optional[List[SlackChannel]] = []
     created_on: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
@@ -41,6 +42,16 @@ class Proposal(beanie.Document):
         default_factory=datetime.datetime.now
     )
 
+
+# -- Pydantic Model for Display/Transport --
+class ProposalDisplay(ProposalBase):
+    # Prevent unwanted fields (like MongoDB _id) from breaking deserialization
+    class Config:
+        extra = "ignore"
+
+
+# -- Beanie Model for Database --
+class Proposal(ProposalBase, beanie.Document):
     class Settings:
         name = "proposals"
         indexes = [

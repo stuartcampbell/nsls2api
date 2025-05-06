@@ -13,6 +13,7 @@ from nsls2api.models.slack_models import (
     SlackUser,
 )
 from nsls2api.services import beamline_service, proposal_service
+
 settings = get_settings()
 
 
@@ -437,11 +438,13 @@ async def create_proposal_channels(
             verified_managers = verify_slack_users(beamline_slack_managers)
 
             if len(beamline_slack_managers) != len(verified_managers):
+                verified_manager_ids = {
+                    manager.user_id for manager in verified_managers
+                }
+                difference = set(beamline_slack_managers) - verified_manager_ids
                 logger.warning(
-                    f"Failed to verify Slack accounts for all managers for beamline {beamline}"
+                    f"Failed to verify Slack accounts the following defined managers {difference} for beamline {beamline}"
                 )
-                logger.warning(f"\tVerified managers: {verified_managers}")
-                logger.warning(f"\tSpecified managers: {beamline_slack_managers}")
 
             # Proceed with the verified managers
             verified_manager_ids = [manager.user_id for manager in verified_managers]

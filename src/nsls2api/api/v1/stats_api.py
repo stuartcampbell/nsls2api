@@ -1,13 +1,13 @@
 import fastapi
 
 from nsls2api._version import version as api_version
-from nsls2api.infrastructure.logging import logger
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.stats_model import (
     AboutModel,
     ProposalsPerCycleModel,
     StatsModel,
 )
+from nsls2api.infrastructure.logging import logger
 from nsls2api.services import (
     beamline_service,
     facility_service,
@@ -35,9 +35,11 @@ async def stats():
             proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle)
             if proposal_list is not None:
                 # Create a model for the cycle and proposal count
-                model = ProposalsPerCycleModel(cycle=cycle, proposal_count=len(proposal_list))
+                model = ProposalsPerCycleModel(
+                    cycle=cycle, proposal_count=len(proposal_list)
+                )
                 nsls2_proposals_per_cycle.append(model)
-        except LookupError as e:
+        except LookupError:
             # Handle the case where the cycle is not found
             logger.error(f"Cycle {cycle} not found for NSLS-II facility.")
             continue
@@ -48,11 +50,15 @@ async def stats():
     lbms_cycle_list = await facility_service.facility_cycles("lbms")
     for cycle in lbms_cycle_list:
         try:
-            proposal_list = await proposal_service.fetch_proposals_for_cycle(cycle, facility_name=FacilityName.lbms)
+            proposal_list = await proposal_service.fetch_proposals_for_cycle(
+                cycle, facility_name=FacilityName.lbms
+            )
             if proposal_list is not None:
-                model = ProposalsPerCycleModel(cycle=cycle, proposal_count=len(proposal_list))
+                model = ProposalsPerCycleModel(
+                    cycle=cycle, proposal_count=len(proposal_list)
+                )
                 lbms_proposals_per_cycle.append(model)
-        except LookupError as e:
+        except LookupError:
             # Handle the case where the cycle is not found
             logger.error(f"Cycle {cycle} not found for LBMS facility.")
             continue
@@ -68,6 +74,7 @@ async def stats():
         lbms_proposals_per_cycle=lbms_proposals_per_cycle,
     )
     return model
+
 
 @router.get("/about", response_model=AboutModel)
 async def about():
