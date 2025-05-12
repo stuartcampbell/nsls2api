@@ -194,6 +194,27 @@ async def proposal_by_id(proposal_id: str) -> Optional[Proposal]:
     return proposal
 
 
+async def proposal_by_saf_id(saf_id: str) -> Optional[Proposal]:
+    """
+    Retrieve a single proposal by its SAF ID.
+
+    :param saf_id: The SAF ID of the proposal to retrieve.
+    :return: The proposal if found, or None if not found.
+    """
+
+    if not saf_id:
+        return None
+
+    proposal: Proposal = await Proposal.find_one(
+        ElemMatch(Proposal.safs, {"saf_id": str(saf_id)})
+    )
+
+    if proposal is None:
+        raise LookupError(f"Could not find a proposal with an SAF ID of {saf_id}")
+
+    return proposal
+
+
 # Get a list of proposals that match the search criteria
 async def search_proposals(search_text: str) -> Optional[list[Proposal]]:
     query = Text(search=search_text, case_sensitive=False)
