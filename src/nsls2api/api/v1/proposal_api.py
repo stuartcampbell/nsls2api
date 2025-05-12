@@ -118,6 +118,29 @@ async def get_proposals(
     return response_model
 
 
+@router.get("/proposal/saf/{saf_id}", response_model=SingleProposal)
+async def get_proposal_by_saf(saf_id: str):
+    try:
+        proposal = await proposal_service.proposal_by_saf_id(saf_id)
+        if proposal is None:
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Proposal with SAF {saf_id} not found",
+            )
+    except LookupError as e:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {e}",
+        )
+
+    response_model = SingleProposal(proposal=proposal)
+    return response_model
+
+
 @router.get("/proposal/{proposal_id}", response_model=SingleProposal)
 async def get_proposal(proposal_id: str):
     try:
