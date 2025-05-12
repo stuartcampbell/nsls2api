@@ -165,7 +165,7 @@ async def set_current_operating_cycle(facility: str, cycle: str) -> Optional[str
 
     await new_current_cycle.set({Cycle.is_current_operating_cycle: True})
 
-    # Let's now check all is well with the world 
+    # Verify that the current operating cycle has been successfully updated.
     expected_current_cycle = await current_operating_cycle(facility)
     if str(expected_current_cycle) != cycle:
         logger.error(f"Failed to set the current operating cycle for {facility} to be {cycle}.")
