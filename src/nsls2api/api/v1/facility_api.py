@@ -4,14 +4,14 @@ import fastapi
 from fastapi import Depends
 
 from nsls2api.api.models.facility_model import (
-    FacilityName,
-    FacilityCyclesResponseModel,
     FacilityCurrentOperatingCycleResponseModel,
+    FacilityCyclesResponseModel,
+    FacilityName,
 )
 
 from nsls2api.infrastructure.security import validate_admin_role
 from nsls2api.api.models.proposal_model import CycleProposalList
-from nsls2api.services import proposal_service, facility_service
+from nsls2api.services import facility_service, proposal_service
 
 router = fastapi.APIRouter()
 

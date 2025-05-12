@@ -65,13 +65,26 @@ def conversation_invite(channel_id: str, user_ids: list[str]):
     """
     client = WebClient(token=settings.slack_bot_token)
     try:
-        response = client.conversations_invite(channel=channel_id, users=user_ids)
+        response = client.conversations_invite(
+            channel=channel_id, users=user_ids, force=True
+        )
         if response.get("ok"):
             logger.info(f"Invited users {user_ids} to channel '{channel_id}'.")
     except SlackApiError as error:
         # If the error is that the user is already in the channel, we can ignore it
         if error.response["error"] == "already_in_channel":
             return
+        if error.response["error"] == "user_is_ultra_restricted":
+            detailed_errors = error.response.get("errors", [])
+            problem_users = []
+            for detailed_error in detailed_errors:
+                if detailed_error.get("error") == "user_is_ultra_restricted":
+                    problem_users.append(detailed_error.get("user"))
+            logger.error(
+                f"User(s) {problem_users} are ultra-restricted and cannot be invited to channel '{channel_id}'."
+            )
+            return
+        logger.exception(error)
 
 
 def get_conversation_topic(channel_id: str) -> str | None:
@@ -143,6 +156,9 @@ def get_bot_details() -> SlackBot:
 def get_user_info(user_id: str) -> Optional[SlackUser]:
     """
     Retrieves the details of a Slack User .
+
+    Args:
+        user_id (str) : Slack user_id to lookup
 
     Returns:
         SlackUser: An instance of the SlackUser class containing the user details.
@@ -278,7 +294,7 @@ def lookup_user_by_email(email: str) -> SlackPerson | None:
         email (str): The email address of the user.
 
     Returns:
-        SlackUser | None: An instance of the SlackUser class containing
+        SlackPerson | None: An instance of the SlackPerson class containing
                           the user details if found, None otherwise.
     """
     try:
@@ -291,9 +307,80 @@ def lookup_user_by_email(email: str) -> SlackPerson | None:
                 email=email,
             )
     except SlackApiError as error:
+        if error.response["error"] == "users_not_found":
+            logger.info(f"Slack User with an email of '{email}' not found.")
+            return None
         logger.exception(error)
 
     return None
+
+
+def get_userid_by_username(username: str) -> Optional[str]:
+    """
+    Looks up the slack user_id associated with the given username.
+
+    Args:
+        username (str): The username of the user.
+
+    Returns:
+        str | None: A string containing the user_id of
+                          the user if found, None otherwise.
+    """
+    client = WebClient(token=settings.slack_bot_token)
+    try:
+        cursor = None
+        while True:
+            response = client.users_list(cursor=cursor)
+            if not response["ok"]:
+                logger.error(f"Slack API returned an error: {response}")
+                return None
+
+            for member in response["members"]:
+                if member.get("name") == username:
+                    return member["id"]
+
+            # Check if there are more pages to fetch
+            cursor = response.get("response_metadata", {}).get("next_cursor")
+            if not cursor:
+                break
+    except SlackApiError as error:
+        logger.exception(f"Failed to retrieve users list: {error}")
+        return None
+
+    return None  # Not found
+
+
+def invite_newuser_to_channel(channel: str, email: str) -> Optional[SlackPerson]:
+    """
+    Invites a user to the workspace/channel.
+    Args:
+        channel (str): The channel ID of the Slack channel.
+        email (str): The email address of the user.
+
+    Returns:
+        SlackPerson | None: An instance of the SlackPerson class containing
+                  the user details of the invited user if successful, None otherwise.
+    """
+    try:
+        client = WebClient(token=settings.slack_admin_user_token)
+        response = client.admin_users_invite(
+            team_id=settings.nsls2_workspace_team_id,
+            email=email,
+            channel_ids=channel,
+        )
+        if response.get("ok"):
+            # If the user invite was ok, then lets look up the user_id of the newly invited user
+            new_user = lookup_user_by_email(email)
+            if new_user:
+                return new_user
+            return None
+        return None
+    except SlackApiError as error:
+        if error.response["error"] == "already_in_team_invited_user":
+            # We've already invited this user - so we are good.
+            return None
+        logger.exception(error)
+        return None
 
 
 async def create_proposal_channels(
@@ -351,11 +438,13 @@ async def create_proposal_channels(
             verified_managers = verify_slack_users(beamline_slack_managers)
 
             if len(beamline_slack_managers) != len(verified_managers):
+                verified_manager_ids = {
+                    manager.user_id for manager in verified_managers
+                }
+                difference = set(beamline_slack_managers) - verified_manager_ids
                 logger.warning(
-                    f"Failed to verify Slack accounts for all managers for beamline {beamline}"
+                    f"Failed to verify Slack accounts the following defined managers {difference} for beamline {beamline}"
                 )
-                logger.warning(f"\tVerified managers: {verified_managers}")
-                logger.warning(f"\tSpecified managers: {beamline_slack_managers}")
 
             # Proceed with the verified managers
             verified_manager_ids = [manager.user_id for manager in verified_managers]
@@ -366,6 +455,7 @@ async def create_proposal_channels(
                 )
                 # Now let's add the beamline Slack channel managers to the channel
                 conversation_invite(channel_id, verified_manager_ids)
+                # And store the verified managers in the proposal channel object
                 proposal_channel.managers.extend(verified_managers)
 
             beamline_slack_bot = verify_slack_bot(
@@ -380,7 +470,9 @@ async def create_proposal_channels(
                 logger.info(
                     f"Adding these beamline bots to the channel: {beamline_slack_bot}"
                 )
+                # Now lets invite the beamline bot to the channel
                 conversation_invite(channel_id, [beamline_slack_bot.user_id])
+                # And store the verified bot in the proposal channel object
                 proposal_channel.bots.append(beamline_slack_bot)
             else:
                 logger.info(f"No slack bot found for beamline {beamline}")
@@ -392,10 +484,21 @@ async def create_proposal_channels(
             user = lookup_user_by_email(email)
             if user:
                 user_ids.append(user.user_id)
-                proposal_channel.users.append(user)
-
-        logger.info(f"Found {len(user_ids)} users to invite: {user_ids}.")
-        conversation_invite(channel_id, user_ids)
+            else:
+                # We need to invite user into the channels (and workspace)
+                logger.info(
+                    f"Inviting user {email} to channel '{channel_name}' (ID: {channel_id})"
+                )
+                new_user = invite_newuser_to_channel(channel_id, email)
+                if new_user:
+                    user_ids.append(new_user.user_id)
+                    proposal_channel.users.append(new_user)
+        logger.info(
+            f"Found {len(user_ids)} users to invite: {user_ids} to channel '{channel_name}' (ID: {channel_id})"
+        )
+        if len(user_ids) > 0:
+            # Only invite users to the channel when we have some to invite.
+            conversation_invite(channel_id, user_ids)
 
         channels_created.append(proposal_channel)
 

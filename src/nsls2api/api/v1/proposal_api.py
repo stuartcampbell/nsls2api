@@ -281,7 +281,10 @@ async def get_slack_channels_for_proposal(
     return channels
 
 
-@router.post("/proposal/{proposal_id}/slack-channels")
+@router.post(
+    "/proposal/{proposal_id}/slack-channels",
+    dependencies=[Depends(validate_admin_role)],
+)
 async def create_slack_channels_for_proposal(
     proposal_id: str,
 ) -> list[ProposalSlackChannel]:
