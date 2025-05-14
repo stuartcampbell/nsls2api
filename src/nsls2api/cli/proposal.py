@@ -139,8 +139,6 @@ def view(
 
     if saf:
         url = f"v1/proposal/saf/{identifier}"
-        error("Lookup by SAF ID is not yet implemented.")
-        raise typer.Exit(code=1)
     else:
         url = f"v1/proposal/{identifier}"
 
@@ -150,7 +148,7 @@ def view(
         error(f"Failed to retrieve proposal with {lookup_type} = {identifier}.")
         raise typer.Exit(code=1)
 
-    proposal_data = response.json().get("proposal", {})
+    proposal_data = response.json().get("proposal", None)
     if not proposal_data:
         error(f"No data found for proposal with {lookup_type} = {identifier}.")
         raise typer.Exit(code=1)
