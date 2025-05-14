@@ -122,11 +122,6 @@ async def get_proposals(
 async def get_proposal_by_saf(saf_id: str):
     try:
         proposal = await proposal_service.proposal_by_saf_id(saf_id)
-        if proposal is None:
-            raise HTTPException(
-                status_code=fastapi.status.HTTP_404_NOT_FOUND,
-                detail=f"Proposal with SAF {saf_id} not found",
-            )
     except LookupError as e:
         raise HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
@@ -145,11 +140,6 @@ async def get_proposal_by_saf(saf_id: str):
 async def get_proposal(proposal_id: str):
     try:
         proposal = await proposal_service.proposal_by_id(proposal_id)
-        if proposal is None:
-            raise HTTPException(
-                status_code=fastapi.status.HTTP_404_NOT_FOUND,
-                detail=f"Proposal {proposal_id} not found",
-            )
     except LookupError as e:
         raise HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
