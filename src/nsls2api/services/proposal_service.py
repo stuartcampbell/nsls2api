@@ -173,16 +173,13 @@ async def get_slack_channels_to_create_for_proposal(
     return channel_list
 
 
-async def proposal_by_id(proposal_id: str) -> Optional[Proposal]:
+async def proposal_by_id(proposal_id: str) -> Proposal:
     """
     Retrieve a single proposal by its ID.
 
     :param proposal_id: The ID of the proposal to retrieve.
-    :return: The proposal if found, or None if not found.
+    :return: The proposal if found, otherwise with throw a LookupError.
     """
-
-    if not proposal_id:
-        return None
 
     proposal: Proposal = await Proposal.find_one(
         Proposal.proposal_id == str(proposal_id)
@@ -194,16 +191,13 @@ async def proposal_by_id(proposal_id: str) -> Optional[Proposal]:
     return proposal
 
 
-async def proposal_by_saf_id(saf_id: str) -> Optional[Proposal]:
+async def proposal_by_saf_id(saf_id: str) -> Proposal:
     """
     Retrieve a single proposal by its SAF ID.
 
     :param saf_id: The SAF ID of the proposal to retrieve.
-    :return: The proposal if found, or None if not found.
+    :return: The proposal if found, otherwise with throw a LookupError.
     """
-
-    if not saf_id:
-        return None
 
     proposal: Proposal = await Proposal.find_one(
         ElemMatch(Proposal.safs, {"saf_id": str(saf_id)})
