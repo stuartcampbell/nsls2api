@@ -182,8 +182,8 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
 
 @dataclass
 class CycleChangeState:
-    new_cycle: Optional[Any] = None
-    previous_cycle: Optional[Any] = None
+    new_cycle: Optional[Cycle] = None
+    previous_cycle: Optional[Cycle] = None
     is_successful: bool = False
 
 
