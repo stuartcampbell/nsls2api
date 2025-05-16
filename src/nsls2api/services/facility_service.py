@@ -278,6 +278,8 @@ async def set_current_operating_cycle(facility: str, cycle: str) -> str:
         CycleUpdateError: If the update operations fail
         CycleVerificationError: If the final state verification fails
     """
+    # The context manager will handle the cycle update operation,
+    # so this pass statement is intentional.
     async with cycle_change_context(facility, cycle) as state:
         pass
 
