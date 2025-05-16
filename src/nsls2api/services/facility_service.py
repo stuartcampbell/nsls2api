@@ -279,8 +279,7 @@ async def set_current_operating_cycle(facility: str, cycle: str) -> str:
         CycleVerificationError: If the final state verification fails
     """
     async with cycle_change_context(facility, cycle) as state:
-        if not state.new_cycle:
-            raise CycleNotFoundError(facility, cycle)
+        pass
 
     return cycle
 
