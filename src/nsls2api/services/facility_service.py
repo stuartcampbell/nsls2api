@@ -3,6 +3,7 @@ from typing import Optional
 
 from beanie.odm.operators.find.comparison import In
 from beanie.odm.operators.update.general import Set
+from motor.motor_asyncio import AsyncIOMotorClient
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure.logging import logger
@@ -136,42 +137,66 @@ async def current_operating_cycle(facility: str) -> Optional[str]:
 
     return cycle.name
 
-async def set_current_operating_cycle(facility: str, cycle: str) -> Optional[str]:
+
+async def set_current_operating_cycle(facility: str, cycle: str) -> str:
     """
-    Set Current Operating Cycle
+    Set the current operating cycle for a given facility in an atomic transaction.
 
-    This method sets the current operating cycle for a given facility.
+    This method attempts to update the current operating cycle. It first retrieves the new cycle
+    and the previous current cycle (if any), then updates both within a transaction.
+    If the verification fails after updating, the transaction is aborted so that no changes persist.
 
-    :param facility: The facility name (str).
-    :param cycle: The cycle name (str).
-    :return: The current operating cycle (str) or None if no current operating cycle is found.
+    Args:
+        facility (str): The facility name.
+        cycle (str): The new cycle name.
+
+    Returns:
+        str: The current operating cycle if successful.
+
+    Raises:
+        Exception: If the requested cycle does not exist or update verification fails.
     """
-    new_current_cycle = await Cycle.find_one(
-        Cycle.facility == facility,
-        Cycle.name == cycle,
-    )
+    # Retrieve the underlying Motor client from Beanie
+    client: AsyncIOMotorClient = Cycle.get_motor_collection().database.client
+    async with client.start_session() as session:
+        async with session.start_transaction():
+            new_current_cycle = await Cycle.find_one(
+                Cycle.facility == facility,
+                Cycle.name == cycle,
+            ).session(session)
 
-    if new_current_cycle is None:
-        return None
+        if new_current_cycle is None:
+            raise Exception(
+                f"Requested Cycle '{cycle}' does not exist for facility '{facility}'. Aborting transaction."
+            )
 
-    # Now find previous "current operating cycle".
-    previous_cycle = await Cycle.find_one(
-        Cycle.facility == facility,
-        Cycle.is_current_operating_cycle is True,
-    )
+        # Get the previous active cycle (if any)
+        previous_cycle = await Cycle.find_one(
+            Cycle.facility == facility,
+            Cycle.is_current_operating_cycle is True,
+        ).session(session)
 
-    if previous_cycle is not None:
-        await previous_cycle.set({Cycle.is_current_operating_cycle: False})
+        # Turn off the previous current cycle.
+        if previous_cycle is not None:
+            await previous_cycle.set(
+                {Cycle.is_current_operating_cycle: False}, session=session
+            )
 
-    await new_current_cycle.set({Cycle.is_current_operating_cycle: True})
+        # Set the new cycle as current.
+        await new_current_cycle.set(
+            {Cycle.is_current_operating_cycle: True}, session=session
+        )
 
-    # Verify that the current operating cycle has been successfully updated.
-    expected_current_cycle = await current_operating_cycle(facility)
-    if str(expected_current_cycle) != cycle:
-        logger.error(f"Failed to set the current operating cycle for {facility} to be {cycle}.")
-        return None
+        # Verify update within the transaction.
+        expected_current_cycle = await current_operating_cycle(facility)
+        if str(expected_current_cycle) != cycle:
+            logger.error(
+                f"Failed to set the current operating cycle for {facility} to be {cycle}."
+            )
+            # Raising an exception causes the transaction to roll back.
+            raise Exception(f"Update verification failed for {facility}.")
 
-    return expected_current_cycle
+        return expected_current_cycle
 
 
 async def cycle_year(
