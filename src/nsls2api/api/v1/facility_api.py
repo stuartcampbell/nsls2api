@@ -1,6 +1,4 @@
-from typing import Annotated
 import fastapi
-
 from fastapi import Depends
 
 from nsls2api.api.models.facility_model import (
@@ -8,10 +6,16 @@ from nsls2api.api.models.facility_model import (
     FacilityCyclesResponseModel,
     FacilityName,
 )
-
-from nsls2api.infrastructure.security import validate_admin_role
 from nsls2api.api.models.proposal_model import CycleProposalList
+from nsls2api.infrastructure.logging import logger
+from nsls2api.infrastructure.security import validate_admin_role
 from nsls2api.services import facility_service, proposal_service
+from nsls2api.services.facility_service import (
+    CycleNotFoundError,
+    CycleOperationError,
+    CycleUpdateError,
+    CycleVerificationError,
+)
 
 router = fastapi.APIRouter()
 
@@ -41,20 +45,51 @@ async def get_current_operating_cycle(facility: FacilityName):
 
     return response_model
 
-@router.post("/facility/{facility}/cycles/current",
-    response_model=FacilityCurrentOperatingCycleResponseModel, dependencies=[Depends(validate_admin_role)],)
-async def set_current_operating_cycle(facility: FacilityName, cycle: str,):
-    current_cycle = await facility_service.set_current_operating_cycle(facility.name, cycle)
-    if current_cycle is None:
+
+@router.post(
+    "/facility/{facility}/cycles/current",
+    response_model=FacilityCurrentOperatingCycleResponseModel,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def set_current_operating_cycle(
+    facility: FacilityName,
+    cycle: str,
+):
+    try:
+        await facility_service.set_current_operating_cycle(facility, cycle)
+    except CycleNotFoundError:
+        # The requested cycle does not exist
+        error_message = f"Cycle {cycle} not found for facility {facility.name}"
+        logger.error(error_message)
         return fastapi.responses.JSONResponse(
-            {
-                "error": f"Failed to set the current operating cycle for facility {facility.name}"
-            },
-            status_code=404,
+            {"error": error_message}, status_code=fastapi.status.HTTP_400_BAD_REQUEST
+        )
+    except CycleVerificationError:
+        # The verification of the cycle failed
+        error_message = (
+            f"Cycle {cycle} verification failed for facility {facility.name}"
+        )
+        logger.error(error_message)
+        return fastapi.responses.JSONResponse(
+            {"error": error_message}, status_code=fastapi.status.HTTP_400_BAD_REQUEST
+        )
+    except CycleUpdateError as e:
+        # Handle update failure with access to the reason
+        logger.error(f"Update failed: {e.reason}")
+        return fastapi.responses.JSONResponse(
+            {"error": "Cycle Update failed"},
+            status_code=fastapi.status.HTTP_400_BAD_REQUEST,
+        )
+    except CycleOperationError:
+        # Catch-all for any other errors that may occur
+        logger.error("Cycle Update failed")
+        return fastapi.responses.JSONResponse(
+            {"error": "Cycle Update failed"},
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
     response_model = FacilityCurrentOperatingCycleResponseModel(
-        facility=facility.name, cycle=current_cycle
+        facility=facility.name, cycle=cycle
     )
 
     return response_model
