@@ -90,7 +90,6 @@ async def fetch_proposals_for_cycle(
     return cycle.proposals or []
 
 
-
 async def fetch_data_sessions_for_username(username: str) -> list[str]:
     proposals = await Proposal.find(
         ElemMatch(Proposal.users, {"username": username})
