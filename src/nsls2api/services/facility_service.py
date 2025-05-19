@@ -237,7 +237,7 @@ async def cycle_change_context(facility: str, cycle: str):
     finally:
         if state.is_successful:
             try:
-                # Step 4: Perform the updates only if everything was successful
+                # Perform the updates only if everything was successful
                 if state.previous_cycle is not None:
                     await state.previous_cycle.set(
                         {Cycle.is_current_operating_cycle: False}
