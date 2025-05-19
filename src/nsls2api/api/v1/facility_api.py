@@ -75,7 +75,7 @@ async def set_current_operating_cycle(
         )
     except CycleUpdateError as e:
         # Handle update failure with access to the reason
-        logger.error(f"Update failed: {e.reason}")
+        logger.error(f"Cycle update failed: {e.reason}")
         return fastapi.responses.JSONResponse(
             {"error": "Cycle Update failed"},
             status_code=fastapi.status.HTTP_400_BAD_REQUEST,
