@@ -43,6 +43,8 @@ async def db():
         facility_id="nsls2",
         fullname="National Synchrotron Light Source II",
         pass_facility_id="NSLS-II",
+        data_admin_group="nsls2-data-admins",
+        data_admins=["testy-mcdata"],
     )
     await facility.insert()
 
@@ -89,7 +91,7 @@ async def db():
 
     yield
 
-    # Cleanup the database collections
+    # Clean up the database collections
     for model in models.all_models:
         print(f"dropping {model}")
         await model.get_motor_collection().drop()
