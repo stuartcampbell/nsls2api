@@ -1,4 +1,6 @@
 import datetime
+from contextlib import asynccontextmanager
+from dataclasses import dataclass
 from typing import Optional
 
 from beanie.odm.operators.find.comparison import In
@@ -8,6 +10,47 @@ from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
+
+
+class CycleOperationError(Exception):
+    """Base exception for cycle operations."""
+
+    pass
+
+
+class CycleNotFoundError(CycleOperationError):
+    """Raised when a requested cycle cannot be found."""
+
+    def __init__(self, facility: str, cycle: str):
+        self.facility = facility
+        self.cycle = cycle
+        super().__init__(
+            f"Requested Cycle '{cycle}' does not exist for facility '{facility}'."
+        )
+
+
+class CycleUpdateError(CycleOperationError):
+    """Raised when cycle update operations fail."""
+
+    def __init__(self, facility: str, cycle: str, reason: str):
+        self.facility = facility
+        self.cycle = cycle
+        self.reason = reason
+        super().__init__(f"Failed to update cycle for facility '{facility}': {reason}")
+
+
+class CycleVerificationError(CycleOperationError):
+    """Raised when cycle verification fails after an update."""
+
+    def __init__(self, facility: str, expected_cycle: str, actual_cycle: Optional[str]):
+        self.facility = facility
+        self.expected_cycle = expected_cycle
+        self.actual_cycle = actual_cycle
+        super().__init__(
+            f"Cycle verification failed for facility '{facility}'. "
+            f"Expected: '{expected_cycle}', "
+            f"Actual: '{actual_cycle or 'None'}'"
+        )
 
 
 async def facilities_count() -> int:
@@ -69,10 +112,8 @@ async def pass_id_for_facility(facility_id: str) -> Optional[str]:
     :return: The PASS ID (str) or None if no facility is found.
     """
     facility = await Facility.find_one(Facility.facility_id == facility_id)
-    if facility is None:
-        return None
 
-    return facility.pass_facility_id
+    return facility.pass_facility_id if facility else None
 
 
 async def data_roles_by_user(username: str) -> Optional[list[str]]:
@@ -93,10 +134,22 @@ async def data_admin_group(facility_name: str) -> Optional[str]:
     """
     facility = await Facility.find_one(Facility.facility_id == facility_name)
 
-    if facility is None:
-        return None
+    return facility.data_admin_group if facility else None
 
-    return facility.data_admin_group
+
+async def get_data_admins(facility_name: str) -> list[str]:
+    """
+    Retrieves the data admins for a given facility name.
+
+    Args:
+        facility_name (str): The facility name. e.g. "nsls2, lbms, cfn, etc."
+
+    Returns:
+        list[str]: A list of data admins for the specified facility.
+    """
+    facility = await Facility.find_one(Facility.facility_id == facility_name)
+
+    return facility.data_admins if facility else []
 
 
 async def update_data_admins(facility_id: str, data_admins: list[str]):
@@ -117,24 +170,127 @@ async def update_data_admins(facility_id: str, data_admins: list[str]):
     )
 
 
-async def current_operating_cycle(facility: str) -> Optional[str]:
+async def current_operating_cycle(facility_name: str) -> Optional[str]:
     """
     Current Operating Cycle
 
     This method retrieves the current operating cycle for a given facility.
 
-    :param facility: The facility name (str).
+    :param facility_name: The facility name (str).
     :return: The current operating cycle (str) or None if no current operating cycle is found.
     """
     cycle = await Cycle.find_one(
-        Cycle.facility == facility,
+        Cycle.facility == facility_name,
         Cycle.is_current_operating_cycle == True,  # noqa: E712
     )
 
-    if cycle is None:
-        return None
+    return cycle.name if cycle else None
 
-    return cycle.name
+
+@dataclass
+class CycleChangeState:
+    new_cycle: Optional[Cycle] = None
+    previous_cycle: Optional[Cycle] = None
+    is_successful: bool = False
+
+
+@asynccontextmanager
+async def cycle_change_context(facility: str, cycle: str):
+    """
+    Context manager to handle atomic-like operations for changing facility cycles.
+
+    Args:
+        facility (str): The facility name
+        cycle (str): The new cycle name to be set
+
+    Yields:
+        CycleChangeState: Object containing the state of the cycle change operation
+
+    Raises:
+        CycleNotFoundError: If the requested cycle cannot be found
+        CycleUpdateError: If the update operations fail
+        CycleVerificationError: If the final state verification fails
+    """
+    state = CycleChangeState()
+
+    try:
+        # Validate and get the new cycle
+        state.new_cycle = await Cycle.find_one(
+            Cycle.facility == facility,
+            Cycle.name == cycle,
+        )
+        if state.new_cycle is None:
+            raise CycleNotFoundError(facility, cycle)
+
+        # Get the current active cycle
+        state.previous_cycle = await Cycle.find_one(
+            Cycle.facility == facility,
+            Cycle.is_current_operating_cycle == True,  # noqa: E712
+        )
+
+        yield state
+
+        # If we get here without exceptions, mark the operation as successful
+        state.is_successful = True
+
+    except CycleOperationError:
+        state.is_successful = False
+        raise
+
+    except Exception as e:
+        state.is_successful = False
+        raise CycleUpdateError(facility, cycle, str(e)) from e
+
+    finally:
+        if state.is_successful:
+            try:
+                # Perform the updates only if everything was successful
+                if state.previous_cycle is not None:
+                    await state.previous_cycle.set(
+                        {Cycle.is_current_operating_cycle: False}
+                    )
+
+                await state.new_cycle.set({Cycle.is_current_operating_cycle: True})
+
+                # Verify the change
+                current = await current_operating_cycle(facility)
+                if str(current) != cycle:
+                    logger.error(
+                        f"Failed to set the current operating cycle for {facility} to be {cycle}."
+                    )
+                    raise CycleVerificationError(facility, cycle, current)
+
+            except CycleOperationError:
+                state.is_successful = False
+                raise
+
+            except Exception as e:
+                state.is_successful = False
+                raise CycleUpdateError(facility, cycle, str(e)) from e
+
+
+async def set_current_operating_cycle(facility_name: str, cycle: str) -> str:
+    """
+    Set the current operating cycle for a given facility using a pseudo-atomic operation.
+
+    Args:
+        facility_name (str): The facility name.
+        cycle (str): The new cycle name.
+
+    Returns:
+        str: The current operating cycle if successful.
+
+    Raises:
+        CycleNotFoundError: If the requested cycle cannot be found
+        CycleUpdateError: If the update operations fail
+        CycleVerificationError: If the final state verification fails
+    """
+    # The context manager will handle the cycle update operation,
+    # so this pass statement is intentional.
+    async with cycle_change_context(facility_name, cycle) as state:  # noqa: F841
+        pass
+
+    return cycle
 
 
 async def cycle_year(
@@ -152,10 +308,8 @@ async def cycle_year(
     cycle = await Cycle.find_one(
         Cycle.name == cycle_name, Cycle.facility == facility_name
     )
-    if cycle is None:
-        return None
 
-    return cycle.year
+    return cycle.year if cycle else None
 
 
 async def is_healthy(facility: str) -> bool:
