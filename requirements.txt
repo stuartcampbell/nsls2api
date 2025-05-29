@@ -24,7 +24,7 @@ certifi==2025.4.26
     #   httpx
 cffi==1.17.1
     # via argon2-cffi-bindings
-click==8.1.8
+click==8.2.1
     # via
     #   beanie
     #   typer
@@ -33,7 +33,7 @@ decorator==5.2.1
     # via gssapi
 dnspython==2.7.0
     # via pymongo
-faker==37.1.0
+faker==37.3.0
     # via -r requirements.in
 fastapi==0.115.12
     # via -r requirements.in
@@ -84,11 +84,11 @@ mdit-py-plugins==0.4.2
     # via markdown-it-py
 mdurl==0.1.2
     # via markdown-it-py
-motor==3.7.0
+motor==3.7.1
     # via
     #   -r requirements.in
     #   beanie
-n2snusertools==0.3.9
+n2snusertools==0.3.10
     # via -r requirements.in
 packaging==25.0
     # via
@@ -96,11 +96,11 @@ packaging==25.0
     #   gunicorn
 passlib==1.7.4
     # via -r requirements.in
-platformdirs==4.3.7
+platformdirs==4.3.8
     # via textual
 prettytable==3.16.0
     # via n2snusertools
-prometheus-client==0.21.1
+prometheus-client==0.22.0
     # via prometheus-fastapi-instrumentator
 prometheus-fastapi-instrumentator==7.1.0
     # via -r requirements.in
@@ -108,7 +108,7 @@ pyasn1==0.6.1
     # via ldap3
 pycparser==2.22
     # via cffi
-pydantic==2.11.4
+pydantic==2.11.5
     # via
     #   -r requirements.in
     #   beanie
@@ -121,7 +121,7 @@ pydantic-settings==2.9.1
     # via -r requirements.in
 pygments==2.19.1
     # via rich
-pymongo==4.12.1
+pymongo==4.13.0
     # via
     #   -r requirements.in
     #   motor
@@ -157,7 +157,7 @@ textual==3.2.0
     # via -r requirements.in
 toml==0.10.2
     # via beanie
-typer==0.15.3
+typer==0.16.0
     # via -r requirements.in
 typing-extensions==4.13.2
     # via
@@ -169,7 +169,7 @@ typing-extensions==4.13.2
     #   textual
     #   typer
     #   typing-inspection
-typing-inspection==0.4.0
+typing-inspection==0.4.1
     # via
     #   pydantic
     #   pydantic-settings

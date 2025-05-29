@@ -2,7 +2,7 @@
 #    uv pip compile requirements-dev.in -o requirements-dev.txt
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp==3.11.18
+aiohttp==3.12.4
     # via
     #   aiohttp-jinja2
     #   textual-dev
@@ -25,8 +25,6 @@ asyncer==0.0.8
     # via -r requirements-dev.in
 attrs==25.3.0
     # via aiohttp
-backports-tarfile==1.2.0
-    # via jaraco-context
 bidict==0.23.1
     # via python-socketio
 black==25.1.0
@@ -43,13 +41,11 @@ certifi==2025.4.26
     #   httpcore
     #   httpx
     #   requests
-cffi==1.17.1
-    # via cryptography
 cfgv==3.4.0
     # via pre-commit
 charset-normalizer==3.4.2
     # via requests
-click==8.1.8
+click==8.2.1
     # via
     #   black
     #   bunnet
@@ -57,14 +53,12 @@ click==8.1.8
     #   hatch
     #   textual-dev
     #   userpath
-configargparse==1.7
+configargparse==1.7.1
     # via
     #   locust
     #   locust-cloud
-coverage==7.8.0
+coverage==7.8.2
     # via -r requirements-dev.in
-cryptography==44.0.3
-    # via secretstorage
 decorator==5.2.1
     # via ipython
 distlib==0.3.9
@@ -95,7 +89,7 @@ gevent==24.11.1
     #   locust-cloud
 geventhttpclient==2.3.3
     # via locust
-greenlet==3.2.1
+greenlet==3.2.2
     # via gevent
 h11==0.16.0
     # via
@@ -105,7 +99,7 @@ hatch==1.14.1
     # via -r requirements-dev.in
 hatch-requirements-txt==0.4.1
     # via -r requirements-dev.in
-hatch-vcs==0.4.0
+hatch-vcs==0.5.0
     # via -r requirements-dev.in
 hatchling==1.27.0
     # via
@@ -119,7 +113,7 @@ httpx==0.28.1
     # via hatch
 hyperlink==21.0.0
     # via hatch
-identify==2.6.10
+identify==2.6.12
     # via pre-commit
 idna==3.10
     # via
@@ -128,8 +122,6 @@ idna==3.10
     #   hyperlink
     #   requests
     #   yarl
-importlib-metadata==8.7.0
-    # via keyring
 iniconfig==2.1.0
     # via pytest
 ipython==9.2.0
@@ -146,10 +138,6 @@ jaraco-functools==4.1.0
     # via keyring
 jedi==0.19.2
     # via ipython
-jeepney==0.9.0
-    # via
-    #   keyring
-    #   secretstorage
 jinja2==3.1.6
     # via
     #   aiohttp-jinja2
@@ -161,11 +149,11 @@ lazy-model==0.2.0
     # via bunnet
 linkify-it-py==2.0.3
     # via markdown-it-py
-locust==2.36.2
+locust==2.37.6
     # via -r requirements-dev.in
-locust-cloud==1.20.7
+locust-cloud==1.21.9
     # via locust
-markdown-it-py[linkify,plugins]==3.0.0
+markdown-it-py==3.0.0
     # via
     #   mdit-py-plugins
     #   rich
@@ -189,7 +177,7 @@ msgpack==1.1.0
     # via
     #   locust
     #   textual-dev
-multidict==6.4.3
+multidict==6.4.4
     # via
     #   aiohttp
     #   yarl
@@ -217,14 +205,14 @@ pexpect==4.9.0
     # via
     #   hatch
     #   ipython
-platformdirs==4.3.7
+platformdirs==4.3.8
     # via
     #   black
     #   hatch
     #   locust-cloud
     #   textual
     #   virtualenv
-pluggy==1.5.0
+pluggy==1.6.0
     # via
     #   hatchling
     #   pytest
@@ -244,9 +232,7 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
-pycparser==2.22
-    # via cffi
-pydantic==2.11.4
+pydantic==2.11.5
     # via
     #   bunnet
     #   lazy-model
@@ -257,19 +243,19 @@ pygments==2.19.1
     #   ipython
     #   ipython-pygments-lexers
     #   rich
-pymongo==4.12.1
+pymongo==4.13.0
     # via bunnet
-pyright==1.1.400
+pyright==1.1.401
     # via -r requirements-dev.in
 pytest==8.3.5
     # via
     #   -r requirements-dev.in
     #   pytest-asyncio
-pytest-asyncio==0.26.0
+pytest-asyncio==1.0.0
     # via -r requirements-dev.in
-python-engineio==4.12.0
+python-engineio==4.12.1
     # via python-socketio
-python-socketio[client]==5.13.0
+python-socketio==5.13.0
     # via locust-cloud
 pyyaml==6.0.2
     # via pre-commit
@@ -284,10 +270,14 @@ rich==14.0.0
     #   hatch
     #   textual
     #   textual-serve
-ruff==0.11.8
+ruff==0.11.12
     # via -r requirements-dev.in
-secretstorage==3.3.3
-    # via keyring
+setuptools==80.9.0
+    # via
+    #   locust
+    #   setuptools-scm
+    #   zope-event
+    #   zope-interface
 setuptools-scm==8.3.1
     # via hatch-vcs
 shellingham==1.5.4
@@ -318,19 +308,18 @@ traitlets==5.14.3
     # via
     #   ipython
     #   matplotlib-inline
-trove-classifiers==2025.5.1.12
+trove-classifiers==2025.5.9.12
     # via hatchling
 typing-extensions==4.13.2
     # via
     #   anyio
-    #   ipython
     #   pydantic
     #   pydantic-core
     #   pyright
     #   textual
     #   textual-dev
     #   typing-inspection
-typing-inspection==0.4.0
+typing-inspection==0.4.1
     # via pydantic
 uc-micro-py==1.0.3
     # via linkify-it-py
@@ -340,12 +329,12 @@ urllib3==2.4.0
     #   requests
 userpath==1.9.2
     # via hatch
-uv==0.7.2
+uv==0.7.8
     # via
     #   -r requirements-dev.in
     #   hatch
     #   pre-commit-uv
-virtualenv==20.30.0
+virtualenv==20.31.2
     # via
     #   hatch
     #   pre-commit
@@ -363,8 +352,6 @@ wsproto==1.2.0
     # via simple-websocket
 yarl==1.20.0
     # via aiohttp
-zipp==3.21.0
-    # via importlib-metadata
 zope-event==5.0
     # via gevent
 zope-interface==7.2
