@@ -17,6 +17,7 @@ anyio==4.9.0
     # via
     #   asyncer
     #   httpx
+    #   watchfiles
 asgi-lifespan==2.1.0
     # via -r requirements-dev.in
 asttokens==3.0.0
@@ -51,8 +52,11 @@ click==8.2.1
     #   bunnet
     #   flask
     #   hatch
+    #   rich-toolkit
     #   textual-dev
+    #   typer
     #   userpath
+    #   uvicorn
 configargparse==1.7.1
     # via
     #   locust
@@ -67,6 +71,8 @@ dnspython==2.7.0
     # via pymongo
 executing==2.2.0
     # via stack-data
+fastapi-cli==0.0.7
+    # via -r requirements-dev.in
 filelock==3.18.0
     # via virtualenv
 flask==3.1.1
@@ -94,6 +100,7 @@ greenlet==3.2.2
 h11==0.16.0
     # via
     #   httpcore
+    #   uvicorn
     #   wsproto
 hatch==1.14.1
     # via -r requirements-dev.in
@@ -109,6 +116,8 @@ hatchling==1.27.0
     #   hatch-vcs
 httpcore==1.0.9
     # via httpx
+httptools==0.6.4
+    # via uvicorn
 httpx==0.28.1
     # via hatch
 hyperlink==21.0.0
@@ -253,12 +262,16 @@ pytest==8.3.5
     #   pytest-asyncio
 pytest-asyncio==1.0.0
     # via -r requirements-dev.in
+python-dotenv==1.1.0
+    # via uvicorn
 python-engineio==4.12.1
     # via python-socketio
 python-socketio==5.13.0
     # via locust-cloud
 pyyaml==6.0.2
-    # via pre-commit
+    # via
+    #   pre-commit
+    #   uvicorn
 pyzmq==26.4.0
     # via locust
 requests==2.32.3
@@ -268,8 +281,12 @@ requests==2.32.3
 rich==14.0.0
     # via
     #   hatch
+    #   rich-toolkit
     #   textual
     #   textual-serve
+    #   typer
+rich-toolkit==0.14.7
+    # via fastapi-cli
 ruff==0.11.12
     # via -r requirements-dev.in
 setuptools==80.9.0
@@ -281,7 +298,9 @@ setuptools==80.9.0
 setuptools-scm==8.3.1
     # via hatch-vcs
 shellingham==1.5.4
-    # via hatch
+    # via
+    #   hatch
+    #   typer
 simple-websocket==1.1.0
     # via python-engineio
 sniffio==1.3.1
@@ -310,14 +329,18 @@ traitlets==5.14.3
     #   matplotlib-inline
 trove-classifiers==2025.5.9.12
     # via hatchling
+typer==0.16.0
+    # via fastapi-cli
 typing-extensions==4.13.2
     # via
     #   anyio
     #   pydantic
     #   pydantic-core
     #   pyright
+    #   rich-toolkit
     #   textual
     #   textual-dev
+    #   typer
     #   typing-inspection
 typing-inspection==0.4.1
     # via pydantic
@@ -334,14 +357,22 @@ uv==0.7.8
     #   -r requirements-dev.in
     #   hatch
     #   pre-commit-uv
+uvicorn==0.34.2
+    # via fastapi-cli
+uvloop==0.21.0
+    # via uvicorn
 virtualenv==20.31.2
     # via
     #   hatch
     #   pre-commit
+watchfiles==1.0.5
+    # via uvicorn
 wcwidth==0.2.13
     # via prompt-toolkit
 websocket-client==1.8.0
     # via python-socketio
+websockets==15.0.1
+    # via uvicorn
 werkzeug==3.1.3
     # via
     #   flask

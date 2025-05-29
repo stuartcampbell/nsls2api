@@ -3,6 +3,7 @@ asyncer
 black
 bunnet
 coverage
+fastapi-cli
 hatch
 hatchling
 hatch-requirements-txt
