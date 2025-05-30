@@ -72,9 +72,8 @@ def show_welcome():
     """Display welcome message and version information"""
     try:
         version = importlib.metadata.version("nsls2api")
-
         version_str = version
-    except ImportError:
+    except importlib.metadata.PackageNotFoundError:
         version_str = "unknown"
 
     welcome_panel = Panel(
