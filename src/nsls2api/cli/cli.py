@@ -12,6 +12,7 @@ from rich.text import Text
 from rich.theme import Theme
 
 from nsls2api.cli import admin, api, auth, beamline, environment, facility, proposal
+from nsls2api.version import get_version
 
 # Remove no_args_is_help and add invoke_without_command to allow version option without subcommand.
 app = typer.Typer(
@@ -41,14 +42,6 @@ console = Console(
         }
     )
 )
-
-
-def get_version() -> str:
-    """Get the version of the nsls2api package"""
-    try:
-        return importlib.metadata.version("nsls2api")
-    except importlib.metadata.PackageNotFoundError:
-        return "unknown"
 
 
 def create_command_panel(command_name: str, commands: dict) -> Panel:
