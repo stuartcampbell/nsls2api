@@ -70,15 +70,11 @@ def create_command_panel(command_name: str, commands: dict) -> Panel:
 
 def show_welcome():
     """Display welcome message and version information"""
-    try:
-        version = importlib.metadata.version("nsls2api")
-        version_str = version
-    except importlib.metadata.PackageNotFoundError:
-        version_str = "unknown"
+    version = get_version()
 
     welcome_panel = Panel(
         Text("Welcome to the NSLS-II API Command Line Interface", style="info"),
-        subtitle=f"Version: {version_str}",
+        subtitle=f"Version: {version}",
         border_style="cyan",
         box=box.DOUBLE,
     )
