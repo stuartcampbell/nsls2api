@@ -132,7 +132,7 @@ def main(
     """
     if version:
         try:
-            version = importlib.metadata.version("nsls2api")
+            version = get_version()
             console.print(f"[info]NSLS-II API CLI version: {version}")
         except importlib.metadata.PackageNotFoundError:
             console.print("[warning]Version information not available")
