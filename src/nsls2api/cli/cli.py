@@ -131,11 +131,8 @@ def main(
     NSLS-II API Command Line Interface
     """
     if version:
-        try:
-            version = get_version()
-            console.print(f"[info]NSLS-II API CLI version: {version}")
-        except importlib.metadata.PackageNotFoundError:
-            console.print("[warning]Version information not available")
+        version = get_version()
+        console.print(f"[info]NSLS-II API CLI version: {version}")
         raise typer.Exit()
 
     # Only show a welcome message and commands if no subcommand is specified
