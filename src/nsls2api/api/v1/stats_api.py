@@ -1,4 +1,3 @@
-
 import fastapi
 
 from nsls2api.api.models.facility_model import FacilityName
