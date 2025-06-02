@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nsls2api"
-dynamic = ["version"]
+dynamic = ["version", "dependencies"]
 description = ''
 readme = "README.md"
 requires-python = ">=3.11"
