@@ -14,7 +14,7 @@ from rich.theme import Theme
 from nsls2api.cli import admin, api, auth, beamline, environment, facility, proposal
 from nsls2api.version import get_version
 
-# Remove no_args_is_help and add invoke_without_command to allow version option without subcommand.
+# Remove no_args_is_help and add invoke_without_command to allow a version option without subcommand.
 app = typer.Typer(
     help="NSLS-II API Command Line Interface", invoke_without_command=True
 )
@@ -138,7 +138,7 @@ def main(
             console.print("[warning]Version information not available")
         raise typer.Exit()
 
-    # Only show welcome message and commands if no subcommand is specified
+    # Only show a welcome message and commands if no subcommand is specified
     if ctx.invoked_subcommand is None:
         show_welcome()
         console.print()
