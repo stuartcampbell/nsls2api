@@ -1,4 +1,3 @@
-import importlib.metadata
 import sys
 from typing import Optional
 
