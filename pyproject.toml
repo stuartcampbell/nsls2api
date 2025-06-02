@@ -37,6 +37,12 @@ vcs = "git"
 style = "pep440"
 bump = true
 
+[tool.hatch.build.hooks.version]
+path = "src/nsls2api/_version.py"
+template = '''
+version = "{version}"
+'''
+
 [tool.hatch.build.targets.sdist]
 exclude = [
     "/.github",
