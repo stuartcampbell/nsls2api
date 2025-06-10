@@ -26,6 +26,8 @@ asyncer==0.0.8
     # via -r requirements-dev.in
 attrs==25.3.0
     # via aiohttp
+backports-tarfile==1.2.0
+    # via jaraco-context
 bidict==0.23.1
     # via python-socketio
 black==25.1.0
@@ -42,6 +44,8 @@ certifi==2025.4.26
     #   httpcore
     #   httpx
     #   requests
+cffi==1.17.1
+    # via cryptography
 cfgv==3.4.0
     # via pre-commit
 charset-normalizer==3.4.2
@@ -63,6 +67,8 @@ configargparse==1.7.1
     #   locust-cloud
 coverage==7.8.2
     # via -r requirements-dev.in
+cryptography==45.0.4
+    # via secretstorage
 decorator==5.2.1
     # via ipython
 distlib==0.3.9
@@ -131,6 +137,8 @@ idna==3.10
     #   hyperlink
     #   requests
     #   yarl
+importlib-metadata==8.7.0
+    # via keyring
 iniconfig==2.1.0
     # via pytest
 ipython==9.2.0
@@ -147,6 +155,10 @@ jaraco-functools==4.1.0
     # via keyring
 jedi==0.19.2
     # via ipython
+jeepney==0.9.0
+    # via
+    #   keyring
+    #   secretstorage
 jinja2==3.1.6
     # via
     #   aiohttp-jinja2
@@ -162,7 +174,7 @@ locust==2.37.6
     # via -r requirements-dev.in
 locust-cloud==1.21.9
     # via locust
-markdown-it-py==3.0.0
+markdown-it-py[linkify,plugins]==3.0.0
     # via
     #   mdit-py-plugins
     #   rich
@@ -241,6 +253,8 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
+pycparser==2.22
+    # via cffi
 pydantic==2.11.5
     # via
     #   bunnet
@@ -266,7 +280,7 @@ python-dotenv==1.1.0
     # via uvicorn
 python-engineio==4.12.1
     # via python-socketio
-python-socketio==5.13.0
+python-socketio[client]==5.13.0
     # via locust-cloud
 pyyaml==6.0.2
     # via
@@ -274,7 +288,7 @@ pyyaml==6.0.2
     #   uvicorn
 pyzmq==26.4.0
     # via locust
-requests==2.32.3
+requests==2.32.4
     # via
     #   locust
     #   python-socketio
@@ -289,12 +303,8 @@ rich-toolkit==0.14.7
     # via fastapi-cli
 ruff==0.11.12
     # via -r requirements-dev.in
-setuptools==80.9.0
-    # via
-    #   locust
-    #   setuptools-scm
-    #   zope-event
-    #   zope-interface
+secretstorage==3.3.3
+    # via keyring
 setuptools-scm==8.3.1
     # via hatch-vcs
 shellingham==1.5.4
@@ -334,6 +344,7 @@ typer==0.16.0
 typing-extensions==4.13.2
     # via
     #   anyio
+    #   ipython
     #   pydantic
     #   pydantic-core
     #   pyright
@@ -357,7 +368,7 @@ uv==0.7.8
     #   -r requirements-dev.in
     #   hatch
     #   pre-commit-uv
-uvicorn==0.34.2
+uvicorn[standard]==0.34.2
     # via fastapi-cli
 uvloop==0.21.0
     # via uvicorn
@@ -383,6 +394,8 @@ wsproto==1.2.0
     # via simple-websocket
 yarl==1.20.0
     # via aiohttp
+zipp==3.23.0
+    # via importlib-metadata
 zope-event==5.0
     # via gevent
 zope-interface==7.2
