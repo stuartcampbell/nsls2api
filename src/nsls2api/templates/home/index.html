@@ -4,21 +4,56 @@
 
 
 
+    <h1 class="baseColor api-landing-title">Welcome to the NSLS-II Facility API</h1>
+
     <p>
-        Welcome to the homepage for the NSLS-II API. This is a project that is
-        under heavy development, so please temper your expectations.
-
-        <br/>
-
-
-        The API Docs can be found at the links below:
-
-
+        The NSLS-II Facility API provides programmatic access to beamline, proposal, and user information at NSLS-II.
+        It is intended for staff, beamline scientists, and external collaborators who need to automate data access or integrate with other systems.
+    </p>
+    
+    
+    <ul>
+        <li>Browse and test endpoints with interactive documentation</li>
+        <li>Retrieve up-to-date facility and experiment information</li>
+        <li>Integrate seamlessly with your scripts and applications</li>
+    </ul>
+    
+    <h3 class="baseColor">
+        Get Started
+    </h3>
+    <p>
+        Use the tools below to explore the API or jump right in with our interactive docs.
     </p>
 
-    <ul>
-        <li><a href="/docs/">Swagger UI</a></li>
-        <li><a href="/redoc/">ReDoc UI</a></li>
-    </ul>
+    <ul  style="list-style-type:none;margin:0;padding:0;">
+    <li class="mb1">
+        <div class="get-started-box">
+        <h3  >Swagger UI</h3>
+            <span>
+                An interactive tool to explore, test, and visualize all API endpoints. You can send requests and see live responses directly from your browser.
+            </span>
+            <ul class=" ml2 mt1">
+                <li>Click <strong>View Swagger UI</strong> below.</li>
+                <li>Select an endpoint (e.g., <code>/v1/beamlines</code>).</li>
+                <li>Click <strong>Try it out</strong>, then <strong>Execute</strong> to see a live response.</li>
+            </ul>
+            <a href="/docs/" class="button mt1 " >View Swagger UI</a>
+        </div>
+    </li>
+    <li class="mb1">
+        <div class="get-started-box">
+            <h3>ReDoc UI</h3>
+            <span>
+                A comprehensive, user-friendly reference for all endpoints, parameters, and response schemas. Ideal for browsing and understanding the API structure.
+            </span>
+            <ul class="ml2 mt1">
+                <li>Click <strong>View ReDoc UI</strong> below.</li>
+                <li>Browse the sidebar to explore endpoints and models.</li>
+                <li>Click any endpoint to view details, parameters, and response schemas.</li>
+            </ul>
+            <a href="/redoc/" class="button mt1 ">View ReDoc UI</a>
+        </div>
+    </li>
+</ul>
 
 {% endblock %}
