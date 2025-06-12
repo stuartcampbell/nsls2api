@@ -1836,6 +1836,8 @@
 			margin-left: .5em;
 		}
 
+		
+
 
 		/* TABLES */
 
@@ -3737,7 +3739,22 @@
 
 		}
 
-
+/*custom margins */
+.mb2 { margin-bottom: 2em !important; }
+.mt1 { margin-top: 1em !important; }
+.mb1 { margin-bottom: 1em !important; }
+.mt2 { margin-top: 2em !important; }
+.ml2 { margin-left: 1em !important; }
+.api-landing-title {
+    border-bottom: 2px solid #105c78;
+}
+.get-started-box {
+    background: #eaf6fa;
+    border-left: 4px solid #105c78;
+    padding: 1em;
+    border-radius: 6px;
+    margin-bottom: 0.5em;
+}
 
 /*	----------------------------------------------------------------------------------------------------------------
 		END OF STYLE SHEET
