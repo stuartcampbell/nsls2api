@@ -121,7 +121,7 @@ def main(
     version: Optional[bool] = typer.Option(
         None,
         "--version",
-        "-v",
+        "-V",
         help="Show version and exit",
         is_eager=True,
     ),
