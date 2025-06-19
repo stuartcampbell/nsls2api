@@ -34,6 +34,9 @@ class CommissioningProposalsList(pydantic.BaseModel):
     beamline: str | None = None
     facility: FacilityName | None = None
 
+class LockedProposals(pydantic.BaseModel):
+   locked_proposals: list[Proposal]
+
 
 class CycleProposalList(pydantic.BaseModel):
     cycle: str

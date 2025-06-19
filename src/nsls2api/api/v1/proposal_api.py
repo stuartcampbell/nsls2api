@@ -20,6 +20,7 @@ from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import get_current_user, validate_admin_role
 from nsls2api.models.slack_models import ProposalSlackChannel, SlackChannel
 from nsls2api.services import proposal_service, slack_service
+from nsls2api.models.proposals import Proposal
 
 router = fastapi.APIRouter(dependencies=[Depends(get_current_user)])
 
@@ -330,3 +331,100 @@ async def create_slack_channels_for_proposal(
     await proposal.save()  # noqa - we don't need to specify any args here
 
     return channels
+
+
+#putting the proposal object in the locked_proposals list
+@router.put("/proposals/lock/{proposal_object}")
+async def lock(proposal_object: Proposal):
+    try:
+       locked_proposals = await proposal_service.get_locked_proposals()
+       locked_proposals.append(proposal_object)
+       await locked_proposals.save()
+       return True
+    except:
+       logger.error(f"Unexpected error when locking proposal {proposal_object.proposal_id}")
+
+#checking whether a proposal is locked or not
+@router.get("/proposals/isLocked/{proposal_id}")
+async def check_locked(proposal_id: str):
+    try:
+       proposal = await proposal_service.proposal_by_id(proposal_id)
+       return await proposal_service.is_locked(proposal)
+    except Exception as e:
+       logger.error(f"Unexpected error when checking if proposal {proposal_id} is locked: {e}")
+
+
+#getting locked proposals (the locked proposals list) that match inputted criteria. Beamline and cycle optional, if neither entered than all proposals
+@router.get("/proposals/locked/") #might need the beamline and cycle here
+async def check_locked_proposals(
+       beamline: Annotated[list[str], Query()] = [],
+       cycle: Annotated[list[str], Query()] = [],):
+   try:
+       list_of_proposals = []
+       proposals = await proposal_service.fetch_proposals(cycle=cycle, beamline=beamline)
+      
+       locked_proposals = await proposal_service.get_locked_proposals()
+      
+       for proposal in locked_proposals:
+           if proposal in proposals:
+               list_of_proposals.append(proposal)
+       return list_of_proposals
+   except Exception as e:
+       logger.error(f"Unexpected error when checking locked proposals: {e}")
+
+
+# getting all locked proposals at a specific beamline
+@router.get("/proposals/beamline/locked/{beamline}")
+async def locked_at_beamline(beamline: str):
+    locked_at_beamline = []
+    try:
+        locked = await proposal_service.get_locked_proposals()
+        proposals_at_beamline = await proposal_service.fetch_proposals(beamline=beamline)
+        for p in locked:
+            if p in proposals_at_beamline:
+               locked_at_beamline.append(p)
+        return locked_at_beamline
+    except Exception as e:
+        logger.error(f"Unexpected error when getting all locked proposals at beamline {beamline}: {e}")
+
+# getting all locked proposals at a specific cycle
+@router.get("/proposals/cycles/locked/{cycle}")
+async def locked_at_cycle(cycle: str):
+   locked_at_cycle = []
+   try:
+       locked = await proposal_service.get_locked_proposals()
+       proposals_at_cycle = await proposal_service.fetch_proposals_for_cycle(cycle)
+       for p in locked:
+           if p in proposals_at_cycle:
+               locked_at_cycle.append(p)
+       return locked_at_cycle
+   except Exception as e:
+       logger.error(f"Unexpected error when getting all locked proposals at cycle: {cycle}: {e}")
+
+#getting all proposals at a specific beamline
+@router.get("/proposals/beamline/{beamline}")
+async def get_proposals_at_beamline(beamline: str):
+   try:
+       proposals_at_beamline = await proposal_service.fetch_proposals(beamline=beamline)
+       return proposals_at_beamline
+   except Exception as e:
+       logger.error(f"Unexpected error when getting proposals at {beamline}: {e}")
+
+# unlocking a proposal, removing it from the locked_proposals list
+@router.put("/proposals/unlock/{proposal_id}")
+async def unlock(proposal_id: str):
+  try:
+      proposal_response = await proposal_service.proposal_by_id(proposal_id)
+      proposal_response.raise_for_status()
+      proposal = proposal_response.json()
+      if(not proposal):
+          logger.error(f"Proposal {proposal_id} does not exist")
+      elif(not await proposal_service.is_locked(proposal)):
+          logger.error(f"Proposal {proposal_id} is not locked")
+      else:
+          locked_proposals = await proposal_service.get_locked_proposals()
+          locked_proposals.remove(proposal)
+          await locked_proposals.save()
+          return True
+  except Exception as e:
+      logger.error(f"Unexpected error when unlocking proposal {proposal_id}: {e}")

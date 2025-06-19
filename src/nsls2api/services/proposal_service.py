@@ -13,6 +13,7 @@ from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
     ProposalDiagnostics,
     ProposalFullDetails,
+    LockedProposals
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -26,6 +27,12 @@ from nsls2api.services import (
     pass_service,
 )
 
+
+async def get_locked_proposals() -> list[Proposal]:
+   return LockedProposals.locked_proposals
+
+async def is_locked(proposal: Proposal) -> bool:
+   return proposal in LockedProposals.locked_proposals
 
 async def exists(proposal_id: str) -> bool:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
