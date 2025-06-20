@@ -41,6 +41,7 @@ class ProposalBase(pydantic.BaseModel):
     last_updated: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
+    locked: bool
 
 
 # -- Pydantic Model for Display/Transport --

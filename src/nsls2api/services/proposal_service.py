@@ -13,7 +13,7 @@ from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
     ProposalDiagnostics,
     ProposalFullDetails,
-    LockedProposals
+    LockedProposalsList
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -28,11 +28,36 @@ from nsls2api.services import (
 )
 
 
-async def get_locked_proposals() -> list[Proposal]:
-   return LockedProposals.locked_proposals
+async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList:
+    locked_proposals = None
+    if cycle and beamline:
+       query = And(
+           Proposal.locked == True,
+           In(Proposal.instruments, [beamline.upper()]),
+           In(Proposal.cycles, [cycle]),
+        )
+       locked_proposals = Proposal.find(query)
+    elif cycle:
+       query = And(
+           Proposal.locked == True,
+           In(Proposal.cycles, [cycle]),
+        )
+       locked_proposals = Proposal.find(query)
+    elif beamline:
+       query = And(
+           Proposal.locked == True,
+           In(Proposal.instruments, [beamline.upper()]),
+        )
+       locked_proposals = Proposal.find(query)
+    else:
+       query = Proposal.locked == True
+       locked_proposals = Proposal.find(query)
+    locked_model = LockedProposalsList(
+        count=locked_proposals.count(),
+        locked_proposals=await locked_proposals.to_list(),
+    )
+    return locked_model
 
-async def is_locked(proposal: Proposal) -> bool:
-   return proposal in LockedProposals.locked_proposals
 
 async def exists(proposal_id: str) -> bool:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
