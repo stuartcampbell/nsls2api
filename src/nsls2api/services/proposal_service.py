@@ -13,7 +13,7 @@ from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
     ProposalDiagnostics,
     ProposalFullDetails,
-    LockedProposalsList
+    LockedProposalsList,
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -31,27 +31,27 @@ from nsls2api.services import (
 async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList:
     locked_proposals = None
     if cycle and beamline:
-       query = And(
-           Proposal.locked == True,
-           In(Proposal.instruments, [beamline.upper()]),
-           In(Proposal.cycles, [cycle]),
+        query = And(
+            Proposal.locked,
+            In(Proposal.instruments, [beamline.upper()]),
+            In(Proposal.cycles, [cycle]),
         )
-       locked_proposals = Proposal.find(query)
+        locked_proposals = Proposal.find(query)
     elif cycle:
-       query = And(
-           Proposal.locked == True,
-           In(Proposal.cycles, [cycle]),
+        query = And(
+            Proposal.locked,
+            In(Proposal.cycles, [cycle]),
         )
-       locked_proposals = Proposal.find(query)
+        locked_proposals = Proposal.find(query)
     elif beamline:
-       query = And(
-           Proposal.locked == True,
-           In(Proposal.instruments, [beamline.upper()]),
+        query = And(
+            Proposal.locked,
+            In(Proposal.instruments, [beamline.upper()]),
         )
-       locked_proposals = Proposal.find(query)
+        locked_proposals = Proposal.find(query)
     else:
-       query = Proposal.locked == True
-       locked_proposals = Proposal.find(query)
+        query = Proposal.locked
+        locked_proposals = Proposal.find(query)
     locked_model = LockedProposalsList(
         count=locked_proposals.count(),
         locked_proposals=await locked_proposals.to_list(),
