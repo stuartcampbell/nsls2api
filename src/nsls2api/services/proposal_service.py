@@ -28,6 +28,9 @@ from nsls2api.services import (
 )
 
 
+# this returns a LockedProposalsList object, containing the count (amount of locked proposals)
+# and locked_proposals (the list of locked proposals). Query based on a list of cycles and beamlines,
+# but optional.
 async def get_locked_proposals(
     cycles: list[str], beamlines: list[str]
 ) -> LockedProposalsList:
