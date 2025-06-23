@@ -344,14 +344,6 @@ async def lock(proposal_id: str):
     except:
        logger.error(f"Unexpected error when locking proposal {proposal_object.proposal_id}")
 
-#checking whether a proposal is locked or not
-@router.get("/proposals/isLocked/{proposal_id}")
-async def check_locked(proposal_id: str):
-    try:
-       proposal = await proposal_service.proposal_by_id(proposal_id)
-       return proposal.locked
-    except Exception as e:
-       logger.error(f"Unexpected error when checking if proposal {proposal_id} is locked: {e}")
 
 
 #getting locked proposals (the locked proposals list) that match inputted criteria. Beamline and cycle optional, if neither entered than all proposals
