@@ -335,9 +335,10 @@ async def create_slack_channels_for_proposal(
 
 
 #putting the proposal object in the locked_proposals list
-@router.put("/proposals/lock/{proposal_object}")
-async def lock(proposal_object: Proposal):
+@router.put("/proposals/lock/{proposal_id}")
+async def lock(proposal_id: str):
     try:
+       proposal_object = await proposal_service.proposal_by_id(proposal_id)
        proposal_object.locked = True
        await proposal_object.save()
     except:
