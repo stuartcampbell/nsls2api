@@ -28,25 +28,30 @@ from nsls2api.services import (
 )
 
 
-async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList:
+async def get_locked_proposals(
+    cycles: list[str], beamlines: list[str]
+) -> LockedProposalsList:
     locked_proposals = None
-    if cycle and beamline:
+    uppercase_beamlines = []
+    for beamline in beamlines:
+        uppercase_beamlines.append(beamline.upper())
+    if cycles and beamlines:
         query = And(
             Proposal.locked,
-            In(Proposal.instruments, [beamline.upper()]),
-            In(Proposal.cycles, [cycle]),
+            In(Proposal.instruments, uppercase_beamlines),
+            In(Proposal.cycles, cycles),
         )
         locked_proposals = Proposal.find(query)
-    elif cycle:
+    elif cycles:
         query = And(
             Proposal.locked,
-            In(Proposal.cycles, [cycle]),
+            In(Proposal.cycles, cycles),
         )
         locked_proposals = Proposal.find(query)
-    elif beamline:
+    elif beamlines:
         query = And(
             Proposal.locked,
-            In(Proposal.instruments, [beamline.upper()]),
+            In(Proposal.instruments, uppercase_beamlines),
         )
         locked_proposals = Proposal.find(query)
     else:

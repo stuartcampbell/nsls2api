@@ -350,11 +350,11 @@ async def lock(proposal_id: str):
 # getting locked proposals (the locked proposals list) that match inputted criteria. Beamline and cycle optional, if neither entered than all proposals
 @router.get("/proposals/locked/", response_model=LockedProposalsList)
 async def gather_locked_proposals(
-    beamline: str | None = None, cycle: str | None = None
+    beamlines: list[str] | None = None, cycles: list[str] | None = None
 ):
     try:
         locked_proposals = await proposal_service.get_locked_proposals(
-            cycle=cycle, beamline=beamline
+            cycles=cycles, beamlines=beamlines
         )
         locked_proposals_list = locked_proposals.locked_proposals
         if locked_proposals_list is None:

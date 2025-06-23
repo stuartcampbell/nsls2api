@@ -35,8 +35,8 @@ class CommissioningProposalsList(pydantic.BaseModel):
     facility: FacilityName | None = None
 
 class LockedProposalsList(pydantic.BaseModel):
-   count: int
-   locked_proposals: list[Proposal]
+    count: int
+    locked_proposals: list[Proposal]
 
 
 class CycleProposalList(pydantic.BaseModel):
