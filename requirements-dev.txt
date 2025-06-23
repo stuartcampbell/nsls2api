@@ -143,7 +143,7 @@ jaraco-classes==3.4.0
     # via keyring
 jaraco-context==6.0.1
     # via keyring
-jaraco-functools==4.1.0
+jaraco-functools==4.2.1
     # via keyring
 jedi==0.19.2
     # via ipython
@@ -158,9 +158,9 @@ lazy-model==0.2.0
     # via bunnet
 linkify-it-py==2.0.3
     # via markdown-it-py
-locust==2.37.10
+locust==2.37.11
     # via -r requirements-dev.in
-locust-cloud==1.23.2
+locust-cloud==1.24.2
     # via locust
 markdown-it-py==3.0.0
     # via
@@ -247,7 +247,7 @@ pydantic==2.11.7
     #   lazy-model
 pydantic-core==2.33.2
     # via pydantic
-pygments==2.19.1
+pygments==2.19.2
     # via
     #   ipython
     #   ipython-pygments-lexers

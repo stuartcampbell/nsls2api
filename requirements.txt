@@ -129,9 +129,9 @@ pydantic==2.11.7
     #   uv-dynamic-versioning
 pydantic-core==2.33.2
     # via pydantic
-pydantic-settings==2.9.1
+pydantic-settings==2.10.0
     # via -r requirements.in
-pygments==2.19.1
+pygments==2.19.2
     # via rich
 pymongo==4.13.2
     # via
