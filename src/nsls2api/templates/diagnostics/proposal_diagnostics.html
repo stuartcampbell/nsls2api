@@ -2,73 +2,73 @@
 
 {% block content %}
 
-<h2>Diagnostic Information for {{ proposal.proposal_id }}.</h2>
+    <h3 class="baseColor">Diagnostic Information for {{ proposal.proposal_id }}.</h3>
 
-<table>
-    <tr>
-        <th>Title:</th>
-        <th>{{ proposal.title }} </th>
-    </tr>
-    <tr>
-        <th>Proposal ID:</th>
-        <th>{{ proposal.proposal_id }} </th>
-    </tr>
-    <tr>
-        <th>PI:</th>
-        <th>{{ proposal.pi.first_name }} {{ proposal.pi.last_name }}</th>
-    </tr> 
-    <tr>
-        <th>Type:</th>
-        <th>{{ proposal.proposal_type }} </th>
-    </tr>
-    <tr>
-        <th>Data Session:</th>
-        <th>{{ proposal.data_session }}</th>
-    </tr>
-    <tr>
-        <th>Beamlines:</th>
-        <th>{{ proposal.beamlines|join(', ') }}</th>
-    </tr>
+    <table>
+        <tr>
+            <th>Title:</th>
+            <td>{{ proposal.title }} </td>
+        </tr>
+        <tr>
+            <th>Proposal ID:</th>
+            <td>{{ proposal.proposal_id }} </td>
+        </tr>
+        <tr>
+            <th>PI:</th>
+            <td>{{ proposal.pi.first_name }} {{ proposal.pi.last_name }}</td>
+        </tr>
+        <tr>
+            <th>Type:</th>
+            <td>{{ proposal.proposal_type }} </td>
+        </tr>
+        <tr>
+            <th>Data Session:</th>
+            <td>{{ proposal.data_session }}</td>
+        </tr>
+        <tr>
+            <th>Beamlines:</th>
+            <td>{{ proposal.beamlines|join(', ') }}</td>
+        </tr>
 
-    <tr>
-        <th>Cycles</th>
-        <th>{{ proposal.cycles|join(', ')  }}</th>
-    </tr>
+        <tr>
+            <th>Cycles</th>
+            <td>{{ proposal.cycles|join(', ') }}</td>
+        </tr>
 
-    <tr>
-        <th>SAFs</th>
-        <th>{{ proposal.safs|join(', ')  }}</th>
-    </tr>
+        <tr>
+            <th>SAFs</th>
+            <td>{{ proposal.safs|join(', ') }}</td>
+        </tr>
 
-    <tr>
-        <th>Users:</th>
-        <th>
+        <tr>
+            <th>Users:</th>
+            <td>
 
-            <table>
-                <tr>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Email</th>
-                    <th>Username</th>
-                </tr>
-                {% for user in proposal.users %}
-                <tr>
-                    <td>{{ user.first_name }}</td>
-                    <td>{{ user.last_name }}</td>
-                    <td>{{ user.email }}</td>
-                    <td><a href="/diagnostics/username/{{ user.username }}">{{ user.username }}</a></td>
-                </tr>
-                {% endfor %}
-            </table>
+                <table>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Username</th>
+                    </tr>
+                    {% for user in proposal.users %}
+                        <tr>
+                            <td>{{ user.first_name }}</td>
+                            <td>{{ user.last_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td><a href="/diagnostics/username/{{ user.username }}">{{ user.username }}</a></td>
+                        </tr>
+                    {% endfor %}
+                </table>
 
-        </th>
-    </tr>
-    <tr>
-        <th>Last Updated:</th>
-        <th>{{ proposal.updated }} </th>
-    </tr>
+                </th>
+        </tr>
+        <tr>
+            <th>Last Updated:</th>
+            <td>{{ proposal.updated }} </td>
+        </tr>
 
-</table>
+    </table>
 
 
 {% endblock %}

@@ -20,12 +20,6 @@ def index(request: Request):
     return templates.TemplateResponse("home/index.html", data)
 
 
-@router.get("/default", include_in_schema=False)
-def default(request: Request):
-    data = {"request": request}
-    return templates.TemplateResponse("home/default.html", data)
-
-
 # This is a test endpoint to make sure the server is running
 # It is used by haproxy to determine if the server is healthy
 @router.get("/healthy", include_in_schema=False)
