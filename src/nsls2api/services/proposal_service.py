@@ -66,6 +66,19 @@ async def get_locked_proposals(
     )
     return locked_model
 
+async def lock(proposal_id:str) -> Proposal:
+    proposal_object = await proposal_by_id(proposal_id)
+    proposal_object.locked = True
+    return proposal_object
+
+async def unlock(proposal_id: str) -> Proposal:
+    proposal_object = await proposal_by_id(proposal_id)
+    if not proposal_object:
+        logger.exception(f"Proposal {proposal_id} does not exist")
+    elif not proposal_object.locked:
+        logger.info(f"Proposal {proposal_id} is not locked")
+    else:
+        proposal_object.locked = False
 
 async def exists(proposal_id: str) -> bool:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))

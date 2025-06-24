@@ -338,12 +338,11 @@ async def create_slack_channels_for_proposal(
 @router.put("/proposals/lock/{proposal_id}")
 async def lock(proposal_id: str):
     try:
-        proposal_object = await proposal_service.proposal_by_id(proposal_id)
-        proposal_object.locked = True
-        await proposal_object.save()
+        locked_proposal = await proposal_service.lock(proposal_id)
+        await locked_proposal.save()
     except Exception as e:
         logger.error(
-            f"Unexpected error when locking proposal {proposal_object.proposal_id} {e}"
+            f"Unexpected error when locking proposal {proposal_id} {e}"
         )
 
 
@@ -390,15 +389,7 @@ async def get_proposals_at_beamline(beamline: str):
 @router.put("/proposals/unlock/{proposal_id}")
 async def unlock(proposal_id: str):
     try:
-        proposal_response = await proposal_service.proposal_by_id(proposal_id)
-        proposal_response.raise_for_status()
-        proposal = proposal_response.json()
-        if not proposal:
-            logger.error(f"Proposal {proposal_id} does not exist")
-        elif not proposal.locked:
-            logger.error(f"Proposal {proposal_id} is not locked")
-        else:
-            proposal.locked = False
-            await proposal.save()
+        unlocked_proposal = await proposal_service.unlock(proposal_id)
+        await unlocked_proposal.save()
     except Exception as e:
         logger.error(f"Unexpected error when unlocking proposal {proposal_id}: {e}")
