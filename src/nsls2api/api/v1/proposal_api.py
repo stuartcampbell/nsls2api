@@ -347,13 +347,13 @@ async def lock(proposal_id: str):
 
 
 # getting locked proposals (the locked proposals list) that match inputted criteria. Beamline and cycle optional, if neither entered than all proposals
-@router.get("/proposals/locked/", response_model=LockedProposalsList)
+@router.get("/proposals/locked", response_model=LockedProposalsList)
 async def gather_locked_proposals(
-    beamlines: list[str] | None = None, cycles: list[str] | None = None
+    beamline: list[str] | None = None, cycle: list[str] | None = None
 ):
     try:
         locked_proposals = await proposal_service.get_locked_proposals(
-            cycles=cycles, beamlines=beamlines
+            cycles=cycle, beamlines=beamline
         )
         locked_proposals_list = locked_proposals.locked_proposals
         if locked_proposals_list is None:
@@ -361,7 +361,7 @@ async def gather_locked_proposals(
                 status_code=fastapi.status.HTTP_404_NOT_FOUND,
                 detail="No locked proposals found",
             )
-        return locked_proposals
+        
     except LookupError as e:
         raise HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
@@ -371,6 +371,7 @@ async def gather_locked_proposals(
             status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred: {e}",
         )
+    return locked_proposals
 
 
 # getting all proposals at a specific beamline

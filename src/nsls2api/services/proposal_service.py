@@ -32,38 +32,42 @@ from nsls2api.services import (
 # and locked_proposals (the list of locked proposals). Query based on a list of cycles and beamlines,
 # but optional.
 async def get_locked_proposals(
-    cycles: list[str], beamlines: list[str]
+    cycle: str, beamline: str
 ) -> LockedProposalsList:
     locked_proposals = None
-    uppercase_beamlines = []
-    for beamline in beamlines:
-        uppercase_beamlines.append(beamline.upper())
-    if cycles and beamlines:
+    uppercase_beamline = []
+    print(beamline)
+    if beamline:
+        uppercase_beamline.append(beamline.upper())
+    
+    if cycle and beamline:
         query = And(
-            Proposal.locked,
-            In(Proposal.instruments, uppercase_beamlines),
-            In(Proposal.cycles, cycles),
+            Proposal.locked==True,
+            In(Proposal.instruments, uppercase_beamline),
+            In(Proposal.cycles, [cycle]),
         )
-        locked_proposals = Proposal.find(query)
-    elif cycles:
+        
+    elif cycle:
         query = And(
-            Proposal.locked,
-            In(Proposal.cycles, cycles),
+            Proposal.locked==True,
+            In(Proposal.cycles, [cycle]),
         )
-        locked_proposals = Proposal.find(query)
-    elif beamlines:
+    
+    elif beamline:
         query = And(
-            Proposal.locked,
-            In(Proposal.instruments, uppercase_beamlines),
+            Proposal.locked==True,
+            In(Proposal.instruments, uppercase_beamline),
         )
-        locked_proposals = Proposal.find(query)
     else:
-        query = Proposal.locked
-        locked_proposals = Proposal.find(query)
-    locked_model = LockedProposalsList(
-        count=locked_proposals.count(),
-        locked_proposals=await locked_proposals.to_list(),
+
+        query = Proposal.locked==True
+       
+    locked_proposals = Proposal.find(query)
+    locked_model = LockedProposalsList( 
+        count=await locked_proposals.count(),
+        locked_proposals= await locked_proposals.to_list(),
     )
+
     return locked_model
 
 async def lock(proposal_id:str) -> Proposal:
