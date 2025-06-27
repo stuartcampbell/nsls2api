@@ -15,7 +15,9 @@ from nsls2api.api.models.proposal_model import (
     ProposalFullDetails,
     LockedProposalsList,
     ProposalsToLock,
-    LockedInformation
+    LockedInformation,
+    ProposalsToUnlock,
+    UnlockedInformation
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -102,14 +104,31 @@ async def lock(proposal_list: ProposalsToLock) -> LockedInformation:
     return lockedInfo
 
 
-async def unlock(proposal_id: str) -> Proposal:
-    proposal_object = await proposal_by_id(proposal_id)
-    if not proposal_object:
-        logger.exception(f"Proposal {proposal_id} does not exist")
-    elif not proposal_object.locked:
-        logger.info(f"Proposal {proposal_id} is not locked")
-    else:
-        proposal_object.locked = False
+async def unlock(proposal_list: ProposalsToUnlock) -> UnlockedInformation:
+    successfully_unlocked_proposals = []
+    failed_to_unlock_proposals =[]
+    proposal_ids = proposal_list.proposal_to_unlock
+    for proposal_id in proposal_ids:
+        try:
+            proposal_object =  await proposal_by_id(proposal_id)
+            if not proposal_object.locked:
+                failed_to_unlock_proposals.append(proposal_id)
+                logger.info(f"Proposal {proposal_id} already unlocked")
+            else:
+                proposal_object.locked = False
+                await proposal_object.save()  # Save the updated proposal object
+                successfully_unlocked_proposals.append(proposal_id)
+        except:
+            failed_to_unlock_proposals.append(proposal_id)
+            logger.error(f"Unexpected error when unlocking {proposal_id}") #perhaps change from error to something else
+
+    unlockedInfo = UnlockedInformation(
+        successful_count = len(successfully_unlocked_proposals),
+        successfully_unlocked_proposals = successfully_unlocked_proposals,
+        failed_to_unlock_proposals = failed_to_unlock_proposals
+    )
+   
+    return unlockedInfo
 
 async def exists(proposal_id: str) -> bool:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))

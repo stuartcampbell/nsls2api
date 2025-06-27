@@ -17,7 +17,9 @@ from nsls2api.api.models.proposal_model import (
     UsernamesList,
     LockedProposalsList,
     LockedInformation,
-    ProposalsToLock
+    ProposalsToLock,
+    UnlockedInformation,
+    ProposalsToUnlock
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import get_current_user, validate_admin_role
@@ -388,10 +390,10 @@ async def get_proposals_at_beamline(beamline: str):
 
 
 # unlocking a proposal, removing it from the locked_proposals list
-@router.put("/proposals/unlock/{proposal_id}")
-async def unlock(proposal_id: str):
+@router.put("/proposals/unlock", response_model=UnlockedInformation)
+async def unlock(proposal_list: ProposalsToUnlock):
     try:
-        unlocked_proposal = await proposal_service.unlock(proposal_id)
-        await unlocked_proposal.save()
+        unlockedInfo = await proposal_service.unlock(proposal_list)
+        return unlockedInfo
     except Exception as e:
-        logger.error(f"Unexpected error when unlocking proposal {proposal_id}: {e}")
+        logger.error(f"Unexpected error when unlocking proposals: {e}")

@@ -148,3 +148,11 @@ class LockedInformation(pydantic.BaseModel):
 
 class ProposalsToLock(pydantic.BaseModel):
     proposal_to_lock: list[str]
+
+class UnlockedInformation(pydantic.BaseModel):
+    successful_count: int
+    successfully_unlocked_proposals: Optional[list[str]]
+    failed_to_unlock_proposals: Optional[list[str]]
+
+class ProposalsToUnlock(pydantic.BaseModel):
+    proposal_to_unlock: list[str]
