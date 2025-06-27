@@ -16,6 +16,8 @@ from nsls2api.api.models.proposal_model import (
     SingleProposal,
     UsernamesList,
     LockedProposalsList,
+    LockedInformation,
+    ProposalsToLock
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import get_current_user, validate_admin_role
@@ -334,15 +336,14 @@ async def create_slack_channels_for_proposal(
     return channels
 
 
-# putting the proposal object in the locked_proposals list
-@router.put("/proposals/lock/{proposal_id}")
-async def lock(proposal_id: str):
+@router.put("/proposals/lock", response_model=LockedInformation)
+async def lock(proposal_list: ProposalsToLock):
     try:
-        locked_proposal = await proposal_service.lock(proposal_id)
-        await locked_proposal.save()
+        lockedInfo = await proposal_service.lock(proposal_list)
+        return lockedInfo
     except Exception as e:
         logger.error(
-            f"Unexpected error when locking proposal {proposal_id} {e}"
+            f"Unexpected error when locking proposals {e}"
         )
 
 

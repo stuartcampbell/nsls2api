@@ -140,3 +140,11 @@ class ProposalDiagnostics(pydantic.BaseModel):
     cycles: Optional[list[str]]
     safs: Optional[list[str]]
     updated: datetime.datetime
+
+class LockedInformation(pydantic.BaseModel):
+    successful_count: int
+    successfully_locked_proposals: Optional[list[str]]
+    failed_to_lock_proposals: Optional[list[str]]
+
+class ProposalsToLock(pydantic.BaseModel):
+    proposal_to_lock: list[str]

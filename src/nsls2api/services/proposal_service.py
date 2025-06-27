@@ -14,6 +14,8 @@ from nsls2api.api.models.proposal_model import (
     ProposalDiagnostics,
     ProposalFullDetails,
     LockedProposalsList,
+    ProposalsToLock,
+    LockedInformation
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -70,10 +72,35 @@ async def get_locked_proposals(
 
     return locked_model
 
-async def lock(proposal_id:str) -> Proposal:
-    proposal_object = await proposal_by_id(proposal_id)
-    proposal_object.locked = True
-    return proposal_object
+async def lock(proposal_list: ProposalsToLock) -> LockedInformation:
+    # proposal_object = await proposal_by_id(proposal_id)
+    # proposal_object.locked = True
+    # return proposal_object
+    successfully_locked_proposals = []
+    failed_to_lock_proposals =[]
+    proposal_ids = proposal_list.proposal_to_lock
+    for proposal_id in proposal_ids:
+        try:
+            proposal_object =   await proposal_by_id(proposal_id)
+            if proposal_object.locked:
+                failed_to_lock_proposals.append(proposal_id)
+                logger.info(f"Proposal {proposal_id} already locked")
+            else:
+                proposal_object.locked = True
+                await proposal_object.save()  # Save the updated proposal object
+                successfully_locked_proposals.append(proposal_id)
+        except:
+            failed_to_lock_proposals.append(proposal_id)
+            logger.error(f"Unexpected error when locking {proposal_id}") #perhaps change from error to something else
+
+    lockedInfo = LockedInformation(
+        successful_count = len(successfully_locked_proposals),
+        successfully_locked_proposals = successfully_locked_proposals,
+        failed_to_lock_proposals = failed_to_lock_proposals
+    )
+   
+    return lockedInfo
+
 
 async def unlock(proposal_id: str) -> Proposal:
     proposal_object = await proposal_by_id(proposal_id)
