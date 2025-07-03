@@ -3,6 +3,7 @@ from pathlib import Path
 
 import click
 import fastapi
+import logfire
 import uvicorn
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi.middleware.cors import CORSMiddleware
@@ -52,6 +53,13 @@ middleware = [Middleware(ProcessTimeMiddleware)]
 app = fastapi.FastAPI(
     title="NSLS-II API", middleware=middleware, lifespan=app_setup.app_lifespan
 )
+
+logfire.configure()
+logfire.instrument_fastapi(app)
+logfire.instrument_httpx()
+logfire.instrument_requests()
+logfire.instrument_pydantic()
+logfire.instrument_pymongo()
 
 # Instrument the app and expose the /metrics endpoint
 # (this is equivalent to calling instrumentator.instrument(app)

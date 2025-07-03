@@ -9,6 +9,7 @@ httpx
 httpx-socks[asyncio]
 jinja2
 jinja-partials
+logfire[fastapi,httpx,pymongo,requests]
 motor
 n2snusertools
 passlib
