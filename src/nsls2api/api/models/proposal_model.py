@@ -34,6 +34,7 @@ class CommissioningProposalsList(pydantic.BaseModel):
     beamline: str | None = None
     facility: FacilityName | None = None
 
+
 class LockedProposalsList(pydantic.BaseModel):
     count: int
     locked_proposals: list[Proposal]
@@ -141,18 +142,22 @@ class ProposalDiagnostics(pydantic.BaseModel):
     safs: Optional[list[str]]
     updated: datetime.datetime
 
+
 class LockedInformation(pydantic.BaseModel):
     successful_count: int
     successfully_locked_proposals: Optional[list[str]]
     failed_to_lock_proposals: Optional[list[str]]
 
+
 class ProposalsToLock(pydantic.BaseModel):
     proposal_to_lock: list[str]
+
 
 class UnlockedInformation(pydantic.BaseModel):
     successful_count: int
     successfully_unlocked_proposals: Optional[list[str]]
     failed_to_unlock_proposals: Optional[list[str]]
+
 
 class ProposalsToUnlock(pydantic.BaseModel):
     proposal_to_unlock: list[str]

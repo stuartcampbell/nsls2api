@@ -19,7 +19,7 @@ from nsls2api.api.models.proposal_model import (
     LockedInformation,
     ProposalsToLock,
     UnlockedInformation,
-    ProposalsToUnlock
+    ProposalsToUnlock,
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import get_current_user, validate_admin_role
@@ -344,9 +344,7 @@ async def lock(proposal_list: ProposalsToLock):
         lockedInfo = await proposal_service.lock(proposal_list)
         return lockedInfo
     except Exception as e:
-        logger.error(
-            f"Unexpected error when locking proposals {e}"
-        )
+        logger.error(f"Unexpected error when locking proposals {e}")
 
 
 # getting locked proposals (the locked proposals list) that match inputted criteria. Beamline and cycle optional, if neither entered than all proposals
@@ -364,7 +362,7 @@ async def gather_locked_proposals(
                 status_code=fastapi.status.HTTP_404_NOT_FOUND,
                 detail="No locked proposals found",
             )
-        
+
     except LookupError as e:
         raise HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]

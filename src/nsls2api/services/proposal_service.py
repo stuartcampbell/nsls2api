@@ -17,7 +17,7 @@ from nsls2api.api.models.proposal_model import (
     ProposalsToLock,
     LockedInformation,
     ProposalsToUnlock,
-    UnlockedInformation
+    UnlockedInformation,
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -35,55 +35,53 @@ from nsls2api.services import (
 # this returns a LockedProposalsList object, containing the count (amount of locked proposals)
 # and locked_proposals (the list of locked proposals). Query based on a list of cycles and beamlines,
 # but optional.
-async def get_locked_proposals(
-    cycle: str, beamline: str
-) -> LockedProposalsList:
+async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList:
     locked_proposals = None
     uppercase_beamline = []
     print(beamline)
     if beamline:
         uppercase_beamline.append(beamline.upper())
-    
+
     if cycle and beamline:
         query = And(
-            Proposal.locked==True,
+            Proposal.locked == True,
             In(Proposal.instruments, uppercase_beamline),
             In(Proposal.cycles, [cycle]),
         )
-        
+
     elif cycle:
         query = And(
-            Proposal.locked==True,
+            Proposal.locked == True,
             In(Proposal.cycles, [cycle]),
         )
-    
+
     elif beamline:
         query = And(
-            Proposal.locked==True,
+            Proposal.locked == True,
             In(Proposal.instruments, uppercase_beamline),
         )
     else:
+        query = Proposal.locked == True
 
-        query = Proposal.locked==True
-       
     locked_proposals = Proposal.find(query)
-    locked_model = LockedProposalsList( 
+    locked_model = LockedProposalsList(
         count=await locked_proposals.count(),
-        locked_proposals= await locked_proposals.to_list(),
+        locked_proposals=await locked_proposals.to_list(),
     )
 
     return locked_model
+
 
 async def lock(proposal_list: ProposalsToLock) -> LockedInformation:
     # proposal_object = await proposal_by_id(proposal_id)
     # proposal_object.locked = True
     # return proposal_object
     successfully_locked_proposals = []
-    failed_to_lock_proposals =[]
+    failed_to_lock_proposals = []
     proposal_ids = proposal_list.proposal_to_lock
     for proposal_id in proposal_ids:
         try:
-            proposal_object =   await proposal_by_id(proposal_id)
+            proposal_object = await proposal_by_id(proposal_id)
             if proposal_object.locked:
                 failed_to_lock_proposals.append(proposal_id)
                 logger.info(f"Proposal {proposal_id} already locked")
@@ -91,26 +89,28 @@ async def lock(proposal_list: ProposalsToLock) -> LockedInformation:
                 proposal_object.locked = True
                 await proposal_object.save()  # Save the updated proposal object
                 successfully_locked_proposals.append(proposal_id)
-        except:
+        except Exception as e:
             failed_to_lock_proposals.append(proposal_id)
-            logger.error(f"Unexpected error when locking {proposal_id}") #perhaps change from error to something else
+            logger.error(
+                f"Unexpected error when locking {proposal_id} {e}"
+            )  # perhaps change from error to something else
 
     lockedInfo = LockedInformation(
-        successful_count = len(successfully_locked_proposals),
-        successfully_locked_proposals = successfully_locked_proposals,
-        failed_to_lock_proposals = failed_to_lock_proposals
+        successful_count=len(successfully_locked_proposals),
+        successfully_locked_proposals=successfully_locked_proposals,
+        failed_to_lock_proposals=failed_to_lock_proposals,
     )
-   
+
     return lockedInfo
 
 
 async def unlock(proposal_list: ProposalsToUnlock) -> UnlockedInformation:
     successfully_unlocked_proposals = []
-    failed_to_unlock_proposals =[]
+    failed_to_unlock_proposals = []
     proposal_ids = proposal_list.proposal_to_unlock
     for proposal_id in proposal_ids:
         try:
-            proposal_object =  await proposal_by_id(proposal_id)
+            proposal_object = await proposal_by_id(proposal_id)
             if not proposal_object.locked:
                 failed_to_unlock_proposals.append(proposal_id)
                 logger.info(f"Proposal {proposal_id} already unlocked")
@@ -118,17 +118,20 @@ async def unlock(proposal_list: ProposalsToUnlock) -> UnlockedInformation:
                 proposal_object.locked = False
                 await proposal_object.save()  # Save the updated proposal object
                 successfully_unlocked_proposals.append(proposal_id)
-        except:
+        except Exception as e:
             failed_to_unlock_proposals.append(proposal_id)
-            logger.error(f"Unexpected error when unlocking {proposal_id}") #perhaps change from error to something else
+            logger.error(
+                f"Unexpected error when unlocking {proposal_id} {e}"
+            )  # perhaps change from error to something else
 
     unlockedInfo = UnlockedInformation(
-        successful_count = len(successfully_unlocked_proposals),
-        successfully_unlocked_proposals = successfully_unlocked_proposals,
-        failed_to_unlock_proposals = failed_to_unlock_proposals
+        successful_count=len(successfully_unlocked_proposals),
+        successfully_unlocked_proposals=successfully_unlocked_proposals,
+        failed_to_unlock_proposals=failed_to_unlock_proposals,
     )
-   
+
     return unlockedInfo
+
 
 async def exists(proposal_id: str) -> bool:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
