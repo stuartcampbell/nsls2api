@@ -1,41 +1,34 @@
 [build-system]
-requires = ["hatchling", "uv-dynamic-versioning"]
 build-backend = "hatchling.build"
+
+requires = [ "hatchling", "uv-dynamic-versioning" ]
 
 [project]
 name = "nsls2api"
-dynamic = ["version", "dependencies"]
-description = ''
+description = "NSLS-II Facility API"
 readme = "README.md"
-requires-python = ">=3.11"
 license = "BSD-3-Clause"
 authors = [
-    { name = "Stuart Campbell", email = "scampbell@bnl.gov" },
+  { name = "Stuart Campbell", email = "scampbell@bnl.gov" },
 ]
+requires-python = ">=3.11"
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: Implementation :: CPython",
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Implementation :: CPython",
 ]
 
-[project.scripts]
-nsls2api = "nsls2api.cli.cli:app"
-
-[project.urls]
-Source = "https://github.com/nsls2/nsls2api/"
+dynamic = [ "dependencies", "version" ]
+urls.Source = "https://github.com/nsls2/nsls2api/"
+scripts.nsls2api = "nsls2api.cli.cli:app"
 
 [tool.hatch.version]
 source = "uv-dynamic-versioning"
-
-[tool.uv-dynamic-versioning]
-vcs = "git"
-style = "pep440"
-bump = true
 
 [tool.hatch.build.hooks.version]
 path = "src/nsls2api/_version.py"
@@ -45,27 +38,31 @@ version = "{version}"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
-    "/.github",
-    "/.gitignore",
-    "/.git",
-    "/.vscode",
-    "/.pytest_cache",
-    "/.venv",
+  "/.github",
+  "/.gitignore",
+  "/.git",
+  "/.vscode",
+  "/.pytest_cache",
+  "/.venv",
 ]
 
 #[tool.hatch.metadata.hooks.requirements_txt.optional-dependencies]
 #dev = ["requirements-dev.txt"]
 
 [tool.black]
-target_version = ['py311']
+target_version = [ 'py311' ]
 include = '\.pyi?$'
+
+[tool.ruff]
+target-version = "py312"
+
+lint.extend-select = [ "I" ]
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
 asyncio_mode = "auto"
 
-[tool.ruff]
-target-version = "py312"
-
-[tool.ruff.lint]
-extend-select = ["I"]
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "pep440"
+bump = true
