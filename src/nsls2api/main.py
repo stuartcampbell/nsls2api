@@ -56,7 +56,7 @@ app = fastapi.FastAPI(
 # Instrument the app and expose the /metrics endpoint
 # (this is equivalent to calling instrumentator.instrument(app)
 # and instrumentator.expose(app) in the startup event)
-instrumentator.instrument(app)
+instrumentator.instrument(app, metric_namespace='nsls2api')
 instrumentator.expose(app, endpoint="/metrics", include_in_schema=False)
 
 app.add_middleware(CorrelationIdMiddleware)
