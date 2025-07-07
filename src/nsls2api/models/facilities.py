@@ -1,4 +1,5 @@
 import datetime
+from enum import StrEnum
 from typing import Optional
 
 import beanie
@@ -22,3 +23,9 @@ class Facility(beanie.Document):
     class Settings:
         name = "facilities"
         indexes = []
+
+
+class FacilityName(StrEnum):
+    nsls2 = "nsls2"
+    lbms = "lbms"
+    cfn = "cfn"
