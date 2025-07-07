@@ -2,7 +2,7 @@ from typing import Optional
 
 from starlette.requests import Request
 
-from nsls2api.api.models.person_model import Person
+from nsls2api.models.person_models import Person
 from nsls2api.services import person_service
 from nsls2api.viewmodels.shared.viewmodelbase import ViewModelBase
 

@@ -2,7 +2,7 @@ from typing import Optional
 
 from N2SNUserTools.ldap import ADObjects
 
-from nsls2api.api.models.person_model import (
+from nsls2api.models.person_models import (
     ActiveDirectoryUser,
     ActiveDirectoryUserGroups,
 )

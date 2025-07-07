@@ -5,7 +5,7 @@ from beanie.operators import AddToSet, Set
 from httpx import HTTPStatusError
 
 from nsls2api.models.facilities import FacilityName
-from nsls2api.api.models.person_model import ActiveDirectoryUser
+from nsls2api.models.person_models import ActiveDirectoryUser
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.beamlines import Beamline
 from nsls2api.models.cycles import Cycle

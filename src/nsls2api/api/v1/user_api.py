@@ -3,7 +3,7 @@ from typing import Annotated
 import fastapi
 from fastapi import Depends
 
-from nsls2api.api.models.person_model import DataSessionAccess, Person
+from nsls2api.models.person_models import DataSessionAccess, Person
 from nsls2api.infrastructure.security import (
     get_current_user,
 )

@@ -1,7 +1,7 @@
 # Helper and utility functions for people/users
 from typing import Optional
 
-from nsls2api.api.models.person_model import (
+from nsls2api.models.person_models import (
     ActiveDirectoryUser,
     DataSessionAccess,
     Person,

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from nsls2api.api.models.person_model import BNLPerson
+from nsls2api.models.person_models import BNLPerson
 from nsls2api.infrastructure.logging import logger
 from nsls2api.services.helpers import (
     _call_async_webservice_with_client,
