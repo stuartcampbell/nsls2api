@@ -6,7 +6,8 @@ import beanie
 import pydantic
 import pymongo
 
-from nsls2api.api.models.facility_model import FacilityName
+from nsls2api.models.facilities import FacilityName
+
 
 # If we want to use Python < 3.11 then replace the above line with
 # from strenum import StrEnum

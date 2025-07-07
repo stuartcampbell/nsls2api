@@ -1,6 +1,6 @@
 import fastapi
 
-from nsls2api.api.models.facility_model import FacilityName
+from nsls2api.models.facilities import FacilityName
 from nsls2api.api.models.stats_model import (
     AboutModel,
     ProposalsPerCycleModel,

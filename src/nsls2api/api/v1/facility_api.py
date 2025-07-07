@@ -4,8 +4,8 @@ from fastapi import Depends
 from nsls2api.api.models.facility_model import (
     FacilityCurrentOperatingCycleResponseModel,
     FacilityCyclesResponseModel,
-    FacilityName,
 )
+from nsls2api.models.facilities import FacilityName
 from nsls2api.api.models.proposal_model import CycleProposalList
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import validate_admin_role

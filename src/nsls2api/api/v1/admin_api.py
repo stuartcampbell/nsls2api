@@ -3,7 +3,7 @@ from typing import Annotated, Optional
 import fastapi
 from fastapi import Depends, HTTPException
 
-from nsls2api.api.models.facility_model import FacilityName
+from nsls2api.models.facilities import FacilityName
 from nsls2api.api.models.proposal_model import SingleProposal
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.security import (

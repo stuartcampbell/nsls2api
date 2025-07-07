@@ -2,7 +2,7 @@ import typer
 from rich.panel import Panel
 from rich.table import Table
 
-from nsls2api.api.models.facility_model import FacilityName
+from nsls2api.models.facilities import FacilityName
 from nsls2api.cli.utils.api import call_nsls2api_endpoint
 from nsls2api.cli.utils.cli_helpers import auto_help_if_no_command
 from nsls2api.cli.utils.console import console, error, info, warning

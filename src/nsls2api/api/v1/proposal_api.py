@@ -4,7 +4,7 @@ from typing import Annotated
 import fastapi
 from fastapi import Depends, HTTPException, Query
 
-from nsls2api.api.models.facility_model import FacilityName
+from nsls2api.models.facilities import FacilityName
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
     ProposalDirectoriesList,
