@@ -33,11 +33,11 @@ decorator==5.2.1
     # via gssapi
 dnspython==2.7.0
     # via pymongo
-dunamai==1.24.1
+dunamai==1.25.0
     # via uv-dynamic-versioning
 faker==37.4.0
     # via -r requirements.in
-fastapi==0.115.14
+fastapi==0.116.0
     # via -r requirements.in
 gssapi==1.9.0
     # via n2snusertools
@@ -165,7 +165,7 @@ starlette==0.46.2
     #   asgi-correlation-id
     #   fastapi
     #   prometheus-fastapi-instrumentator
-textual==3.5.0
+textual==3.6.0
     # via -r requirements.in
 tomlkit==0.13.3
     # via uv-dynamic-versioning
@@ -173,7 +173,7 @@ trove-classifiers==2025.5.9.12
     # via hatchling
 typer==0.16.0
     # via -r requirements.in
-typing-extensions==4.14.0
+typing-extensions==4.14.1
     # via
     #   anyio
     #   beanie
