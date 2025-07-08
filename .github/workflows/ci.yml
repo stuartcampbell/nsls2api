@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # Install Kerberos dependencies (for N2SNUserTools)
       - name: Install krb5-devel
