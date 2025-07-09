@@ -1,4 +1,6 @@
 name: Integration Tests for Deployed API
+permissions:
+  contents: read
 
 on:
   schedule:

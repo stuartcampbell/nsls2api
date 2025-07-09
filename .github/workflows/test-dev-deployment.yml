@@ -1,4 +1,6 @@
 name: Integration Tests for Development API
+permissions:
+  contents: read
 
 on:
   schedule:
