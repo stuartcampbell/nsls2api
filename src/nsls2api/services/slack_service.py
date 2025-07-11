@@ -9,6 +9,7 @@ from nsls2api.models.slack_models import (
     ProposalSlackChannel,
     SlackBot,
     SlackChannelToCreate,
+    SlackConversation,
     SlackPerson,
     SlackUser,
 )
