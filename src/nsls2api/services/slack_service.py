@@ -155,21 +155,25 @@ def get_bot_details() -> SlackBot:
 
 def get_user_info(user_id: str) -> Optional[SlackUser]:
     """
-    Retrieves the details of a Slack User .
+    Retrieves the details of a Slack User.
 
     Args:
-        user_id (str) : Slack user_id to lookup
+        user_id (str): Slack user_id to lookup
 
     Returns:
         SlackUser: An instance of the SlackUser class containing the user details.
     """
     client = WebClient(token=settings.slack_bot_token)
     try:
-        response = client.users_info(user_id=user_id)
-        return SlackUser(
-            username=response.get("user", ""),
-            user_id=response.get("user_id", user_id),
+        response = client.users_info(user=user_id)
+        slack_user = SlackUser(
+            username=response.get("user").get("name", ""),
+            user_id=response.get("user").get("id", user_id),
+            is_bot=response.get("user").get("is_bot", False),
+            real_name=response.get("user").get("real_name", ""),
+            pending_invitation=response.get("user").get("accepted_invitation", False),
         )
+        return slack_user
     except SlackApiError as error:
         logger.exception(error)
 
