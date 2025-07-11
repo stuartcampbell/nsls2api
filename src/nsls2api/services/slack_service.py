@@ -292,6 +292,53 @@ def get_private_channel_id(name: str) -> str | None:
     return None
 
 
+def get_conversation_details(channel_id: str) -> SlackConversation | None:
+    """
+    Retrieves detailed information about a Slack conversation (channel).
+
+    Args:
+        channel_id (str): The ID of the Slack channel.
+
+    Returns:
+        SlackConversation | None: An instance of the SlackConversation class containing
+            the channel details if successful, None otherwise.
+    """
+    client = WebClient(token=settings.slack_bot_token)
+    try:
+        info_response = client.conversations_info(
+            channel=channel_id, include_num_members=True
+        )
+
+        channel_users = []
+        slack_userid_list = get_channel_members(channel_id)
+        for slack_userid in slack_userid_list:
+            user_info = get_user_info(user_id=slack_userid)
+            if user_info:
+                channel_users.append(user_info)
+
+        details = SlackConversation(
+            conversation_id=channel_id,
+            name=info_response.get("channel", {}).get("name", ""),
+            is_private=info_response.get("channel", {}).get("is_private", False),
+            topic=info_response.get("channel").get("topic", {}).get("value", ""),
+            purpose=info_response.get("channel").get("purpose", {}).get("value", ""),
+            creator=info_response.get("channel", {}).get("creator", ""),
+            is_archived=info_response.get("channel", {}).get("is_archived", False),
+            updated=datetime.fromtimestamp(
+                info_response.get("channel", {}).get("updated", 0) / 1000.0
+            ),
+            created=datetime.fromtimestamp(
+                info_response.get("channel", {}).get("created", 0)
+            ),
+            num_members=info_response.get("channel", {}).get("num_members", 0),
+            members=channel_users,
+        )
+        return details
+    except SlackApiError as error:
+        logger.exception(error)
+    return None
+
+
 def lookup_user_by_email(email: str) -> SlackPerson | None:
     """
     Looks up the user associated with the given email address.
