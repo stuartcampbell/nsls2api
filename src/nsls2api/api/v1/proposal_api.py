@@ -341,6 +341,7 @@ async def lock(proposal_list: ProposalsToChangeLockedStatus):
     try:
         for proposal_id in proposal_list.proposal_to_change:
             if not await proposal_service.exists(proposal_id):
+                proposal_list.proposal_to_change.remove(proposal_id)
                 raise HTTPException(
                     status_code=fastapi.status.HTTP_404_NOT_FOUND,
                     detail=f"Proposal {proposal_id} not found",
@@ -397,6 +398,7 @@ async def unlock(proposal_list: ProposalsToChangeLockedStatus):
     try:
         for proposal_id in proposal_list.proposal_to_change:
             if not await proposal_service.exists(proposal_id):
+                proposal_list.proposal_to_change.remove(proposal_id)
                 raise HTTPException(
                     status_code=fastapi.status.HTTP_404_NOT_FOUND,
                     detail=f"Proposal {proposal_id} not found",
