@@ -15,9 +15,8 @@ from nsls2api.api.models.proposal_model import (
     ProposalFullDetails,
     LockedProposalsList,
     ProposalsToLock,
-    LockedInformation,
     ProposalsToUnlock,
-    UnlockedInformation,
+    ProposalLockingResultsLists
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -72,7 +71,7 @@ async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList
     return locked_model
 
 
-async def lock(proposal_list: ProposalsToLock) -> LockedInformation:
+async def lock(proposal_list: ProposalsToLock) -> ProposalLockingResultsLists:
     # proposal_object = await proposal_by_id(proposal_id)
     # proposal_object.locked = True
     # return proposal_object
@@ -95,16 +94,16 @@ async def lock(proposal_list: ProposalsToLock) -> LockedInformation:
                 f"Unexpected error when locking {proposal_id} {e}"
             )  # perhaps change from error to something else
 
-    lockedInfo = LockedInformation(
+    lockedInfo = ProposalLockingResultsLists(
         successful_count=len(successfully_locked_proposals),
-        successfully_locked_proposals=successfully_locked_proposals,
-        failed_to_lock_proposals=failed_to_lock_proposals,
+        successful_proposals=successfully_locked_proposals,
+        failed_proposals=failed_to_lock_proposals,
     )
 
     return lockedInfo
 
 
-async def unlock(proposal_list: ProposalsToUnlock) -> UnlockedInformation:
+async def unlock(proposal_list: ProposalsToUnlock) -> ProposalLockingResultsLists:
     successfully_unlocked_proposals = []
     failed_to_unlock_proposals = []
     proposal_ids = proposal_list.proposal_to_unlock
@@ -124,10 +123,10 @@ async def unlock(proposal_list: ProposalsToUnlock) -> UnlockedInformation:
                 f"Unexpected error when unlocking {proposal_id} {e}"
             )  # perhaps change from error to something else
 
-    unlockedInfo = UnlockedInformation(
+    unlockedInfo = ProposalLockingResultsLists(
         successful_count=len(successfully_unlocked_proposals),
-        successfully_unlocked_proposals=successfully_unlocked_proposals,
-        failed_to_unlock_proposals=failed_to_unlock_proposals,
+        successfull_proposals=successfully_unlocked_proposals,
+        failed_proposals=failed_to_unlock_proposals,
     )
 
     return unlockedInfo
