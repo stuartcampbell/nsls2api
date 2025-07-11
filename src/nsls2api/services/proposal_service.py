@@ -14,9 +14,8 @@ from nsls2api.api.models.proposal_model import (
     ProposalDiagnostics,
     ProposalFullDetails,
     LockedProposalsList,
-    ProposalsToLock,
-    ProposalsToUnlock,
-    ProposalLockingResultsLists
+    ProposalLockingResultsLists,
+    ProposalsToChangeLockedStatus
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -71,13 +70,13 @@ async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList
     return locked_model
 
 
-async def lock(proposal_list: ProposalsToLock) -> ProposalLockingResultsLists:
+async def lock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockingResultsLists:
     # proposal_object = await proposal_by_id(proposal_id)
     # proposal_object.locked = True
     # return proposal_object
     successfully_locked_proposals = []
     failed_to_lock_proposals = []
-    proposal_ids = proposal_list.proposal_to_lock
+    proposal_ids = proposal_list.proposal_to_change
     for proposal_id in proposal_ids:
         try:
             proposal_object = await proposal_by_id(proposal_id)
@@ -103,10 +102,10 @@ async def lock(proposal_list: ProposalsToLock) -> ProposalLockingResultsLists:
     return lockedInfo
 
 
-async def unlock(proposal_list: ProposalsToUnlock) -> ProposalLockingResultsLists:
+async def unlock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockingResultsLists:
     successfully_unlocked_proposals = []
     failed_to_unlock_proposals = []
-    proposal_ids = proposal_list.proposal_to_unlock
+    proposal_ids = proposal_list.proposal_to_change
     for proposal_id in proposal_ids:
         try:
             proposal_object = await proposal_by_id(proposal_id)

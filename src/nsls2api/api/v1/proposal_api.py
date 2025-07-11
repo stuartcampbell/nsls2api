@@ -16,9 +16,8 @@ from nsls2api.api.models.proposal_model import (
     SingleProposal,
     UsernamesList,
     LockedProposalsList,
-    ProposalsToLock,
-    ProposalsToUnlock,
-    ProposalLockingResultsLists
+    ProposalLockingResultsLists,
+    ProposalsToChangeLockedStatus
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import get_current_user, validate_admin_role
@@ -338,7 +337,7 @@ async def create_slack_channels_for_proposal(
 
 
 @router.put("/proposals/lock", response_model=ProposalLockingResultsLists)
-async def lock(proposal_list: ProposalsToLock):
+async def lock(proposal_list: ProposalsToChangeLockedStatus):
     try:
         lockedInfo = await proposal_service.lock(proposal_list)
         return lockedInfo
@@ -388,7 +387,7 @@ async def get_proposals_at_beamline(beamline: str):
 
 # unlocking a proposal, removing it from the locked_proposals list
 @router.put("/proposals/unlock", response_model=ProposalLockingResultsLists)
-async def unlock(proposal_list: ProposalsToUnlock):
+async def unlock(proposal_list: ProposalsToChangeLockedStatus):
     try:
         unlockedInfo = await proposal_service.unlock(proposal_list)
         return unlockedInfo

@@ -143,20 +143,9 @@ class ProposalDiagnostics(pydantic.BaseModel):
     updated: datetime.datetime
 
 
-# class LockedInformation(pydantic.BaseModel):
-#     successful_count: int
-#     successfully_locked_proposals: Optional[list[str]]
-#     failed_to_lock_proposals: Optional[list[str]]
+# class ProposalsToLock(pydantic.BaseModel):
+#     proposal_to_lock: list[str]
 
-
-class ProposalsToLock(pydantic.BaseModel):
-    proposal_to_lock: list[str]
-
-
-# class UnlockedInformation(pydantic.BaseModel):
-#     successful_count: int
-#     successfully_unlocked_proposals: Optional[list[str]]
-#     failed_to_unlock_proposals: Optional[list[str]]
 
 class ProposalLockingResultsLists(pydantic.BaseModel):
     successful_count: int
@@ -164,5 +153,8 @@ class ProposalLockingResultsLists(pydantic.BaseModel):
     failed_proposals: Optional[list[str]]
 
 
-class ProposalsToUnlock(pydantic.BaseModel):
-    proposal_to_unlock: list[str]
+# class ProposalsToUnlock(pydantic.BaseModel):
+#     proposal_to_unlock: list[str]
+
+class ProposalsToChangeLockedStatus(pydantic.BaseModel):
+    proposal_to_change: list[str]
