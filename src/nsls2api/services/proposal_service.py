@@ -122,7 +122,6 @@ async def unlock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockin
         except LookupError:
             failed_to_unlock_proposals.append(proposal_id)
             logger.info(f"Proposal {proposal_id} not found")
-            
         except Exception as e:
             failed_to_unlock_proposals.append(proposal_id)
             logger.info(

@@ -357,7 +357,7 @@ async def gather_locked_proposals(
         locked_proposals_list = locked_proposals.locked_proposals
         if locked_proposals_list is None:
             raise HTTPException(
-                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                status_code=fastapi.status.HTTP_204_NO_CONTENT,
                 detail="No locked proposals found",
             )
 
