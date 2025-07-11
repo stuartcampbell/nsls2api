@@ -17,6 +17,7 @@ from nsls2api.models.beamlines import (
     EpicsServicesServiceAccountView,
     IOCServiceAccountView,
     LsdcServiceAccountView,
+    NetworkLocationsView,
     OperatorServiceAccountView,
     ServiceAccounts,
     ServiceAccountsView,
@@ -208,6 +209,25 @@ async def data_root_directory(name: str) -> str:
     else:
         data_root_prefix = default_root / data_root.data_root
     return data_root_prefix
+
+
+async def network_locations(name: str) -> Optional[list[str]]:
+    """
+    Retrieve the network locations for a given beamline.
+
+    Args:
+        name (str): The name of the beamline.
+
+    Returns:
+        Optional[list[str]]: A list of network locations for the beamline, or None if not found.
+    """
+    beamline = await Beamline.find_one(Beamline.name == name.upper()).project(
+        NetworkLocationsView
+    )
+    if beamline is None:
+        return None
+
+    return beamline.network_locations
 
 
 async def workflow_username(name: str) -> str:

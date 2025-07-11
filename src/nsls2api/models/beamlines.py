@@ -190,6 +190,13 @@ class SlackBeamlineBotUserIdView(pydantic.BaseModel):
         projection = {"slack_beamline_bot_user_id": "$slack_beamline_bot_user_id"}
 
 
+class NetworkLocationsView(pydantic.BaseModel):
+    network_locations: Optional[list[str]] = []
+
+    class Settings:
+        projection = {"network_locations": "$network_locations"}
+
+
 class EndStation(pydantic.BaseModel):
     name: str
     service_accounts: Optional[ServiceAccounts] = None
