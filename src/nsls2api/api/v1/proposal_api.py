@@ -339,8 +339,8 @@ async def create_slack_channels_for_proposal(
 @router.put("/proposals/lock", response_model=ProposalLockingResultsLists)
 async def lock(proposal_list: ProposalsToChangeLockedStatus):
     try:
-        lockedInfo = await proposal_service.lock(proposal_list)
-        return lockedInfo
+        locked_info = await proposal_service.lock(proposal_list)
+        return locked_info
     except Exception as e:
         logger.error(f"Unexpected error when locking proposals {e}")
 
@@ -389,7 +389,7 @@ async def get_proposals_at_beamline(beamline: str):
 @router.put("/proposals/unlock", response_model=ProposalLockingResultsLists)
 async def unlock(proposal_list: ProposalsToChangeLockedStatus):
     try:
-        unlockedInfo = await proposal_service.unlock(proposal_list)
-        return unlockedInfo
+        unlocked_info = await proposal_service.unlock(proposal_list)
+        return unlocked_info
     except Exception as e:
         logger.error(f"Unexpected error when unlocking proposals: {e}")
