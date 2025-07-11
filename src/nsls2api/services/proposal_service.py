@@ -87,9 +87,6 @@ async def lock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockingR
                 proposal_object.locked = True
                 await proposal_object.save()  # Save the updated proposal object
                 successfully_locked_proposals.append(proposal_id)
-        except LookupError:
-            failed_to_lock_proposals.append(proposal_id)
-            logger.info(f"Proposal {proposal_id} not found")
         except Exception as e:
             failed_to_lock_proposals.append(proposal_id)
             logger.info(
@@ -119,9 +116,6 @@ async def unlock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockin
                 proposal_object.locked = False
                 await proposal_object.save()  # Save the updated proposal object
                 successfully_unlocked_proposals.append(proposal_id)
-        except LookupError:
-            failed_to_unlock_proposals.append(proposal_id)
-            logger.info(f"Proposal {proposal_id} not found")
         except Exception as e:
             failed_to_unlock_proposals.append(proposal_id)
             logger.info(
