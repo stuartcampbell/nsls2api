@@ -89,20 +89,20 @@ async def lock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockingR
                 successfully_locked_proposals.append(proposal_id)
         except LookupError:
             failed_to_lock_proposals.append(proposal_id)
-            logger.error(f"Proposal {proposal_id} not found")
+            logger.info(f"Proposal {proposal_id} not found")
         except Exception as e:
             failed_to_lock_proposals.append(proposal_id)
-            logger.error(
+            logger.info(
                 f"Unexpected error when locking {proposal_id} {e}"
             )  # perhaps change from error to something else
 
-    lockedInfo = ProposalLockingResultsLists(
+    locked_info = ProposalLockingResultsLists(
         successful_count=len(successfully_locked_proposals),
         successful_proposals=successfully_locked_proposals,
         failed_proposals=failed_to_lock_proposals,
     )
 
-    return lockedInfo
+    return locked_info
 
 
 async def unlock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockingResultsLists:
@@ -119,19 +119,22 @@ async def unlock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockin
                 proposal_object.locked = False
                 await proposal_object.save()  # Save the updated proposal object
                 successfully_unlocked_proposals.append(proposal_id)
+        except LookupError:
+            failed_to_unlock_proposals.append(proposal_id)
+            logger.info(f"Proposal {proposal_id} not found")
         except Exception as e:
             failed_to_unlock_proposals.append(proposal_id)
-            logger.error(
+            logger.info(
                 f"Unexpected error when unlocking {proposal_id} {e}"
             )  # perhaps change from error to something else
 
-    unlockedInfo = ProposalLockingResultsLists(
+    unlocked_info = ProposalLockingResultsLists(
         successful_count=len(successfully_unlocked_proposals),
         successfull_proposals=successfully_unlocked_proposals,
         failed_proposals=failed_to_unlock_proposals,
     )
 
-    return unlockedInfo
+    return unlocked_info
 
 
 async def exists(proposal_id: str) -> bool:
