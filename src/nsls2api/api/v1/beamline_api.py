@@ -232,6 +232,21 @@ async def get_beamline_operator_username(name: str):
 
 
 @router.get(
+    "/beamline/{name}/network-locations",
+    response_model=list[str],
+    include_in_schema=True,
+)
+async def get_beamline_network_locations(name: str) -> list[str]:
+    network_locations = await beamline_service.network_locations(name)
+    if network_locations is None:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"No network locations could not be found for the '{name.upper()}' beamline.",
+        )
+    return network_locations
+
+
+@router.get(
     "/beamline/{name}/services",
     response_model=list[BeamlineService],
     include_in_schema=True,
