@@ -244,7 +244,7 @@ def get_channel_members(channel_id: str) -> list[str]:
     """
     try:
         client = WebClient(token=settings.slack_bot_token)
-        response = client.conversations_members(channel=channel_id)
+        response = client.conversations_members(channel=channel_id, limit=1000)
     except SlackApiError as error:
         logger.exception(error)
         return []
