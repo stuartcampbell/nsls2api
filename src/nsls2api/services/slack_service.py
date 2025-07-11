@@ -266,7 +266,7 @@ async def is_channel_private(channel_id: str) -> bool:
     return response.get("channel").get("is_private")
 
 
-def retrieve_private_channel_id(name: str) -> str | None:
+def get_private_channel_id(name: str) -> str | None:
     """
     Retrieves the channel ID for a given private channel name.
 
@@ -409,7 +409,7 @@ async def create_proposal_channels(
             logger.info(f"Created Channel '{channel_name}' with an ID of {channel_id}")
         except ChannelAlreadyExistsError:
             logger.info(f"Channel '{channel_name}' already exists.")
-            channel_id = retrieve_private_channel_id(channel_name)
+            channel_id = get_private_channel_id(channel_name)
 
         # Create a new proposal channel object to store the details
         proposal_channel = ProposalSlackChannel(
