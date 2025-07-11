@@ -339,13 +339,6 @@ async def create_slack_channels_for_proposal(
 @router.put("/proposals/lock", response_model=ProposalLockingResultsLists)
 async def lock(proposal_list: ProposalsToChangeLockedStatus):
     try:
-        for proposal_id in proposal_list.proposal_to_change:
-            if not await proposal_service.exists(proposal_id):
-                proposal_list.proposal_to_change.remove(proposal_id)
-                raise HTTPException(
-                    status_code=fastapi.status.HTTP_404_NOT_FOUND,
-                    detail=f"Proposal {proposal_id} not found",
-                )  
         locked_info = await proposal_service.lock(proposal_list)
         return locked_info
     except Exception as e:
@@ -396,13 +389,6 @@ async def get_proposals_at_beamline(beamline: str):
 @router.put("/proposals/unlock", response_model=ProposalLockingResultsLists)
 async def unlock(proposal_list: ProposalsToChangeLockedStatus):
     try:
-        for proposal_id in proposal_list.proposal_to_change:
-            if not await proposal_service.exists(proposal_id):
-                proposal_list.proposal_to_change.remove(proposal_id)
-                raise HTTPException(
-                    status_code=fastapi.status.HTTP_404_NOT_FOUND,
-                    detail=f"Proposal {proposal_id} not found",
-                )  
         unlocked_info = await proposal_service.unlock(proposal_list)
         return unlocked_info
     except Exception as e:
