@@ -14,8 +14,8 @@ from nsls2api.api.models.proposal_model import (
     ProposalDiagnostics,
     ProposalFullDetails,
     LockedProposalsList,
-    ProposalLockingResultsLists,
-    ProposalsToChangeLockedStatus
+    ProposalChangeResultsList,
+    ProposalsToChangeList
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -36,7 +36,6 @@ from nsls2api.services import (
 async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList:
     locked_proposals = None
     uppercase_beamline = []
-    print(beamline)
     if beamline:
         uppercase_beamline.append(beamline.upper())
 
@@ -61,16 +60,16 @@ async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList
     else:
         query = Proposal.locked == True
 
-    locked_proposals = Proposal.find(query)
+    locked_proposals = await Proposal.find(query)
     locked_model = LockedProposalsList(
-        count=await locked_proposals.count(),
-        locked_proposals=await locked_proposals.to_list(),
+        count= locked_proposals.count(),
+        locked_proposals= locked_proposals.to_list(),
     )
 
     return locked_model
 
 
-async def lock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockingResultsLists:
+async def lock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsList:
     # proposal_object = await proposal_by_id(proposal_id)
     # proposal_object.locked = True
     # return proposal_object
@@ -96,7 +95,7 @@ async def lock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockingR
                 f"Unexpected error when locking {proposal_id} {e}"
             )  # perhaps change from error to something else
 
-    locked_info = ProposalLockingResultsLists(
+    locked_info = ProposalChangeResultsList(
         successful_count=len(successfully_locked_proposals),
         successful_proposals=successfully_locked_proposals,
         failed_proposals=failed_to_lock_proposals,
@@ -105,7 +104,7 @@ async def lock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockingR
     return locked_info
 
 
-async def unlock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockingResultsLists:
+async def unlock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsList:
     successfully_unlocked_proposals = []
     failed_to_unlock_proposals = []
     proposal_ids = proposal_list.proposal_to_change
@@ -128,7 +127,7 @@ async def unlock(proposal_list: ProposalsToChangeLockedStatus) -> ProposalLockin
                 f"Unexpected error when unlocking {proposal_id} {e}"
             )  # perhaps change from error to something else
 
-    unlocked_info = ProposalLockingResultsLists(
+    unlocked_info = ProposalChangeResultsList(
         successful_count=len(successfully_unlocked_proposals),
         successfull_proposals=successfully_unlocked_proposals,
         failed_proposals=failed_to_unlock_proposals,
