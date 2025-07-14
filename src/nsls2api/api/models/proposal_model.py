@@ -156,4 +156,4 @@ class ProposalChangeResultsList(pydantic.BaseModel):
 #     proposal_to_unlock: list[str]
 
 class ProposalsToChangeList(pydantic.BaseModel):
-    proposal_to_change: list[str]
+    proposals_to_change: list[str]

@@ -75,7 +75,7 @@ async def lock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsLis
     # return proposal_object
     successfully_locked_proposals = []
     failed_to_lock_proposals = []
-    proposal_ids = proposal_list.proposal_to_change
+    proposal_ids = proposal_list.proposals_to_change
     for proposal_id in proposal_ids:
         try:
             proposal_object = await proposal_by_id(proposal_id)
@@ -100,7 +100,7 @@ async def lock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsLis
 async def unlock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsList:
     successfully_unlocked_proposals = []
     failed_to_unlock_proposals = []
-    proposal_ids = proposal_list.proposal_to_change
+    proposal_ids = proposal_list.proposals_to_change
     for proposal_id in proposal_ids:
         try:
             proposal_object = await proposal_by_id(proposal_id)
