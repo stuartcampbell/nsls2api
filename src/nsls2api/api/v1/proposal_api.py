@@ -342,15 +342,13 @@ async def lock(proposal_list: ProposalsToChangeList):
         failed_to_lock_not_found = []
         temp_proposal_list = proposal_list.proposal_to_change
         for proposal_id in temp_proposal_list:
-            try:
-                if not await proposal_service.exists(proposal_id):
-                    proposal_list.proposal_to_change.remove(proposal_id)
-                    failed_to_lock_not_found.append(proposal_id)
-                    raise HTTPException(
-                        status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
-                    )
-            except HTTPException as e:
-                logger.info(f"Proposal {proposal_id} not found in the database.")
+
+            if not await proposal_service.exists(proposal_id):
+                proposal_list.proposal_to_change.remove(proposal_id)
+                failed_to_lock_not_found.append(proposal_id)
+                logger.info(
+                    f"Proposal {proposal_id} not found, removing from lock list"
+                )
         locked_info = await proposal_service.lock(proposal_list)
         locked_info.failed_proposals.extend(failed_to_lock_not_found)
         return locked_info
@@ -390,7 +388,18 @@ async def gather_locked_proposals(
 @router.put("/proposals/unlock", response_model=ProposalChangeResultsList)
 async def unlock(proposal_list: ProposalsToChangeList):
     try:
+        failed_to_unlock_not_found = []
+        temp_proposal_list = proposal_list.proposal_to_change
+        for proposal_id in temp_proposal_list:
+            if not await proposal_service.exists(proposal_id):
+                proposal_list.proposal_to_change.remove(proposal_id)
+                failed_to_unlock_not_found.append(proposal_id)
+                logger.info(
+                    f"Proposal {proposal_id} not found, removing from lock list"
+                )
         unlocked_info = await proposal_service.unlock(proposal_list)
+        unlocked_info.failed_proposals.extend(failed_to_unlock_not_found)
         return unlocked_info
+    
     except Exception as e:
         logger.error(f"Unexpected error when unlocking proposals: {e}")
