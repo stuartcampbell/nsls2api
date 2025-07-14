@@ -339,7 +339,20 @@ async def create_slack_channels_for_proposal(
 @router.put("/proposals/lock", response_model=ProposalChangeResultsList)
 async def lock(proposal_list: ProposalsToChangeList):
     try:
+        failed_to_lock_not_found = []
+        temp_proposal_list = proposal_list.proposal_to_change
+        for proposal_id in temp_proposal_list:
+            try:
+                if not await proposal_service.exists(proposal_id):
+                    proposal_list.proposal_to_change.remove(proposal_id)
+                    failed_to_lock_not_found.append(proposal_id)
+                    raise HTTPException(
+                        status_code=fastapi.status.HTTP_404_NOT_FOUND, detail=e.args[0]
+                    )
+            except HTTPException as e:
+                logger.info(f"Proposal {proposal_id} not found in the database.")
         locked_info = await proposal_service.lock(proposal_list)
+        locked_info.failed_proposals.extend(failed_to_lock_not_found)
         return locked_info
     except Exception as e:
         logger.error(f"Unexpected error when locking proposals {e}")
@@ -371,18 +384,6 @@ async def gather_locked_proposals(
             detail=f"An error occurred: {e}",
         )
     return locked_proposals
-
-
-# getting all proposals at a specific beamline
-@router.get("/proposals/beamline/{beamline}")
-async def get_proposals_at_beamline(beamline: str):
-    try:
-        proposals_at_beamline = await proposal_service.fetch_proposals(
-            beamline=beamline
-        )
-        return proposals_at_beamline
-    except Exception as e:
-        logger.error(f"Unexpected error when getting proposals at {beamline}: {e}")
 
 
 # unlocking a proposal, removing it from the locked_proposals list
