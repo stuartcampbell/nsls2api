@@ -5,13 +5,14 @@ from typing import Optional
 import beanie
 import pydantic
 from beanie import Insert, before_event
+from pydantic import field_validator
 
 
 class DirectoryGranularity(StrEnum):
     """
     Represents the granularity options for asset directory YYYY/MM/DD/HH tree structure.
     The value specifies the most granular level to create directories for.  If no date
-    structure is wanted then the value "flat" is used.
+    structure is wanted, then the value "flat" is used.
     """
 
     flat = "flat"
@@ -200,10 +201,10 @@ class Beamline(beanie.Document):
     long_name: Optional[str]
     alternative_name: Optional[str]
     port: str
-    network_locations: Optional[list[str]]
+    network_locations: Optional[list[str]] = []
     pass_name: Optional[str]
     pass_id: Optional[str]
-    nsls2_redhat_satellite_location_name: Optional[str]
+    nsls2_redhat_satellite_location_name: Optional[list[str]] = []
     service_accounts: ServiceAccounts | None = None
     endstations: Optional[list[EndStation]] = []
     slack_channel_managers: Optional[list[str]] = []
@@ -222,6 +223,15 @@ class Beamline(beanie.Document):
     last_updated: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
+
+    @field_validator(
+        "network_locations", "nsls2_redhat_satellite_location_name", mode="before"
+    )
+    @classmethod
+    def ensure_string_list(cls, v: str) -> list:
+        if isinstance(v, str):
+            return [v]
+        return v
 
     @before_event(Insert)
     def uppercase_name(self):
