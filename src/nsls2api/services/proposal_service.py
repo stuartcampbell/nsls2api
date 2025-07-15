@@ -31,26 +31,26 @@ from nsls2api.services import (
 
 
 
-async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList:
+async def get_locked_proposals(cycles: list[str], beamlines: list[str]) -> LockedProposalsList:
     locked_proposals = None
     uppercase_beamline = []
-    if beamline:
-        uppercase_beamline.append(beamline.upper())
-    # can do a list comprehension to convert beamline to uppercase
-    if cycle and beamline:
+    if beamlines:
+         uppercase_beamline = [beamline.upper() for beamline in beamlines] 
+   
+    if cycles and beamlines:
         query = And(
             Proposal.locked == True,
             In(Proposal.instruments, uppercase_beamline),
-            In(Proposal.cycles, [cycle]),
+            In(Proposal.cycles, cycles),
         )
 
-    elif cycle:
+    elif cycles:
         query = And(
             Proposal.locked == True,
-            In(Proposal.cycles, [cycle]),
+            In(Proposal.cycles, cycles),
         )
 
-    elif beamline:
+    elif beamlines:
         query = And(
             Proposal.locked == True,
             In(Proposal.instruments, uppercase_beamline),
@@ -68,9 +68,6 @@ async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList
 
 
 async def lock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsList:
-    # proposal_object = await proposal_by_id(proposal_id)
-    # proposal_object.locked = True
-    # return proposal_object
     successfully_locked_proposals = []
     failed_to_lock_proposals = []
     proposal_ids = proposal_list.proposals_to_change
@@ -78,13 +75,13 @@ async def lock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsLis
         try:
             proposal_object = await proposal_by_id(proposal_id)
             proposal_object.locked = True
-            await proposal_object.save()  # Save the updated proposal object
+            await proposal_object.save() 
             successfully_locked_proposals.append(proposal_id)
         except Exception as e:
             failed_to_lock_proposals.append(proposal_id)
             logger.info(
                 f"Unexpected error when locking {proposal_id} {e}"
-            )  # perhaps change from error to something else
+            )  
 
     locked_info = ProposalChangeResultsList(
         successful_count=len(successfully_locked_proposals),
@@ -103,13 +100,13 @@ async def unlock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsL
         try:
             proposal_object = await proposal_by_id(proposal_id)
             proposal_object.locked = False
-            await proposal_object.save()  # Save the updated proposal object
+            await proposal_object.save()  
             successfully_unlocked_proposals.append(proposal_id)
         except Exception as e:
             failed_to_unlock_proposals.append(proposal_id)
             logger.info(
                 f"Unexpected error when unlocking {proposal_id} {e}"
-            )  # perhaps change from error to something else
+            )  
 
     unlocked_info = ProposalChangeResultsList(
         successful_count=len(successfully_unlocked_proposals),

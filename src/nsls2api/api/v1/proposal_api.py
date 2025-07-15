@@ -354,10 +354,23 @@ async def lock(proposal_list: ProposalsToChangeList, response: Response):
 
 @router.get("/proposals/locked", response_model=LockedProposalsList)
 async def gather_locked_proposals(
-    beamline: list[str] | None = None, cycle: list[str] | None = None
+    beamlines: list[str] | None = None, cycles: list[str] | None = None
 ):
+    for beamline_name in beamlines:
+            beamline = await beamline_service.beamline_by_name(beamline_name)
+            if beamline is None:
+                raise HTTPException(
+                    status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                    detail=f"Beamline {beamline_name} not found",
+                )
+    for cycle_name in cycles:
+        if not await proposal_service.cycle_exists(cycle_name):
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Cycle {cycle_name} not found",
+            )
     locked_proposals = await proposal_service.get_locked_proposals(
-        cycles=cycle, beamlines=beamline
+        cycles=cycles, beamlines=beamlines
     )
     locked_proposals_list = locked_proposals.locked_proposals
     if locked_proposals_list is None:
