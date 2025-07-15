@@ -2,7 +2,7 @@ import datetime
 from typing import Annotated
 
 import fastapi
-from fastapi import Depends, HTTPException, Query
+from fastapi import Depends, HTTPException, Query, Response
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
@@ -338,73 +338,32 @@ async def create_slack_channels_for_proposal(
 
 
 
-# adding to failed to lock list and not raising an HTTPException if proposal not found
+
+
+# raising an HTTPException if a proposals is not found and not locking
 @router.put("/proposals/lock", response_model=ProposalChangeResultsList)
-async def lock(proposal_list: ProposalsToChangeList):
+async def lock(proposal_list: ProposalsToChangeList, response: Response):
     try:
-        failed_to_lock_not_found = []
-        temp_proposal_list = proposal_list.proposals_to_change
-        for proposal_id in temp_proposal_list:
+        unknown_proposals = []
+        raise_an_http_exception = False
+        for proposal_id in proposal_list.proposals_to_change:
 
             if not await proposal_service.exists(proposal_id):
-                proposal_list.proposals_to_change.remove(proposal_id)
-                failed_to_lock_not_found.append(proposal_id)
-                logger.info(
-                    f"Proposal {proposal_id} not found, removing from lock list"
+                unknown_proposals.append(proposal_id)
+                raise_an_http_exception = True
+        if raise_an_http_exception:
+            raise HTTPException(
+                    status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                    detail=f"Proposals {unknown_proposals} not found. No action taken.", # send as a response the list of all the proposals that were not found
                 )
         locked_info = await proposal_service.lock(proposal_list)
-        locked_info.failed_proposals.extend(failed_to_lock_not_found)
+        if locked_info.failed_proposals:
+            response.status_code = fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY 
         return locked_info
     except Exception as e:
         logger.error(f"Unexpected error when locking proposals {e}")
 
 
-
-# raising an HTTPException if a proposals is not found and not locking
-# @router.put("/proposals/lock", response_model=ProposalChangeResultsList)
-# async def lock(proposal_list: ProposalsToChangeList):
-#     try:
-#         for proposal_id in proposal_list.proposals_to_change:
-
-#             if not await proposal_service.exists(proposal_id):
-#                 raise HTTPException(
-#                     status_code=fastapi.status.HTTP_404_NOT_FOUND,
-#                     detail=f"Proposal {proposal_id} not found",
-#                 )
-#         locked_info = await proposal_service.lock(proposal_list)
-#         return locked_info
-#     except Exception as e:
-#         logger.error(f"Unexpected error when locking proposals {e}")
-
-
-# Raising an HTTPException if proposal(s) is not found at the end and locking others. 
-# Though this locks in the database, it probably wouldn't lock for the proposal object 
-# in create_proposal_directories.py
-# @router.put("/proposals/lock", response_model=ProposalChangeResultsList)
-# async def lock(proposal_list: ProposalsToChangeList):
-#     try:
-#         raise_an_http_exception = False
-#         failed_to_lock_not_found = []
-#         temp_proposal_list = proposal_list.proposals_to_change
-#         for proposal_id in temp_proposal_list:
-
-#             if not await proposal_service.exists(proposal_id):
-#                 proposal_list.proposals_to_change.remove(proposal_id)
-#                 failed_to_lock_not_found.append(proposal_id)
-#                 logger.info(
-#                     f"Proposal {proposal_id} not found, removing from lock list"
-#                 )
-#                 raise_an_http_exception = True
-#         locked_info = await proposal_service.lock(proposal_list)
-#         locked_info.failed_proposals.extend(failed_to_lock_not_found)
-#         if raise_an_http_exception:
-#             raise HTTPException(
-#                 status_code=fastapi.status.HTTP_404_NOT_FOUND,
-#                 detail=f"Some proposals were not found: {failed_to_lock_not_found}.",
-#             )
-#         return locked_info
-#     except Exception as e:
-#         logger.error(f"Unexpected error when locking proposals {e}")
 
 
 
