@@ -30,15 +30,13 @@ from nsls2api.services import (
 )
 
 
-# this returns a LockedProposalsList object, containing the count (amount of locked proposals)
-# and locked_proposals (the list of locked proposals). Query based on a list of cycles and beamlines,
-# but optional.
+
 async def get_locked_proposals(cycle: str, beamline: str) -> LockedProposalsList:
     locked_proposals = None
     uppercase_beamline = []
     if beamline:
         uppercase_beamline.append(beamline.upper())
-
+    # can do a list comprehension to convert beamline to uppercase
     if cycle and beamline:
         query = And(
             Proposal.locked == True,
