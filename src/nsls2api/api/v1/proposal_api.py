@@ -349,7 +349,7 @@ async def lock(proposal_list: ProposalsToChangeList, response: Response):
 
             if not await proposal_service.exists(proposal_id):
                 unknown_proposals.append(proposal_id)
-        if not unknown_proposals:
+        if unknown_proposals:
             raise HTTPException(
                     status_code=fastapi.status.HTTP_404_NOT_FOUND,
                     detail=f"Proposals {unknown_proposals} not found. No action taken.", # send as a response the list of all the proposals that were not found
