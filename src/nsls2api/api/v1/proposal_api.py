@@ -22,7 +22,7 @@ from nsls2api.api.models.proposal_model import (
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import get_current_user, validate_admin_role
 from nsls2api.models.slack_models import ProposalSlackChannel, SlackChannel
-from nsls2api.services import proposal_service, slack_service
+from nsls2api.services import proposal_service, slack_service, beamline_service
 
 
 router = fastapi.APIRouter(dependencies=[Depends(get_current_user)])
@@ -403,3 +403,22 @@ async def unlock(proposal_list: ProposalsToChangeList):
     
     except Exception as e:
         logger.error(f"Unexpected error when unlocking proposals: {e}")
+
+
+@router.put("/proposals/beamline/lock", response_model=ProposalChangeResultsList)
+async def lock(beamline_name: str):
+    try:
+        check_beamline = await beamline_service.beamline_by_name(beamline_name)
+        if check_beamline is None:
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Beamline {beamline_name} not found",
+            )
+        proposals_at_beamline = await proposal_service.fetch_proposals(beamline=[beamline_name])
+        proposal_list = ProposalsToChangeList(
+            proposals_to_change=[proposal.proposal_id for proposal in proposals_at_beamline]
+        )
+        locked_info = await proposal_service.lock(proposal_list)
+        return locked_info
+    except Exception as e:
+        logger.error(f"Unexpected error when locking beamline {e}")
