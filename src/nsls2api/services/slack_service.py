@@ -320,7 +320,7 @@ def get_conversation_details(channel_id: str) -> SlackConversation | None:
             conversation_id=channel_id,
             name=info_response.get("channel", {}).get("name", ""),
             is_private=info_response.get("channel", {}).get("is_private", False),
-            topic=info_response.get("channel").get("topic", {}).get("value", ""),
+            topic=info_response.get("channel", {}).get("topic", {}).get("value", ""),
             purpose=info_response.get("channel").get("purpose", {}).get("value", ""),
             creator=info_response.get("channel", {}).get("creator", ""),
             is_archived=info_response.get("channel", {}).get("is_archived", False),
