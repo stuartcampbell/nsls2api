@@ -345,13 +345,11 @@ async def create_slack_channels_for_proposal(
 async def lock(proposal_list: ProposalsToChangeList, response: Response):
     try:
         unknown_proposals = []
-        raise_an_http_exception = False
         for proposal_id in proposal_list.proposals_to_change:
 
             if not await proposal_service.exists(proposal_id):
                 unknown_proposals.append(proposal_id)
-                raise_an_http_exception = True
-        if raise_an_http_exception:
+        if not unknown_proposals:
             raise HTTPException(
                     status_code=fastapi.status.HTTP_404_NOT_FOUND,
                     detail=f"Proposals {unknown_proposals} not found. No action taken.", # send as a response the list of all the proposals that were not found
