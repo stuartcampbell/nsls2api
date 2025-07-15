@@ -405,7 +405,7 @@ async def unlock(proposal_list: ProposalsToChangeList):
         logger.error(f"Unexpected error when unlocking proposals: {e}")
 
 
-@router.put("/proposals/beamline/lock", response_model=ProposalChangeResultsList)
+@router.put("/proposals/beamline/lock/{beamline_name}", response_model=ProposalChangeResultsList)
 async def lock(beamline_name: str):
     try:
         check_beamline = await beamline_service.beamline_by_name(beamline_name)
@@ -424,7 +424,7 @@ async def lock(beamline_name: str):
         logger.error(f"Unexpected error when locking beamline {e}")
 
 
-@router.put("/proposals/cycle/lock", response_model=ProposalChangeResultsList)
+@router.put("/proposals/cycle/lock/{cycle_name}", response_model=ProposalChangeResultsList)
 async def lock(cycle_name: str):
     try:
         check_cycle = await proposal_service.cycle_exists(cycle_name)
