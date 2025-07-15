@@ -169,11 +169,11 @@ def get_user_info(user_id: str) -> Optional[SlackUser]:
     try:
         response = client.users_info(user=user_id)
         slack_user = SlackUser(
-            username=response.get("user").get("name", ""),
-            user_id=response.get("user").get("id", user_id),
-            is_bot=response.get("user").get("is_bot", False),
-            real_name=response.get("user").get("real_name", ""),
-            pending_invitation=response.get("user").get("accepted_invitation", False),
+            username=response.get("user", {}).get("name", ""),
+            user_id=response.get("user", {}).get("id", user_id),
+            is_bot=response.get("user", {}).get("is_bot", False),
+            real_name=response.get("user", {}).get("real_name", ""),
+            pending_invitation=response.get("user", {}).get("accepted_invitation", False),
         )
         return slack_user
     except SlackApiError as error:
