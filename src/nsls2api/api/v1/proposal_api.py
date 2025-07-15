@@ -422,3 +422,22 @@ async def lock(beamline_name: str):
         return locked_info
     except Exception as e:
         logger.error(f"Unexpected error when locking beamline {e}")
+
+
+@router.put("/proposals/cycle/lock", response_model=ProposalChangeResultsList)
+async def lock(cycle_name: str):
+    try:
+        check_cycle = await proposal_service.cycle_exists(cycle_name)
+        if not check_cycle:
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Cycle {cycle_name} not found",
+            )
+        proposals_at_cycle = await proposal_service.fetch_proposals(cycle=[cycle_name])
+        proposal_list = ProposalsToChangeList(
+            proposals_to_change=[proposal.proposal_id for proposal in proposals_at_cycle]
+        )
+        locked_info = await proposal_service.lock(proposal_list)
+        return locked_info
+    except Exception as e:
+        logger.error(f"Unexpected error when locking beamline {e}")
