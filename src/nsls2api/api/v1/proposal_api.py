@@ -336,7 +336,7 @@ async def create_slack_channels_for_proposal(
     return channels
 
 
-@router.put("/proposals/lock", response_model=ProposalChangeResultsList)
+@router.put("/proposals/lock", response_model=ProposalChangeResultsList, dependencies=[Depends(validate_admin_role)])
 async def lock(proposal_list: ProposalsToChangeList, response: Response):
     unknown_proposals = [proposal for proposal in proposal_list.proposals_to_change if not await proposal_service.exists(proposal)]
     if unknown_proposals:
@@ -382,7 +382,7 @@ async def gather_locked_proposals(
 
 
 
-@router.put("/proposals/unlock", response_model=ProposalChangeResultsList)
+@router.put("/proposals/unlock", response_model=ProposalChangeResultsList, dependencies=[Depends(validate_admin_role)],)
 async def unlock(proposal_list: ProposalsToChangeList, response: Response):
     unknown_proposals = [proposal for proposal in proposal_list.proposals_to_change if not await proposal_service.exists(proposal)]
     if unknown_proposals:
@@ -398,7 +398,7 @@ async def unlock(proposal_list: ProposalsToChangeList, response: Response):
 
 
 
-@router.put("/proposals/beamline/lock/{beamline_name}", response_model=ProposalChangeResultsList)
+@router.put("/proposals/beamline/lock/{beamline_name}", response_model=ProposalChangeResultsList, dependencies=[Depends(validate_admin_role)],)
 async def lock_beamline(beamline_name: str):
 
     beamline = await beamline_service.beamline_by_name(beamline_name)
@@ -416,7 +416,7 @@ async def lock_beamline(beamline_name: str):
 
 
 
-@router.put("/proposals/cycle/lock/{cycle_name}", response_model=ProposalChangeResultsList)
+@router.put("/proposals/cycle/lock/{cycle_name}", response_model=ProposalChangeResultsList, dependencies=[Depends(validate_admin_role)],)
 async def lock_cycle(cycle_name: str):
     cycle = await proposal_service.cycle_exists(cycle_name)
     if not cycle:
