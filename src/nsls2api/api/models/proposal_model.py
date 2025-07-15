@@ -147,7 +147,7 @@ class ProposalChangeResultsList(pydantic.BaseModel):
     successful_count: int
     successful_proposals: Optional[list[str]]
     failed_proposals: Optional[list[str]]
-   
+
 
 class ProposalsToChangeList(pydantic.BaseModel):
     proposals_to_change: list[str]
