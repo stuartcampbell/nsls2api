@@ -437,6 +437,7 @@ async def lock_beamline(beamline_name: str):
     dependencies=[Depends(validate_admin_role)],
 )
 async def unlock_beamline(beamline_name: str):
+    # should we add the normalizing beamline names here and in lock_beamline as well?
     beamline = await beamline_service.beamline_by_name(beamline_name)
     if beamline is None:
         raise HTTPException(
