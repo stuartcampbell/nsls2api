@@ -165,7 +165,7 @@ starlette==0.46.2
     #   asgi-correlation-id
     #   fastapi
     #   prometheus-fastapi-instrumentator
-textual==3.5.0
+textual==4.0.0
     # via -r requirements.in
 tomlkit==0.13.3
     # via uv-dynamic-versioning
