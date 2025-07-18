@@ -360,7 +360,8 @@ async def lock(proposal_list: ProposalsToChangeList, response: Response):
 
 @router.get("/proposals/locked", response_model=LockedProposalsList)
 async def gather_locked_proposals(
-    beamlines: list[str] | None = None, cycles: list[str] | None = None
+    beamlines: Annotated[list[str], Query()] = [],
+    cycles: Annotated[list[str], Query()] = []
 ):
     for beamline_name in beamlines:
         beamline = await beamline_service.beamline_by_name(beamline_name)
@@ -430,6 +431,28 @@ async def lock_beamline(beamline_name: str):
     locked_info = await proposal_service.lock(proposal_list)
     return locked_info
 
+@router.put(
+    "/proposals/beamline/unlock/{beamline_name}",
+    response_model=ProposalChangeResultsList,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def unlock_beamline(beamline_name: str):
+    beamline = await beamline_service.beamline_by_name(beamline_name)
+    if beamline is None:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Beamline {beamline_name} not found",
+        )
+    proposals_at_beamline = await proposal_service.fetch_proposals(
+        beamline=[beamline_name]
+    )
+    proposal_list = ProposalsToChangeList(
+        proposals_to_change=[proposal.proposal_id for proposal in proposals_at_beamline]
+    )
+    unlocked_info = await proposal_service.unlock(proposal_list)
+    return unlocked_info
+
+
 
 @router.put(
     "/proposals/cycle/lock/{cycle_name}",
@@ -449,3 +472,22 @@ async def lock_cycle(cycle_name: str):
     )
     locked_info = await proposal_service.lock(proposal_list)
     return locked_info
+
+@router.put(
+    "/proposals/cycle/unlock/{cycle_name}",
+    response_model=ProposalChangeResultsList,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def unlock_cycle(cycle_name: str):
+    cycle = await proposal_service.cycle_exists(cycle_name)
+    if not cycle:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Cycle {cycle_name} not found",
+        )
+    proposals_at_cycle = await proposal_service.fetch_proposals(cycle=[cycle_name])
+    proposal_list = ProposalsToChangeList(
+        proposals_to_change=[proposal.proposal_id for proposal in proposals_at_cycle]
+    )
+    unlocked_info = await proposal_service.unlock(proposal_list)
+    return unlocked_info
