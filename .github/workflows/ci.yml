@@ -1,4 +1,6 @@
 name: CI
+permissions:
+  contents: read
 
 on: 
   pull_request:
@@ -20,6 +22,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # Install Kerberos dependencies (for N2SNUserTools)
       - name: Install krb5-devel
@@ -46,7 +50,7 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.12.0
+        uses: supercharge/mongodb-github-action@90004df786821b6308fb02299e5835d0dae05d0d # 1.12.0
         with:
           mongodb-version: "8.0"
 
