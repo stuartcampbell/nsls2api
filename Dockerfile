@@ -11,6 +11,7 @@ RUN uv pip install wheel gssapi
 RUN uv pip install -r /code/requirements.txt
 
 COPY . .
+RUN uv build
 RUN uv pip install '.'
 
 CMD ["uvicorn", "nsls2api.main:app", "--proxy-headers", \

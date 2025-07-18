@@ -8,7 +8,7 @@ anyio==4.9.0
     # via
     #   httpx
     #   starlette
-argon2-cffi==23.1.0
+argon2-cffi==25.1.0
     # via -r requirements.in
 argon2-cffi-bindings==21.2.0
     # via argon2-cffi
@@ -16,15 +16,15 @@ asgi-correlation-id==4.3.4
     # via -r requirements.in
 async-timeout==5.0.1
     # via httpx-socks
-beanie==1.29.0
+beanie==1.30.0
     # via -r requirements.in
-certifi==2025.4.26
+certifi==2025.6.15
     # via
     #   httpcore
     #   httpx
 cffi==1.17.1
     # via argon2-cffi-bindings
-click==8.1.8
+click==8.2.1
     # via
     #   beanie
     #   typer
@@ -33,9 +33,11 @@ decorator==5.2.1
     # via gssapi
 dnspython==2.7.0
     # via pymongo
-faker==37.1.0
+dunamai==1.24.1
+    # via uv-dynamic-versioning
+faker==37.4.0
     # via -r requirements.in
-fastapi==0.115.12
+fastapi==0.115.14
     # via -r requirements.in
 gssapi==1.9.0
     # via n2snusertools
@@ -45,6 +47,8 @@ h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
+hatchling==1.27.0
+    # via uv-dynamic-versioning
 httpcore==1.0.9
     # via
     #   httpx
@@ -53,18 +57,19 @@ httpx==0.28.1
     # via
     #   -r requirements.in
     #   httpx-socks
-httpx-socks==0.10.0
+httpx-socks==0.10.1
     # via -r requirements.in
 idna==3.10
     # via
     #   anyio
     #   httpx
-jinja-partials==0.2.1
+jinja-partials==0.3.0
     # via -r requirements.in
 jinja2==3.1.6
     # via
     #   -r requirements.in
     #   jinja-partials
+    #   uv-dynamic-versioning
 lazy-model==0.2.0
     # via beanie
 ldap3==2.9.1
@@ -84,23 +89,29 @@ mdit-py-plugins==0.4.2
     # via markdown-it-py
 mdurl==0.1.2
     # via markdown-it-py
-motor==3.7.0
+motor==3.7.1
     # via
     #   -r requirements.in
     #   beanie
-n2snusertools==0.3.9
+n2snusertools==0.3.10
     # via -r requirements.in
 packaging==25.0
     # via
     #   asgi-correlation-id
+    #   dunamai
     #   gunicorn
+    #   hatchling
 passlib==1.7.4
     # via -r requirements.in
-platformdirs==4.3.7
+pathspec==0.12.1
+    # via hatchling
+platformdirs==4.3.8
     # via textual
+pluggy==1.6.0
+    # via hatchling
 prettytable==3.16.0
     # via n2snusertools
-prometheus-client==0.21.1
+prometheus-client==0.22.1
     # via prometheus-fastapi-instrumentator
 prometheus-fastapi-instrumentator==7.1.0
     # via -r requirements.in
@@ -108,24 +119,25 @@ pyasn1==0.6.1
     # via ldap3
 pycparser==2.22
     # via cffi
-pydantic==2.11.4
+pydantic==2.11.7
     # via
     #   -r requirements.in
     #   beanie
     #   fastapi
     #   lazy-model
     #   pydantic-settings
+    #   uv-dynamic-versioning
 pydantic-core==2.33.2
     # via pydantic
-pydantic-settings==2.9.1
+pydantic-settings==2.10.1
     # via -r requirements.in
-pygments==2.19.1
+pygments==2.19.2
     # via rich
-pymongo==4.12.1
+pymongo==4.13.2
     # via
     #   -r requirements.in
     #   motor
-python-dotenv==1.1.0
+python-dotenv==1.1.1
     # via pydantic-settings
 python-multipart==0.0.20
     # via -r requirements.in
@@ -153,13 +165,15 @@ starlette==0.46.2
     #   asgi-correlation-id
     #   fastapi
     #   prometheus-fastapi-instrumentator
-textual==3.2.0
+textual==3.5.0
     # via -r requirements.in
-toml==0.10.2
-    # via beanie
-typer==0.15.3
+tomlkit==0.13.3
+    # via uv-dynamic-versioning
+trove-classifiers==2025.5.9.12
+    # via hatchling
+typer==0.16.0
     # via -r requirements.in
-typing-extensions==4.13.2
+typing-extensions==4.14.0
     # via
     #   anyio
     #   beanie
@@ -169,7 +183,7 @@ typing-extensions==4.13.2
     #   textual
     #   typer
     #   typing-inspection
-typing-inspection==0.4.0
+typing-inspection==0.4.1
     # via
     #   pydantic
     #   pydantic-settings
@@ -179,7 +193,9 @@ uc-micro-py==1.0.3
     # via linkify-it-py
 uuid==1.30
     # via -r requirements.in
-uvicorn==0.34.2
+uv-dynamic-versioning==0.8.2
+    # via -r requirements.in
+uvicorn==0.35.0
     # via -r requirements.in
 wcwidth==0.2.13
     # via prettytable
