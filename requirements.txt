@@ -33,7 +33,7 @@ decorator==5.2.1
     # via gssapi
 dnspython==2.7.0
     # via pymongo
-dunamai==1.24.1
+dunamai==1.25.0
     # via uv-dynamic-versioning
 faker==37.4.0
     # via -r requirements.in
