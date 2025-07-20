@@ -334,7 +334,7 @@ trove-classifiers==2025.5.9.12
     # via hatchling
 typer==0.16.0
     # via fastapi-cli
-typing-extensions==4.14.0
+typing-extensions==4.14.1
     # via
     #   pydantic
     #   pydantic-core
