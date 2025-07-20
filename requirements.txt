@@ -37,7 +37,7 @@ dunamai==1.25.0
     # via uv-dynamic-versioning
 faker==37.4.2
     # via -r requirements.in
-fastapi==0.115.14
+fastapi==0.116.1
     # via -r requirements.in
 gssapi==1.9.0
     # via n2snusertools
