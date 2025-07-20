@@ -63,8 +63,6 @@ configargparse==1.7.1
     #   locust-cloud
 coverage==7.9.1
     # via -r requirements-dev.in
-cryptography==45.0.5
-    # via secretstorage
 decorator==5.2.1
     # via ipython
 distlib==0.4.0
