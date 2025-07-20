@@ -292,8 +292,12 @@ rich-toolkit==0.14.8
     # via fastapi-cli
 ruff==0.12.4
     # via -r requirements-dev.in
-secretstorage==3.3.3
-    # via keyring
+setuptools==80.9.0
+    # via
+    #   locust
+    #   setuptools-scm
+    #   zope-event
+    #   zope-interface
 setuptools-scm==8.3.1
     # via hatch-vcs
 shellingham==1.5.4
