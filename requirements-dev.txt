@@ -265,7 +265,7 @@ pygments==2.19.2
     #   rich
 pymongo==4.13.2
     # via bunnet
-pyright==1.1.402
+pyright==1.1.403
     # via -r requirements-dev.in
 pytest==8.4.1
     # via
