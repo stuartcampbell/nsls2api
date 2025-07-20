@@ -35,7 +35,7 @@ dnspython==2.7.0
     # via pymongo
 dunamai==1.25.0
     # via uv-dynamic-versioning
-faker==37.4.0
+faker==37.4.2
     # via -r requirements.in
 fastapi==0.115.14
     # via -r requirements.in
@@ -154,7 +154,7 @@ shellingham==1.5.4
     # via typer
 slack-bolt==1.23.0
     # via -r requirements.in
-slack-sdk==3.35.0
+slack-sdk==3.36.0
     # via
     #   -r requirements.in
     #   slack-bolt
