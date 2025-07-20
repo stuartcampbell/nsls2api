@@ -162,7 +162,7 @@ locust==2.37.14
     # via -r requirements-dev.in
 locust-cloud==1.26.3
     # via locust
-markdown-it-py[linkify,plugins]==3.0.0
+markdown-it-py==3.0.0
     # via
     #   mdit-py-plugins
     #   rich
