@@ -61,7 +61,7 @@ configargparse==1.7.1
     # via
     #   locust
     #   locust-cloud
-coverage==7.9.1
+coverage==7.9.2
     # via -r requirements-dev.in
 decorator==5.2.1
     # via ipython
