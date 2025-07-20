@@ -359,7 +359,7 @@ uv==0.8.0
     #   -r requirements-dev.in
     #   hatch
     #   pre-commit-uv
-uvicorn[standard]==0.35.0
+uvicorn==0.35.0
     # via fastapi-cli
 uvloop==0.21.0
     # via uvicorn
