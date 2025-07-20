@@ -298,9 +298,9 @@ rich==14.0.0
     #   textual
     #   textual-serve
     #   typer
-rich-toolkit==0.14.7
+rich-toolkit==0.14.8
     # via fastapi-cli
-ruff==0.12.1
+ruff==0.12.4
     # via -r requirements-dev.in
 secretstorage==3.3.3
     # via keyring
