@@ -170,9 +170,9 @@ lazy-model==0.2.0
     # via bunnet
 linkify-it-py==2.0.3
     # via markdown-it-py
-locust==2.37.11
+locust==2.37.14
     # via -r requirements-dev.in
-locust-cloud==1.24.2
+locust-cloud==1.26.3
     # via locust
 markdown-it-py[linkify,plugins]==3.0.0
     # via
