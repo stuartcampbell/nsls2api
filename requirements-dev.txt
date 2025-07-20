@@ -269,7 +269,7 @@ python-engineio==4.12.2
     # via
     #   locust-cloud
     #   python-socketio
-python-socketio[client]==5.13.0
+python-socketio==5.13.0
     # via locust-cloud
 pyyaml==6.0.2
     # via
@@ -336,9 +336,6 @@ typer==0.16.0
     # via fastapi-cli
 typing-extensions==4.14.0
     # via
-    #   aiosignal
-    #   anyio
-    #   ipython
     #   pydantic
     #   pydantic-core
     #   pyright
