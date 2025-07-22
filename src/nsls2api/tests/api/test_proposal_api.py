@@ -80,7 +80,7 @@ async def test_lock_and_unlock_proposals():
     response_get_list_json = response_get_list.json()
     assert response_get_list.status_code == 200
     locked_proposals_list = LockedProposalsList(**response_get_list_json)
-    assert locked_proposals_list.locked_proposals == [test_proposal_id] 
+    assert locked_proposals_list.locked_proposals[0].proposal_id == test_proposal_id 
 
 
     #unlocking
