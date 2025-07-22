@@ -61,7 +61,7 @@ async def get_locked_proposals(
 
     locked_proposals = await Proposal.find_many(query).to_list()
     locked_model = LockedProposalsList(
-        count=locked_proposals.count(),
+        count=len(locked_proposals),
         locked_proposals=locked_proposals,
     )
 
