@@ -69,18 +69,18 @@ async def test_lock_and_unlock_proposals():
     assert proposal_objects[0].locked == True
 
     #gathering locked proposals
-    # facility_name = "nsls2",
-    # beamline = "ZZZ"
-    # async with AsyncClient(
-    #     transport=ASGITransport(app=app), base_url="http://test"
-    # ) as ac:
-    #     response_get_list = await ac.get(
-    #         f"/v1/proposals/locked?beamline={beamline}?facility={facility_name}",headers={"Authorization": key.secret_key}
-    #     )
-    # response_get_list_json = response_get_list.json()
-    # assert response_get_list.status_code == 200
-    # locked_proposals_list = LockedProposalsList(**response_get_list_json)
-    # assert locked_proposals_list.locked_proposals == [test_proposal_id] 
+    facility_name = "nsls2",
+    beamline = ["ZZZ"]
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response_get_list = await ac.get(
+            f"/v1/proposals/locked?beamline={beamline}?facility={facility_name}",headers={"Authorization": key.secret_key}
+        )
+    response_get_list_json = response_get_list.json()
+    assert response_get_list.status_code == 200
+    locked_proposals_list = LockedProposalsList(**response_get_list_json)
+    assert locked_proposals_list.locked_proposals == [test_proposal_id] 
 
 
     #unlocking
