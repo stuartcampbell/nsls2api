@@ -107,7 +107,7 @@ async def unlock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsL
 
     unlocked_info = ProposalChangeResultsList(
         successful_count=len(successfully_unlocked_proposals),
-        successfull_proposals=successfully_unlocked_proposals,
+        successful_proposals=successfully_unlocked_proposals,
         failed_proposals=failed_to_unlock_proposals,
     )
 
