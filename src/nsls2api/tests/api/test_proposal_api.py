@@ -5,6 +5,7 @@ from nsls2api.main import app
 from nsls2api.api.models.proposal_model import (
     ProposalChangeResultsList,
     LockedProposalsList,
+    ProposalFullDetailsList
 )
 from nsls2api.services import (
     proposal_service
@@ -17,7 +18,17 @@ test_cycle_name = "1999-1"
 
 facility = "nsls2"
 
-# make into one test for locking/unlocking
+@pytest.mark.anyio
+async def test_get_proposal():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response = await ac.get( f"/v1/proposals/?proposal_id={test_proposal_id}")
+    response_json = response.json()
+    assert response.status_code == 200
+    proposal_info = ProposalFullDetailsList(**response_json)
+    assert proposal_info.proposals[0].proposal_id == test_proposal_id
+
 
 @pytest.mark.anyio
 async def test_lock_and_unlock_proposals():
@@ -26,7 +37,7 @@ async def test_lock_and_unlock_proposals():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_start = await ac.put( f"/proposals/unlock",
+        response_start = await ac.put( f"/v1/proposals/unlock",
                 json=data_start)
         
     response_start_json = response_start.json()
@@ -41,7 +52,7 @@ async def test_lock_and_unlock_proposals():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_lock = await ac.put( f"/proposals/lock",
+        response_lock = await ac.put( f"/v1/proposals/lock",
                 json=data_lock)
         
     response_lock_json = response_lock.json()
@@ -58,7 +69,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_get_list = await ac.get(
-            f"/proposals/locked?beamline={beamline}?facility={facility_name}"
+            f"/v1/proposals/locked?beamline={beamline}?facility={facility_name}"
         )
     response_get_list_json = response_get_list.json()
     assert response_get_list.status_code == 200
@@ -71,7 +82,7 @@ async def test_lock_and_unlock_proposals():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_unlock = await ac.put( f"/proposals/unlock",
+        response_unlock = await ac.put( f"/v1/proposals/unlock",
                 json=data_unlock) 
         
     response_unlock_json = response_unlock.json()
@@ -87,7 +98,7 @@ async def test_lock_and_unlock_beamlines():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_start = await ac.put( f"/proposals/beamline/unlock/{test_beamline_name}")
+        response_start = await ac.put( f"/v1/proposals/beamline/unlock/{test_beamline_name}")
     
     response_start_json = response_start.json()
     assert response_start.status_code == 200
@@ -101,7 +112,7 @@ async def test_lock_and_unlock_beamlines():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_lock = await ac.put( f"/proposals/beamline/lock/{test_beamline_name}")
+        response_lock = await ac.put( f"/v1/proposals/beamline/lock/{test_beamline_name}")
     
     response_lock_json = response_lock.json()
     assert response_lock.status_code == 200
@@ -114,7 +125,7 @@ async def test_lock_and_unlock_beamlines():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_unlock = await ac.put( f"/proposals/beamline/unlock/{test_beamline_name}")
+        response_unlock = await ac.put( f"/v1/proposals/beamline/unlock/{test_beamline_name}")
     
     response_unlock_json = response_unlock.json()
     assert response_unlock.status_code == 200
@@ -130,7 +141,7 @@ async def test_lock_and_unlock_cycles():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_start = await ac.put( f"/proposals/cycle/lock/{test_cycle_name}/{facility}")
+        response_start = await ac.put( f"/v1/proposals/cycle/lock/{test_cycle_name}/{facility}")
     
     response_start_json = response_start.json()
     assert response_start.status_code == 200
@@ -144,7 +155,7 @@ async def test_lock_and_unlock_cycles():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_lock = await ac.put( f"/proposals/cycle/lock/{test_cycle_name}/{facility}")
+        response_lock = await ac.put( f"/v1/proposals/cycle/lock/{test_cycle_name}/{facility}")
     
     response_lock_json = response_lock.json()
     assert response_lock.status_code == 200
@@ -157,7 +168,7 @@ async def test_lock_and_unlock_cycles():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_unlock = await ac.put( f"/proposals/cycle/lock/{test_cycle_name}/{facility}")
+        response_unlock = await ac.put( f"/v1/proposals/cycle/lock/{test_cycle_name}/{facility}")
     
     response_unlock_json = response_unlock.json()
     assert response_unlock.status_code == 200
