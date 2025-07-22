@@ -149,7 +149,7 @@ async def test_lock_and_unlock_cycles():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_start = await ac.put( f"/v1/proposals/cycle/lock/{test_cycle_name}/{facility}",headers={"Authorization": key.secret_key})
+        response_start = await ac.put( f"/v1/proposals/cycle/unlock/{test_cycle_name}/{facility}",headers={"Authorization": key.secret_key})
     
     response_start_json = response_start.json()
     assert response_start.status_code == 200
@@ -176,7 +176,7 @@ async def test_lock_and_unlock_cycles():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        response_unlock = await ac.put( f"/v1/proposals/cycle/lock/{test_cycle_name}/{facility}",headers={"Authorization": key.secret_key})
+        response_unlock = await ac.put( f"/v1/proposals/cycle/unlock/{test_cycle_name}/{facility}",headers={"Authorization": key.secret_key})
     
     response_unlock_json = response_unlock.json()
     assert response_unlock.status_code == 200
