@@ -309,12 +309,7 @@ def get_conversation_details(channel_id: str) -> SlackConversation | None:
             channel=channel_id, include_num_members=True
         )
 
-        channel_users = []
-        slack_userid_list = get_channel_members(channel_id)
-        for slack_userid in slack_userid_list:
-            user_info = get_user_info(user_id=slack_userid)
-            if user_info:
-                channel_users.append(user_info)
+        channel_users = [user_info for slack_userid in get_channel_members(channel_id) if (user_info := get_user_info(user_id=slack_user_id))]
 
         details = SlackConversation(
             conversation_id=channel_id,
