@@ -363,7 +363,7 @@ uvicorn==0.35.0
     # via fastapi-cli
 uvloop==0.21.0
     # via uvicorn
-virtualenv==20.31.2
+virtualenv==20.32.0
     # via
     #   hatch
     #   pre-commit
@@ -385,7 +385,7 @@ wsproto==1.2.0
     # via simple-websocket
 yarl==1.20.1
     # via aiohttp
-zope-event==5.1
+zope-event==5.1.1
     # via gevent
 zope-interface==7.2
     # via gevent
