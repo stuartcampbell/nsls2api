@@ -86,6 +86,7 @@ async def db():
         slack_channels=[],
         created_on=datetime.datetime.fromisoformat("1999-01-01"),
         last_updated=datetime.datetime.now(),
+        locked=False
     )
     await proposal.insert()
 
