@@ -3,6 +3,7 @@ import datetime
 import pytest_asyncio
 
 from nsls2api import models
+import secrets
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.mongodb_setup import init_connection
 from nsls2api.models.beamlines import Beamline, ServiceAccounts
@@ -10,12 +11,36 @@ from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal
+from nsls2api.models.apikeys import ApiKey, ApiUser
+from passlib.handlers.argon2 import argon2 as crypto
+from beanie import WriteRules
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
 async def db():
     settings = get_settings()
     await init_connection(settings.mongodb_dsn)
+
+    TOKEN_BYTE_LENGTH = 32
+    API_KEY_PREFIX = "nsls2-api-"
+    generated_key = secrets.token_hex(TOKEN_BYTE_LENGTH + 4)
+    secret_key = f"{API_KEY_PREFIX}{generated_key}"
+    to_hash = crypto.hash(secret_key)
+    prefix_length = len(API_KEY_PREFIX)
+
+    fake_api_user = ApiUser(
+        username="test_user"
+    )
+
+    fake_key = ApiKey(
+            user=fake_api_user,
+            username="test_user",
+            first_eight=secret_key[prefix_length : prefix_length + 8],
+            secret_key=secret_key,  # TODO: After development - we will not be storing this one in the database
+            hashed_key=to_hash,
+            expires_after=None,
+        )
+    await fake_key.save(link_rule=WriteRules.WRITE)
 
     # Insert a beamline into the database
     beamline = Beamline(
