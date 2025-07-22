@@ -4,7 +4,8 @@ from httpx import ASGITransport, AsyncClient
 from nsls2api.main import app
 from nsls2api.api.models.proposal_model import (
     ProposalChangeResultsList,
-    LockedProposalsList
+    LockedProposalsList,
+    ProposalsToChangeList
 )
 from nsls2api.services import (
     proposal_service
@@ -22,7 +23,9 @@ facility = "nsls2"
 @pytest.mark.anyio
 async def test_lock_and_unlock_proposals():
     #resetting to ensure locked is false
-    data_start = {"proposals_to_change": [test_proposal_id]}
+    data_start = ProposalsToChangeList(
+        proposals_to_change=[test_proposal_id]
+    )
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
@@ -37,7 +40,9 @@ async def test_lock_and_unlock_proposals():
     assert proposal_objects_start[0].locked == False
 
     #locking
-    data_lock = {"proposals_to_change": [test_proposal_id]}
+    data_lock = ProposalsToChangeList(
+        proposals_to_change=[test_proposal_id]
+    )
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
@@ -67,7 +72,9 @@ async def test_lock_and_unlock_proposals():
 
 
     #unlocking
-    data_unlock = {"proposals_to_change": [test_proposal_id]}
+    data_unlock = ProposalsToChangeList(
+        proposals_to_change=[test_proposal_id]
+    )
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
