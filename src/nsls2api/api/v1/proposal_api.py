@@ -22,7 +22,7 @@ from nsls2api.api.models.proposal_model import (
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import get_current_user, validate_admin_role
 from nsls2api.models.slack_models import ProposalSlackChannel, SlackChannel
-from nsls2api.services import proposal_service, slack_service, beamline_service
+from nsls2api.services import proposal_service, slack_service, beamline_service, facility_service
 
 
 router = fastapi.APIRouter(dependencies=[Depends(get_current_user)])
@@ -360,6 +360,7 @@ async def lock(proposal_list: ProposalsToChangeList, response: Response):
 
 @router.get("/proposals/locked", response_model=LockedProposalsList)
 async def gather_locked_proposals(
+    facility: str,
     beamlines: Annotated[list[str], Query()] = [],
     cycles: Annotated[list[str], Query()] = []
 ):
@@ -371,7 +372,7 @@ async def gather_locked_proposals(
                 detail=f"Beamline {beamline_name} not found",
             )
     for cycle_name in cycles:
-        if not await proposal_service.cycle_exists(cycle_name):
+        if not await facility_service.cycle_exists(cycle_name=cycle_name, facility=facility):
             raise HTTPException(
                 status_code=fastapi.status.HTTP_404_NOT_FOUND,
                 detail=f"Cycle {cycle_name} not found",
@@ -455,12 +456,12 @@ async def unlock_beamline(beamline_name: str):
 
 
 @router.put(
-    "/proposals/cycle/lock/{cycle_name}",
+    "/proposals/cycle/lock/{cycle_name}/{facility}",
     response_model=ProposalChangeResultsList,
     dependencies=[Depends(validate_admin_role)],
 )
-async def lock_cycle(cycle_name: str):
-    cycle = await proposal_service.cycle_exists(cycle_name)
+async def lock_cycle(cycle_name: str, facility: str):
+    cycle = await facility_service.cycle_exists(cycle_name=cycle_name, facility=facility)
     if not cycle:
         raise HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND,
@@ -474,12 +475,12 @@ async def lock_cycle(cycle_name: str):
     return locked_info
 
 @router.put(
-    "/proposals/cycle/unlock/{cycle_name}",
+    "/proposals/cycle/unlock/{cycle_name}/{facility}",
     response_model=ProposalChangeResultsList,
     dependencies=[Depends(validate_admin_role)],
 )
-async def unlock_cycle(cycle_name: str):
-    cycle = await proposal_service.cycle_exists(cycle_name)
+async def unlock_cycle(cycle_name: str, facility: str):
+    cycle = await facility_service.cycle_exists(cycle_name=cycle_name, facility=facility)
     if not cycle:
         raise HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND,

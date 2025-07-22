@@ -343,3 +343,8 @@ async def is_healthy(facility: str) -> bool:
         health_status = False
 
     return health_status
+
+
+async def cycle_exists(cycle_name: str, facility: str) -> bool:
+    cycle = await Cycle.find_one(Cycle.name == cycle_name, Cycle.facility == facility)
+    return False if cycle is None else True

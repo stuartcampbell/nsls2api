@@ -119,9 +119,6 @@ async def exists(proposal_id: str) -> bool:
     return False if proposal is None else True
 
 
-async def cycle_exists(cycle_name: str) -> bool:
-    cycle = await Cycle.find_one(Cycle.name == cycle_name)
-    return False if cycle is None else True
 
 
 async def proposal_count() -> int:
