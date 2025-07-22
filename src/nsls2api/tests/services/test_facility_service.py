@@ -65,3 +65,11 @@ async def test_set_current_operating_cycle_invalid():
 async def test_cycle_year():
     cycle = await facility_service.cycle_year(valid_cycle_name)
     assert cycle == "1999"
+
+@pytest.mark.anyio
+async def test_cycle_exists():
+    cycle = await facility_service.cycle_exists(valid_cycle_name)
+    assert cycle == True
+
+    fake_cycle = await facility_service.cycle_exists("fake")
+    assert fake_cycle == False
