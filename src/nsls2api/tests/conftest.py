@@ -30,14 +30,14 @@ async def db():
 
     fake_api_user = ApiUser(
         username="test_user",
-        type=ApiUserType
+        type="user"
     )
 
     fake_key = ApiKey(
             user=fake_api_user,
             username="test_user",
             first_eight=secret_key[prefix_length : prefix_length + 8],
-            secret_key=secret_key,  # TODO: After development - we will not be storing this one in the database
+            secret_key=secret_key,  
             hashed_key=to_hash,
             expires_after=None,
         )
