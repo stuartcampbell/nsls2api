@@ -305,7 +305,9 @@ async def get_slack_channels_for_proposal(
 
     logger.info(f"Slack conversations for proposal {channels}")
 
-    conversations = [get_conversation_details(channel.channel_id) for channel in channels]
+    conversations = [
+        get_conversation_details(channel.channel_id) for channel in channels
+    ]
 
     logger.info(conversations)
     return conversations
