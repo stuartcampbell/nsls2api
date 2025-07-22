@@ -110,7 +110,7 @@ async def test_lock_and_unlock_beamlines():
     response_start_json = response_start.json()
     assert response_start.status_code == 200
     start_beamline_info = ProposalChangeResultsList(**response_start_json)
-    assert start_beamline_info.sucessful_proposals == [test_proposal_id]
+    assert start_beamline_info.successful_proposals == [test_proposal_id]
     proposal_objects = await proposal_service.fetch_proposals(proposal_id = [test_proposal_id])
     assert proposal_objects[0].locked == False
 
@@ -124,7 +124,7 @@ async def test_lock_and_unlock_beamlines():
     response_lock_json = response_lock.json()
     assert response_lock.status_code == 200
     locked_beamline_info = ProposalChangeResultsList(**response_lock_json)
-    assert locked_beamline_info.sucessful_proposals == [test_proposal_id]
+    assert locked_beamline_info.successful_proposals == [test_proposal_id]
     proposal_objects = await proposal_service.fetch_proposals(proposal_id = [test_proposal_id])
     assert proposal_objects[0].locked == True
 
@@ -137,7 +137,7 @@ async def test_lock_and_unlock_beamlines():
     response_unlock_json = response_unlock.json()
     assert response_unlock.status_code == 200
     unlocked_beamline_info = ProposalChangeResultsList(**response_unlock_json)
-    assert unlocked_beamline_info.sucessful_proposals == [test_proposal_id]
+    assert unlocked_beamline_info.successful_proposals == [test_proposal_id]
     proposal_objects = await proposal_service.fetch_proposals(proposal_id = [test_proposal_id])
     assert proposal_objects[0].locked == False
 
@@ -154,7 +154,7 @@ async def test_lock_and_unlock_cycles():
     response_start_json = response_start.json()
     assert response_start.status_code == 200
     start_info = ProposalChangeResultsList(**response_start_json)
-    assert start_info.sucessful_proposals == [test_proposal_id]
+    assert start_info.successful_proposals == [test_proposal_id]
     proposal_objects = await proposal_service.fetch_proposals(proposal_id = [test_proposal_id])
     assert proposal_objects[0].locked == False
 
@@ -168,7 +168,7 @@ async def test_lock_and_unlock_cycles():
     response_lock_json = response_lock.json()
     assert response_lock.status_code == 200
     locked_cycle_info = ProposalChangeResultsList(**response_lock_json)
-    assert locked_cycle_info.sucessful_proposals == [test_proposal_id]
+    assert locked_cycle_info.successful_proposals == [test_proposal_id]
     proposal_objects = await proposal_service.fetch_proposals(proposal_id = [test_proposal_id])
     assert proposal_objects[0].locked == True
 
@@ -181,7 +181,7 @@ async def test_lock_and_unlock_cycles():
     response_unlock_json = response_unlock.json()
     assert response_unlock.status_code == 200
     unlocked_cycle_info = ProposalChangeResultsList(**response_unlock_json)
-    assert unlocked_cycle_info.sucessful_proposals == [test_proposal_id]
+    assert unlocked_cycle_info.successful_proposals == [test_proposal_id]
     proposal_objects = await proposal_service.fetch_proposals(proposal_id = [test_proposal_id])
     assert proposal_objects[0].locked == False
 
