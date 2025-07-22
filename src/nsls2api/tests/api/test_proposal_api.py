@@ -30,7 +30,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put( f"/proposals/unlock",
-                json=data_start)
+                data_start)
         
     response_start_json = response_start.json()
     assert response_start.status_code == 200
@@ -47,7 +47,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_lock = await ac.put( f"/proposals/lock",
-                json=data_lock)
+                data_lock)
         
     response_lock_json = response_lock.json()
     assert response_lock.status_code == 200
@@ -79,7 +79,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_unlock = await ac.put( f"/proposals/unlock",
-                json=data_unlock) 
+                data_unlock) 
         
     response_unlock_json = response_unlock.json()
     assert response_unlock.status_code == 200
