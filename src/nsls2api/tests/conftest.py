@@ -41,7 +41,7 @@ async def db():
             hashed_key=to_hash,
             expires_after=None,
         )
-    await fake_key.save(link_rule=WriteRules.WRITE)
+    await fake_key.insert(link_rule=WriteRules.WRITE)
 
     # Insert a beamline into the database
     beamline = Beamline(
