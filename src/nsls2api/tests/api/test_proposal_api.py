@@ -5,7 +5,6 @@ from nsls2api.main import app
 from nsls2api.api.models.proposal_model import (
     ProposalChangeResultsList,
     LockedProposalsList,
-    ProposalsToChangeList
 )
 from nsls2api.services import (
     proposal_service
@@ -23,14 +22,12 @@ facility = "nsls2"
 @pytest.mark.anyio
 async def test_lock_and_unlock_proposals():
     #resetting to ensure locked is false
-    data_start = ProposalsToChangeList(
-        proposals_to_change=[test_proposal_id]
-    )
+    data_start = {"proposals_to_change": [test_proposal_id]}
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put( f"/proposals/unlock",
-                data_start)
+                json=data_start)
         
     response_start_json = response_start.json()
     assert response_start.status_code == 200
@@ -40,14 +37,12 @@ async def test_lock_and_unlock_proposals():
     assert proposal_objects_start[0].locked == False
 
     #locking
-    data_lock = ProposalsToChangeList(
-        proposals_to_change=[test_proposal_id]
-    )
+    data_lock = {"proposals_to_change": [test_proposal_id]}
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_lock = await ac.put( f"/proposals/lock",
-                data_lock)
+                json=data_lock)
         
     response_lock_json = response_lock.json()
     assert response_lock.status_code == 200
@@ -72,14 +67,12 @@ async def test_lock_and_unlock_proposals():
 
 
     #unlocking
-    data_unlock = ProposalsToChangeList(
-        proposals_to_change=[test_proposal_id]
-    )
+    data_unlock = {"proposals_to_change": [test_proposal_id]}
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_unlock = await ac.put( f"/proposals/unlock",
-                data_unlock) 
+                json=data_unlock) 
         
     response_unlock_json = response_unlock.json()
     assert response_unlock.status_code == 200
