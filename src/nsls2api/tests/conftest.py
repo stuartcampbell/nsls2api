@@ -11,7 +11,7 @@ from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal
-from nsls2api.models.apikeys import ApiKey, ApiUser
+from nsls2api.models.apikeys import ApiKey, ApiUser, ApiUserType
 from passlib.handlers.argon2 import argon2 as crypto
 from beanie import WriteRules
 
@@ -29,7 +29,8 @@ async def db():
     prefix_length = len(API_KEY_PREFIX)
 
     fake_api_user = ApiUser(
-        username="test_user"
+        username="test_user",
+        type=ApiUserType
     )
 
     fake_key = ApiKey(
