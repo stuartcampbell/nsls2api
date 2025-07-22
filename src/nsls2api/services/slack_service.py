@@ -173,7 +173,9 @@ def get_user_info(user_id: str) -> Optional[SlackUser]:
             user_id=response.get("user", {}).get("id", user_id),
             is_bot=response.get("user", {}).get("is_bot", False),
             real_name=response.get("user", {}).get("real_name", ""),
-            pending_invitation=response.get("user", {}).get("accepted_invitation", False),
+            pending_invitation=response.get("user", {}).get(
+                "accepted_invitation", False
+            ),
         )
         return slack_user
     except SlackApiError as error:
@@ -309,7 +311,11 @@ def get_conversation_details(channel_id: str) -> SlackConversation | None:
             channel=channel_id, include_num_members=True
         )
 
-        channel_users = [user_info for slack_userid in get_channel_members(channel_id) if (user_info := get_user_info(user_id=slack_user_id))]
+        channel_users = [
+            user_info
+            for slack_userid in get_channel_members(channel_id)
+            if (user_info := get_user_info(user_id=slack_userid))
+        ]
 
         details = SlackConversation(
             conversation_id=channel_id,
