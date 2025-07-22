@@ -68,8 +68,8 @@ async def test_cycle_year():
 
 @pytest.mark.anyio
 async def test_cycle_exists():
-    cycle = await facility_service.cycle_exists(cycle = valid_cycle_name, facility = "nsls2")
+    cycle = await facility_service.cycle_exists(cycle_name = valid_cycle_name, facility = "nsls2")
     assert cycle == True
 
-    fake_cycle = await facility_service.cycle_exists(cycle = "fake", facility = "nsls2")
+    fake_cycle = await facility_service.cycle_exists(cycle_name = "fake", facility = "nsls2")
     assert fake_cycle == False
