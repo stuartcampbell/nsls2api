@@ -75,7 +75,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_get_list = await ac.get(
-            f"/v1/proposals/locked?beamline={beamline}?facility={facility_name}",headers={"Authorization": key.secret_key}
+            f"/v1/proposals/locked?beamline={beamline}&facility={facility_name}",headers={"Authorization": key.secret_key}
         )
     response_get_list_json = response_get_list.json()
     assert response_get_list.status_code == 200
