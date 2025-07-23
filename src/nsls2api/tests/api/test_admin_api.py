@@ -29,7 +29,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
-            f"/v1/proposals/unlock",
+            f"/v1/admin/proposals/unlock",
             json=data_start,
             headers={"Authorization": key.secret_key},
         )
@@ -49,7 +49,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_lock = await ac.put(
-            f"/v1/proposals/lock",
+            f"/v1/admin/proposals/lock",
             json=data_lock,
             headers={"Authorization": key.secret_key},
         )
@@ -70,7 +70,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_get_list = await ac.get(
-            f"/v1/proposals/locked?beamline={beamline}&facility={facility_name}",
+            f"/v1/admin/proposals/locked?beamline={beamline}&facility={facility_name}",
             headers={"Authorization": key.secret_key},
         )
     response_get_list_json = response_get_list.json()
@@ -84,7 +84,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_unlock = await ac.put(
-            f"/v1/proposals/unlock",
+            f"/v1/admin/proposals/unlock",
             json=data_unlock,
             headers={"Authorization": key.secret_key},
         )
@@ -107,7 +107,7 @@ async def test_lock_and_unlock_beamlines():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
-            f"/v1/proposals/beamline/unlock/{test_beamline_name}",
+            f"/v1/admin/proposals/beamline/unlock/{test_beamline_name}",
             headers={"Authorization": key.secret_key},
         )
 
@@ -125,7 +125,7 @@ async def test_lock_and_unlock_beamlines():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_lock = await ac.put(
-            f"/v1/proposals/beamline/lock/{test_beamline_name}",
+            f"/v1/admin/proposals/beamline/lock/{test_beamline_name}",
             headers={"Authorization": key.secret_key},
         )
 
@@ -143,7 +143,7 @@ async def test_lock_and_unlock_beamlines():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_unlock = await ac.put(
-            f"/v1/proposals/beamline/unlock/{test_beamline_name}",
+            f"/v1/admin/proposals/beamline/unlock/{test_beamline_name}",
             headers={"Authorization": key.secret_key},
         )
 
@@ -165,7 +165,7 @@ async def test_lock_and_unlock_cycles():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
-            f"/v1/proposals/cycle/unlock/{test_cycle_name}/{facility}",
+            f"/v1/admin/proposals/cycle/unlock/{test_cycle_name}/{facility}",
             headers={"Authorization": key.secret_key},
         )
 
@@ -183,7 +183,7 @@ async def test_lock_and_unlock_cycles():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_lock = await ac.put(
-            f"/v1/proposals/cycle/lock/{test_cycle_name}/{facility}",
+            f"/v1/admin/proposals/cycle/lock/{test_cycle_name}/{facility}",
             headers={"Authorization": key.secret_key},
         )
 
@@ -201,7 +201,7 @@ async def test_lock_and_unlock_cycles():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_unlock = await ac.put(
-            f"/v1/proposals/cycle/unlock/{test_cycle_name}/{facility}",
+            f"/v1/admin/proposals/cycle/unlock/{test_cycle_name}/{facility}",
             headers={"Authorization": key.secret_key},
         )
 
