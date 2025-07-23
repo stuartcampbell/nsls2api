@@ -22,28 +22,6 @@ async def db():
     settings = get_settings()
     await init_connection(settings.mongodb_dsn)
 
-    # TOKEN_BYTE_LENGTH = 32
-    # API_KEY_PREFIX = "nsls2-api-"
-    # generated_key = secrets.token_hex(TOKEN_BYTE_LENGTH + 4)
-    # secret_key = f"{API_KEY_PREFIX}{generated_key}"
-    # to_hash = crypto.hash(secret_key)
-    # prefix_length = len(API_KEY_PREFIX)
-
-    # fake_api_user = ApiUser(
-    #     username="test_user",
-    #     type="user"
-    # )
-
-    # fake_key = ApiKey(
-    #         user=fake_api_user,
-    #         username="test_user",
-    #         first_eight=secret_key[prefix_length : prefix_length + 8],
-    #         secret_key=secret_key,  
-    #         hashed_key=to_hash,
-    #         expires_after=None,
-    #     )
-    # await fake_key.insert(link_rule=WriteRules.WRITE)
-
     fake_key = await generate_api_key(username="test_user", usertype="user")
    
     # Insert a beamline into the database
