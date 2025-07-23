@@ -2,7 +2,7 @@ import datetime
 from typing import Annotated
 
 import fastapi
-from fastapi import Depends, HTTPException, Query
+from fastapi import Depends, HTTPException, Query, Response
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
@@ -15,6 +15,9 @@ from nsls2api.api.models.proposal_model import (
     RecentProposalsList,
     SingleProposal,
     UsernamesList,
+    LockedProposalsList,
+    ProposalChangeResultsList,
+    ProposalsToChangeList,
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import get_current_user, validate_admin_role
@@ -23,8 +26,14 @@ from nsls2api.models.slack_models import (
     SlackChannel,
     SlackConversation,
 )
-from nsls2api.services import proposal_service, slack_service
+from nsls2api.services import (
+    proposal_service,
+    slack_service,
+    beamline_service,
+    facility_service,
+)
 from nsls2api.services.slack_service import get_conversation_details
+
 
 router = fastapi.APIRouter(dependencies=[Depends(get_current_user)])
 
@@ -342,3 +351,168 @@ async def create_slack_channels_for_proposal(
     await proposal.save()  # noqa - we don't need to specify any args here
 
     return channels
+
+
+@router.put(
+    "/proposals/lock",
+    response_model=ProposalChangeResultsList,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def lock(proposal_list: ProposalsToChangeList, response: Response):
+    unknown_proposals = [
+        proposal
+        for proposal in proposal_list.proposals_to_change
+        if not await proposal_service.exists(proposal)
+    ]
+    if unknown_proposals:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Proposals {unknown_proposals} not found. No action taken.",
+        )
+    locked_info = await proposal_service.lock(proposal_list)
+    if locked_info.failed_proposals:
+        response.status_code = fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY
+    return locked_info
+
+
+@router.get("/proposals/locked", response_model=LockedProposalsList)
+async def gather_locked_proposals(
+    facility: str,
+    beamlines: Annotated[list[str], Query()] = [],
+    cycles: Annotated[list[str], Query()] = [],
+):
+    for beamline_name in beamlines:
+        beamline = await beamline_service.beamline_by_name(beamline_name)
+        if beamline is None:
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Beamline {beamline_name} not found",
+            )
+    for cycle_name in cycles:
+        if not await facility_service.cycle_exists(
+            cycle_name=cycle_name, facility=facility
+        ):
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+                detail=f"Cycle {cycle_name} not found",
+            )
+    locked_proposals = await proposal_service.get_locked_proposals(
+        cycles=cycles, beamlines=beamlines
+    )
+    locked_proposals_list = locked_proposals.locked_proposals
+    if locked_proposals_list is None:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_204_NO_CONTENT,
+            detail="No locked proposals found",
+        )
+    return locked_proposals
+
+
+@router.put(
+    "/proposals/unlock",
+    response_model=ProposalChangeResultsList,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def unlock(proposal_list: ProposalsToChangeList, response: Response):
+    unknown_proposals = [
+        proposal
+        for proposal in proposal_list.proposals_to_change
+        if not await proposal_service.exists(proposal)
+    ]
+    if unknown_proposals:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Proposals {unknown_proposals} not found. No action taken.",
+        )
+    unlocked_info = await proposal_service.unlock(proposal_list)
+    if unlocked_info.failed_proposals:
+        response.status_code = fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY
+    return unlocked_info
+
+
+@router.put(
+    "/proposals/beamline/lock/{beamline_name}",
+    response_model=ProposalChangeResultsList,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def lock_beamline(beamline_name: str):
+    beamline = await beamline_service.beamline_by_name(beamline_name)
+    if beamline is None:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Beamline {beamline_name} not found",
+        )
+    proposals_at_beamline = await proposal_service.fetch_proposals(
+        beamline=[beamline_name]
+    )
+    proposal_list = ProposalsToChangeList(
+        proposals_to_change=[proposal.proposal_id for proposal in proposals_at_beamline]
+    )
+    locked_info = await proposal_service.lock(proposal_list)
+    return locked_info
+
+
+@router.put(
+    "/proposals/beamline/unlock/{beamline_name}",
+    response_model=ProposalChangeResultsList,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def unlock_beamline(beamline_name: str):
+    beamline = await beamline_service.beamline_by_name(beamline_name)
+    if beamline is None:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Beamline {beamline_name} not found",
+        )
+    proposals_at_beamline = await proposal_service.fetch_proposals(
+        beamline=[beamline_name]
+    )
+    proposal_list = ProposalsToChangeList(
+        proposals_to_change=[proposal.proposal_id for proposal in proposals_at_beamline]
+    )
+    unlocked_info = await proposal_service.unlock(proposal_list)
+    return unlocked_info
+
+
+@router.put(
+    "/proposals/cycle/lock/{cycle_name}/{facility}",
+    response_model=ProposalChangeResultsList,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def lock_cycle(cycle_name: str, facility: str):
+    cycle = await facility_service.cycle_exists(
+        cycle_name=cycle_name, facility=facility
+    )
+    if not cycle:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Cycle {cycle_name} not found",
+        )
+    proposals_at_cycle = await proposal_service.fetch_proposals(cycle=[cycle_name])
+    proposal_list = ProposalsToChangeList(
+        proposals_to_change=[proposal.proposal_id for proposal in proposals_at_cycle]
+    )
+    locked_info = await proposal_service.lock(proposal_list)
+    return locked_info
+
+
+@router.put(
+    "/proposals/cycle/unlock/{cycle_name}/{facility}",
+    response_model=ProposalChangeResultsList,
+    dependencies=[Depends(validate_admin_role)],
+)
+async def unlock_cycle(cycle_name: str, facility: str):
+    cycle = await facility_service.cycle_exists(
+        cycle_name=cycle_name, facility=facility
+    )
+    if not cycle:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Cycle {cycle_name} not found",
+        )
+    proposals_at_cycle = await proposal_service.fetch_proposals(cycle=[cycle_name])
+    proposal_list = ProposalsToChangeList(
+        proposals_to_change=[proposal.proposal_id for proposal in proposals_at_cycle]
+    )
+    unlocked_info = await proposal_service.unlock(proposal_list)
+    return unlocked_info
