@@ -63,7 +63,7 @@ async def test_lock_and_unlock_proposals():
     assert proposal_objects[0].locked == True
 
     # gathering locked proposals
-    facility_name = ("nsls2",)
+    facility_name = "nsls2"
     beamline = ["ZZZ"]
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
