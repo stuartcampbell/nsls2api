@@ -46,7 +46,6 @@ async def db():
 
     fake_key = generate_api_key(username="test_user")
     await fake_key.insert()
-
     # Insert a beamline into the database
     beamline = Beamline(
         name="ZZZ",
