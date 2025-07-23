@@ -3,7 +3,6 @@ import datetime
 import pytest_asyncio
 
 from nsls2api import models
-import secrets
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.mongodb_setup import init_connection
 from nsls2api.models.beamlines import Beamline, ServiceAccounts
@@ -11,10 +10,8 @@ from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal
-from nsls2api.models.apikeys import ApiKey, ApiUser, ApiUserType
-from passlib.handlers.argon2 import argon2 as crypto
-from beanie import WriteRules
-from nsls2api.infrastructure.security import generate_api_key, lookup_api_key
+from nsls2api.models.apikeys import ApiUserRole
+from nsls2api.infrastructure.security import generate_api_key
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
@@ -22,7 +19,7 @@ async def db():
     settings = get_settings()
     await init_connection(settings.mongodb_dsn)
 
-    fake_key = await generate_api_key(username="test_user", usertype="user")
+    fake_key = await generate_api_key(username="test_admin", usertype=ApiUserRole.admin)
    
     # Insert a beamline into the database
     beamline = Beamline(
