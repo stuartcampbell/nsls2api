@@ -6,10 +6,10 @@ from starlette.responses import Response
 
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
-    SingleProposal,
+    LockedProposalsList,
     ProposalChangeResultsList,
     ProposalsToChangeList,
-    LockedProposalsList,
+    SingleProposal,
 )
 from nsls2api.api.v1.proposal_api import router
 from nsls2api.infrastructure import config
@@ -23,7 +23,7 @@ from nsls2api.models.apikeys import (
     ApiUserRole,
     ApiUserType,
 )
-from nsls2api.services import proposal_service, facility_service, beamline_service
+from nsls2api.services import beamline_service, facility_service, proposal_service
 
 # router = fastapi.APIRouter()
 router = fastapi.APIRouter(

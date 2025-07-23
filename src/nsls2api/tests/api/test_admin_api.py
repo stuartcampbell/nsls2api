@@ -1,15 +1,14 @@
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from nsls2api.main import app
 from nsls2api.api.models.proposal_model import (
-    ProposalChangeResultsList,
     LockedProposalsList,
-    ProposalFullDetailsList,
+    ProposalChangeResultsList,
 )
-from nsls2api.services import proposal_service
+from nsls2api.main import app
 from nsls2api.models.apikeys import ApiKey
-import os
+from nsls2api.services import proposal_service
 
 test_proposal_id = "314159"
 
@@ -29,7 +28,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
-            f"/v1/admin/proposals/unlock",
+            "/v1/admin/proposals/unlock",
             json=data_start,
             headers={"Authorization": key.secret_key},
         )
@@ -49,7 +48,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_lock = await ac.put(
-            f"/v1/admin/proposals/lock",
+            "/v1/admin/proposals/lock",
             json=data_lock,
             headers={"Authorization": key.secret_key},
         )
@@ -84,7 +83,7 @@ async def test_lock_and_unlock_proposals():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_unlock = await ac.put(
-            f"/v1/admin/proposals/unlock",
+            "/v1/admin/proposals/unlock",
             json=data_unlock,
             headers={"Authorization": key.secret_key},
         )
