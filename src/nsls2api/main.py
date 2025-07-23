@@ -86,11 +86,6 @@ def configure_routing():
     app.include_router(home.router)
     app.include_router(diagnostics.router)
     app.mount("/static", StaticFiles(directory=static_root_absolute), name="static")
-    app.mount(
-        "/assets",
-        StaticFiles(directory=static_root_absolute / "assets"),
-        name="assets",
-    )
 
 
 def main():
