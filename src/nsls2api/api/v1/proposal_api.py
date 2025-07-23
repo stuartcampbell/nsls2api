@@ -21,13 +21,18 @@ from nsls2api.api.models.proposal_model import (
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import get_current_user, validate_admin_role
-from nsls2api.models.slack_models import ProposalSlackChannel, SlackChannel
+from nsls2api.models.slack_models import (
+    ProposalSlackChannel,
+    SlackChannel,
+    SlackConversation,
+)
 from nsls2api.services import (
     proposal_service,
     slack_service,
     beamline_service,
     facility_service,
 )
+from nsls2api.services.slack_service import get_conversation_details
 
 
 router = fastapi.APIRouter(dependencies=[Depends(get_current_user)])
