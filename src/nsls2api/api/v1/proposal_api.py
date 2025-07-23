@@ -294,7 +294,7 @@ async def get_proposal_directories(proposal_id: str) -> ProposalDirectoriesList:
 @router.get("/proposal/{proposal_id}/slack-channels")
 async def get_slack_channels_for_proposal(
     proposal_id: str,
-) -> list[SlackChannel]:
+) -> list[SlackConversation]:
     try:
         channels = await proposal_service.slack_channels_for_proposal(proposal_id)
         if channels is None:
@@ -312,7 +312,14 @@ async def get_slack_channels_for_proposal(
             detail=f"An error occurred: {e}",
         )
 
-    return channels
+    logger.info(f"Slack conversations for proposal {channels}")
+
+    conversations = [
+        get_conversation_details(channel.channel_id) for channel in channels
+    ]
+
+    logger.info(conversations)
+    return conversations
 
 
 @router.post(
