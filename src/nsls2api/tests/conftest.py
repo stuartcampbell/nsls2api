@@ -45,6 +45,7 @@ async def db():
     # await fake_key.insert(link_rule=WriteRules.WRITE)
 
     fake_key = generate_api_key(username="test_user")
+    await fake_key.insert()
 
     # Insert a beamline into the database
     beamline = Beamline(
