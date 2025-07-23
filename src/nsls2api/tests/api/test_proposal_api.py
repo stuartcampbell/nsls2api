@@ -22,19 +22,6 @@ test_cycle_name = "1999-1"
 facility = "nsls2"
 
 
-
-# @pytest.mark.anyio
-# async def test_get_proposal():
-#     async with AsyncClient(
-#         transport=ASGITransport(app=app), base_url="http://test"
-#     ) as ac:
-#         response = await ac.get( f"/v1/proposals/?proposal_id={test_proposal_id}")
-#     response_json = response.json()
-#     assert response.status_code == 200
-#     proposal_info = ProposalFullDetailsList(**response_json)
-#     assert proposal_info.proposals[0].proposal_id == test_proposal_id
-
-
 @pytest.mark.anyio
 async def test_lock_and_unlock_proposals():
     #resetting to ensure locked is false
