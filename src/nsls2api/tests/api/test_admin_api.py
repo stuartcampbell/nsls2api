@@ -21,7 +21,7 @@ facility_name = "nsls2"
 @pytest.mark.anyio
 async def test_lock_and_unlock_proposals():
     # resetting to ensure locked is false
-    key = await ApiKey.find_one(ApiKey.username == "test_user")
+    key = await ApiKey.find_one(ApiKey.username == "test_admin")
     data_start = {"proposals_to_change": [test_proposal_id]}
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
@@ -97,7 +97,7 @@ async def test_lock_and_unlock_proposals():
 
 @pytest.mark.anyio
 async def test_lock_and_unlock_beamlines():
-    key = await ApiKey.find_one(ApiKey.username == "test_user")
+    key = await ApiKey.find_one(ApiKey.username == "test_admin")
     # start with unlocking to ensure its unlocked
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
@@ -155,13 +155,13 @@ async def test_lock_and_unlock_beamlines():
 
 @pytest.mark.anyio
 async def test_lock_and_unlock_cycles():
-    key = await ApiKey.find_one(ApiKey.username == "test_user")
+    key = await ApiKey.find_one(ApiKey.username == "test_admin")
     # start with unlocking to ensure its unlocked
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
-            f"/v1/admin/proposals/cycle/unlock/{test_cycle_name}/{facility}",
+            f"/v1/admin/proposals/cycle/unlock/{test_cycle_name}/{facility_name}",
             headers={"Authorization": key.secret_key},
         )
 
@@ -179,7 +179,7 @@ async def test_lock_and_unlock_cycles():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_lock = await ac.put(
-            f"/v1/admin/proposals/cycle/lock/{test_cycle_name}/{facility}",
+            f"/v1/admin/proposals/cycle/lock/{test_cycle_name}/{facility_name}",
             headers={"Authorization": key.secret_key},
         )
 
@@ -197,7 +197,7 @@ async def test_lock_and_unlock_cycles():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_unlock = await ac.put(
-            f"/v1/admin/proposals/cycle/unlock/{test_cycle_name}/{facility}",
+            f"/v1/admin/proposals/cycle/unlock/{test_cycle_name}/{facility_name}",
             headers={"Authorization": key.secret_key},
         )
 
