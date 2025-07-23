@@ -16,7 +16,7 @@ test_beamline_name = "ZZZ"
 
 test_cycle_name = "1999-1"
 
-facility = "nsls2"
+facility_name = "nsls2"
 
 
 @pytest.mark.anyio
@@ -63,13 +63,11 @@ async def test_lock_and_unlock_proposals():
     assert proposal_objects[0].locked == True
 
     # gathering locked proposals
-    facility_name = "nsls2"
-    beamline = ["ZZZ"]
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_get_list = await ac.get(
-            f"/v1/admin/proposals/locked?beamline={beamline}&facility={facility_name}",
+            f"/v1/admin/proposals/locked?beamline={test_beamline_name}&facility={facility_name}",
             headers={"Authorization": key.secret_key},
         )
     response_get_list_json = response_get_list.json()
