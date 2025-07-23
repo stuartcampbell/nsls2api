@@ -14,7 +14,7 @@ from nsls2api.models.proposals import Proposal
 from nsls2api.models.apikeys import ApiKey, ApiUser, ApiUserType
 from passlib.handlers.argon2 import argon2 as crypto
 from beanie import WriteRules
-from nsls2api.infrastructure.security import generate_api_key
+from nsls2api.infrastructure.security import generate_api_key, lookup_api_key
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
@@ -44,10 +44,8 @@ async def db():
     #     )
     # await fake_key.insert(link_rule=WriteRules.WRITE)
 
-    fake_key = generate_api_key(username="test_user", usertype="user")
-    key = await ApiKey.find_one(ApiKey.username == "test_user")
-    await key.insert(link_rule=WriteRules.WRITE)
-
+    fake_key = await generate_api_key(username="test_user", usertype="user")
+   
     # Insert a beamline into the database
     beamline = Beamline(
         name="ZZZ",
