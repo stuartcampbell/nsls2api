@@ -2,34 +2,35 @@
 
 {% block content %}
 
-    <h2>Diagnostic Information for {{ username }}.</h2>
+    <h3 class="baseColor">Diagnostic Information for {{ username }}.</h3>
 
     <table>
         <tr>
             <th>Name:</th>
-            <th>{{ person.firstname }} {{ person.lastname }}</th>
+            <td>{{ person.firstname }} {{ person.lastname }}</td>
         </tr>
         <tr>
             <th>Institution:</th>
-            <th>{{ person.institution }}</th>
+            <td>{{ person.institution }}</td>
         </tr>
         <tr>
             <th>E-mail:</th>
-            <th>{{ person.email }}</th>
+            <td>{{ person.email }}</td>
         </tr>
         <tr>
             <th>BNL (Life/Guest) ID:</th>
-            <th>{{ person.bnl_id }}</th>
+            <td>{{ person.bnl_id }}</td>
         </tr>
         <tr>
             <th>Account Locked:</th>
-            <th>{{ person.account_locked }}</th>
+            <td>{{ person.account_locked }}</td>
         </tr>
-    <tr>
-        <th>
-        Cybersecurity Agreement Signed</th>
-        <th>{{ person.cyber_agreement_signed }}</th>
-    </tr>
+        <tr>
+            <th>
+                Cybersecurity Agreement Signed
+            </th>
+            <td>{{ person.cyber_agreement_signed }}</td>
+        </tr>
     </table>
 
 

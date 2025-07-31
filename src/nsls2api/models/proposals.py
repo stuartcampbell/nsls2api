@@ -21,6 +21,7 @@ class User(pydantic.BaseModel):
     bnl_id: Optional[str] = None
     username: Optional[str] = None
     is_pi: bool = False
+    orcid: Optional[str] = None
 
 
 # -- Shared Base --
@@ -41,6 +42,7 @@ class ProposalBase(pydantic.BaseModel):
     last_updated: datetime.datetime = pydantic.Field(
         default_factory=datetime.datetime.now
     )
+    locked: bool | None = False
 
 
 # -- Pydantic Model for Display/Transport --

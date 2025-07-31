@@ -10,12 +10,25 @@ from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal
+from nsls2api.models.apikeys import ApiUserType, ApiUserRole
+from nsls2api.infrastructure.security import generate_api_key, set_user_role
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
 async def db():
     settings = get_settings()
     await init_connection(settings.mongodb_dsn)
+
+    # create user and key for a yet-to-be admin
+    test_admin_key = await generate_api_key(
+        username="test_admin", usertype=ApiUserType.user
+    )
+    # promote user to admin
+    test_admin_user = await set_user_role(username="test_admin", role=ApiUserRole.admin)
+    # promote user's key to admin
+    test_admin_key = await generate_api_key(
+        username="test_admin", usertype=ApiUserType.user
+    )
 
     # Insert a beamline into the database
     beamline = Beamline(
@@ -86,6 +99,7 @@ async def db():
         slack_channels=[],
         created_on=datetime.datetime.fromisoformat("1999-01-01"),
         last_updated=datetime.datetime.now(),
+        locked=False,
     )
     await proposal.insert()
 
