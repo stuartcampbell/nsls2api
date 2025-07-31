@@ -11,10 +11,10 @@ test_proposal_id = "314159"
 @pytest.mark.anyio
 async def test_case_sensitivity_fetch_proposals():
     proposal_objects_upper = await proposal_service.fetch_proposals(
-        proposal_id=[test_beamline_name]
+        beamline=[test_beamline_name]
     )
     proposal_objects_lower = await proposal_service.fetch_proposals(
-        proposal_id=[test_beamline_name_lower]
+        beamline=[test_beamline_name_lower]
     )
 
     assert proposal_objects_upper == proposal_objects_lower
