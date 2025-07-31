@@ -341,9 +341,10 @@ async def fetch_proposals(
     include_directories: bool = False,
 ) -> Optional[list[ProposalFullDetails]]:
     query = []
-
+    
     if beamline:
-        query.append(In(Proposal.instruments, beamline))
+        beamline_upper = [beamline_name.upper() for beamline_name in beamline]
+        query.append(In(Proposal.instruments, beamline_upper))
 
     if cycle:
         query.append(In(Proposal.cycles, cycle))
