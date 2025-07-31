@@ -97,4 +97,4 @@ async def test_case_sensitivity_fetch_proposals():
     )
 
     assert proposal_objects_upper == proposal_objects_lower
-    assert proposal_objects_lower.proposal_id[0] == test_proposal_id
+    assert proposal_objects_lower[0].proposal_id == test_proposal_id
