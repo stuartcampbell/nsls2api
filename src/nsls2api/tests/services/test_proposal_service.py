@@ -5,6 +5,10 @@ from nsls2api.services import proposal_service
 
 test_proposal_id = "314159"
 
+test_beamline_name = "ZZZ"
+
+test_beamline_name_lower = "zzz"
+
 
 @pytest.mark.anyio
 async def test_get_beamline_specific_slack_channel_for_proposal():
@@ -81,3 +85,16 @@ async def test_cycles_for_proposal():
 async def test_is_commissioning():
     proposal = await proposal_service.proposal_by_id(test_proposal_id)
     assert await proposal_service.is_commissioning(proposal) is False
+
+
+@pytest.mark.anyio
+async def test_case_sensitivity_fetch_proposals():
+    proposal_objects_upper = await proposal_service.fetch_proposals(
+        beamline=[test_beamline_name]
+    )
+    proposal_objects_lower = await proposal_service.fetch_proposals(
+        beamline=[test_beamline_name_lower]
+    )
+
+    assert proposal_objects_upper == proposal_objects_lower
+    assert proposal_objects_lower[0].proposal_id == test_proposal_id
