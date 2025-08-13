@@ -1,12 +1,10 @@
 import fastapi
 from fastapi import Depends
-from datetime import datetime, timezone
 
 from nsls2api.api.models.facility_model import (
     FacilityCurrentOperatingCycleResponseModel,
     FacilityCyclesResponseModel,
     FacilityName,
-    FacilityCycleResponseModel
 )
 from nsls2api.api.models.proposal_model import CycleProposalList
 from nsls2api.infrastructure.logging import logger
@@ -131,95 +129,5 @@ async def get_proposals_for_cycle(facility: FacilityName, cycle: str):
         )
     model = CycleProposalList(
         cycle=cycle, proposals=proposal_list, count=len(proposal_list)
-    )
-    return model
-
-
-@router.get(
-    "/facility/{facility}/cycle_by_date",
-    response_model=FacilityCycleResponseModel,
-    include_in_schema=True,
-)
-async def get_cycle_by_date(facility: FacilityName, date: str):
-    """
-        Get the facility cycle that covers a specific date.
-
-        Args:
-            facility (FacilityName): The facility identifier (e.g., "nsls2").
-            date (str): The date to query in ISO format (YYYY-MM-DD).
-
-        Returns:
-            FacilityCycleResponseModel: The cycle covering the given date, including whether it is the current operating cycle.
-
-        Responses:
-            200: Cycle found for the given date.
-            400: Invalid date format.
-            404: No cycle found for the given date.
-    """
-    try:
-        query_date = datetime.fromisoformat(date)
-    except ValueError:
-        return fastapi.responses.JSONResponse(
-            {"error": f"Invalid date format: {date}. Use YYYY-MM-DD."},
-            status_code=400,
-        )
-
-    found_cycle = await facility_service.facility_cycle_by_date(facility.name, query_date)
-    if not found_cycle:
-        return fastapi.responses.JSONResponse(
-            {"error": f"No cycle found for date {date} in facility {facility.name}"},
-            status_code=404,
-        )
-
-    model = FacilityCycleResponseModel(
-        facility=facility.name,
-        cycle=found_cycle.name,
-        start_date=found_cycle.start_date.isoformat() if found_cycle.start_date else None,
-        end_date=found_cycle.end_date.isoformat() if found_cycle.end_date else None,
-        is_current_operating_cycle=found_cycle.is_current_operating_cycle,
-        active=found_cycle.active,
-    )
-    return model
-
-
-@router.post(
-    "/facility/{facility}/cycles/set_current_cycle_by_today",
-    response_model=FacilityCycleResponseModel,
-    include_in_schema=True,
-    dependencies=[Depends(validate_admin_role)],
-)
-async def set_current_cycle_by_today(facility: FacilityName):
-    """
-        Set the current operating cycle for a facility to the cycle covering today's date.
-
-        This admin-only endpoint finds the cycle that covers the current UTC date and sets it as the current operating cycle for the given facility.
-
-        Args:
-            facility (FacilityName): The facility identifier (e.g., "nsls2").
-
-        Returns:
-            FacilityCycleResponseModel: The updated cycle, now set as the current operating cycle.
-
-        Responses:
-            200: The current cycle was successfully updated.
-            404: No cycle found covering today's date for the facility.
-            403: Not authorized (admin only).
-    """
-    today = datetime.now(timezone.utc)
-    print(today)
-    found_cycle = await facility_service.facility_cycle_by_date(facility.name, today)
-    if not found_cycle:
-        return fastapi.responses.JSONResponse(
-            {"error": f"No cycle found for today's date in facility {facility.name}"},
-            status_code=404,
-        )
-    await facility_service.set_current_operating_cycle(facility.name, found_cycle.name)
-    model = FacilityCycleResponseModel(
-        facility=facility.name,
-        cycle=found_cycle.name,
-        start_date=found_cycle.start_date.isoformat() if found_cycle.start_date else None,
-        end_date=found_cycle.end_date.isoformat() if found_cycle.end_date else None,
-        is_current_operating_cycle=True,
-        active=found_cycle.active,
     )
     return model

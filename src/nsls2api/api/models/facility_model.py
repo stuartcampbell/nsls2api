@@ -17,12 +17,3 @@ class FacilityCyclesResponseModel(pydantic.BaseModel):
 class FacilityCurrentOperatingCycleResponseModel(pydantic.BaseModel):
     facility: str
     cycle: str
-
-
-class FacilityCycleResponseModel(pydantic.BaseModel):
-    facility: str
-    cycle: str
-    start_date: str
-    end_date: str
-    is_current_operating_cycle: bool
-    active: bool
