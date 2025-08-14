@@ -87,7 +87,7 @@ async def worker_synchronize_cycles_from_pass(
     """
     Synchronize cycles for a facility from PASS and set the current cycle to today's date.
     """
-    start_time = datetime.datetime.now()
+    start_time = datetime.datetime.now(datetime.timezone.utc)
 
     try:
         pass_cycles: list[PassCycle] = await pass_service.get_cycles(facility_name)
@@ -126,7 +126,7 @@ async def worker_synchronize_cycles_from_pass(
                     Cycle.year: cycle.year,
                     Cycle.start_date: cycle.start_date,
                     Cycle.end_date: cycle.end_date,
-                    Cycle.last_updated: datetime.datetime.now(),
+                    Cycle.last_updated: datetime.datetime.now(datetime.timezone.utc),
                 }
             ),
             on_insert=cycle,
@@ -141,11 +141,11 @@ async def worker_synchronize_cycles_from_pass(
             await updated_cycle.update(
                 AddToSet({Cycle.proposals: str(proposal.Proposal_ID)})
             )
-            updated_cycle.last_updated = datetime.datetime.now()
+            updated_cycle.last_updated = datetime.datetime.now(datetime.timezone.utc)
             await updated_cycle.save()
 
-    # --- Set current operating cycle to today's date ---
-    today = datetime.datetime.now()
+    # --- Set current operating cycle to today's date---
+    today = datetime.datetime.now(datetime.timezone.utc)
     found_cycle = await facility_service.facility_cycle_by_date(facility_name, today)
     if not found_cycle:
         logger.warning(
@@ -161,7 +161,7 @@ async def worker_synchronize_cycles_from_pass(
             f"Set current operating cycle for {facility_name} to {found_cycle.name}"
         )
 
-    time_taken = datetime.datetime.now() - start_time
+    time_taken = datetime.datetime.now(datetime.timezone.utc) - start_time
     logger.info(
         f"Cycle information (for {facility_name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )

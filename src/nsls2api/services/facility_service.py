@@ -89,16 +89,16 @@ async def facility_cycles(facility: str) -> Optional[list[str]]:
     cycle_list = [c.name for c in cycles if c.name is not None]
     return cycle_list
 
-async def facility_cycle_by_date(facility: str, date: datetime.datetime) -> Optional[Cycle]:
+async def facility_cycle_by_date(facility: FacilityName, date: datetime.datetime) -> Optional[Cycle]:
     """
     Find the cycle for a facility that contains the given date.
 
-    :param facility: The facility name (str).
+    :param facility: The facility name (FacilityName).
     :param date: The date to search for (datetime).
     :return: The matching Cycle or None.
     """
     cycle = await Cycle.find_one(
-        Cycle.facility == facility,
+        Cycle.facility == facility.value,
         Cycle.start_date <= date,
         Cycle.end_date >= date
     )
