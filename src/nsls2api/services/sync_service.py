@@ -144,7 +144,7 @@ async def worker_synchronize_cycles_from_pass(
             updated_cycle.last_updated = datetime.datetime.now()
             await updated_cycle.save()
 
-    # --- Set current operating cycle to today's date ---
+    # --- Set current operating cycle from today's date ---
     today = datetime.datetime.now()
     found_cycle = await facility_service.facility_cycle_by_date(facility_name, today)
     if not found_cycle:
