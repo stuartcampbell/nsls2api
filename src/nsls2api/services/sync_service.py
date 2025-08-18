@@ -85,7 +85,7 @@ async def worker_synchronize_cycles_from_pass(
     facility_name: FacilityName = FacilityName.nsls2,
 ) -> None:
     """
-    Synchronize cycles for a facility from PASS and set the current cycle to today's date.
+    Synchronize cycles for a facility from PASS and set the current cycle.
     """
     start_time = datetime.datetime.now()
 
