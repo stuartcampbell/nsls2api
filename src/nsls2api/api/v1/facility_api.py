@@ -148,13 +148,6 @@ async def get_cycle_details(facility: FacilityName, cycle: str):
         If the cycle is not found, returns a 404 JSON error response.
     """
     try:
-        cycle_obj = await facility_service.get_cycle_by_name(facility.name, cycle)
-    except CycleNotFoundError as e:
-        return fastapi.responses.JSONResponse(
-            {"error": str(e)},
-            status_code=404,
-        )
-    response_model = FacilityCycleDetailsResponseModel(
         cycle_obj = await facility_service.get_cycle_by_name(facility.value, cycle)
     except CycleNotFoundError as e:
         return fastapi.responses.JSONResponse(
