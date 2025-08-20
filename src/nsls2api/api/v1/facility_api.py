@@ -155,7 +155,14 @@ async def get_cycle_details(facility: FacilityName, cycle: str):
             status_code=404,
         )
     response_model = FacilityCycleDetailsResponseModel(
-        facility=facility.name,
+        cycle_obj = await facility_service.get_cycle_by_name(facility.value, cycle)
+    except CycleNotFoundError as e:
+        return fastapi.responses.JSONResponse(
+            {"error": str(e)},
+            status_code=404,
+        )
+    response_model = FacilityCycleDetailsResponseModel(
+        facility=facility.value,
         cycle=cycle_obj.name,
         start_date=cycle_obj.start_date,
         end_date=cycle_obj.end_date,
