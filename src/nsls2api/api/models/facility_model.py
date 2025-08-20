@@ -1,5 +1,5 @@
 from enum import StrEnum
-import datetime
+from datetime import datetime
 import pydantic
 
 
@@ -21,8 +21,8 @@ class FacilityCurrentOperatingCycleResponseModel(pydantic.BaseModel):
 class FacilityCycleDetailsResponseModel(pydantic.BaseModel):
     facility: str
     cycle: str
-    start_date: datetime.datetime | None = None
-    end_date: datetime.datetime | None = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
     active: bool | None = None
     is_current_operating_cycle: bool
     accepting_proposals: bool | None = None
