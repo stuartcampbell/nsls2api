@@ -207,6 +207,18 @@ async def worker_synchronize_proposal_types_from_pass(
 async def synchronize_proposal_from_pass(
     proposal_id: str, facility_name: FacilityName = FacilityName.nsls2
 ) -> None:
+    """
+    Synchronize a proposal from PASS into the local database.
+
+    This function fetches proposal details, associated SAFs, beamlines, and users from PASS,
+    and updates or inserts the corresponding Proposal document in the database.
+
+    :param proposal_id: The PASS proposal ID to synchronize.
+    :type proposal_id: str
+    :param facility_name: The facility name (FacilityName) to use for synchronization.
+    :type facility_name: FacilityName
+    :return: None
+    """
     beamline_list = []
     user_list = []
     saf_list = []
@@ -334,10 +346,13 @@ async def update_proposals_with_cycle(
     cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
 ) -> None:
     """
-    Update the cycle <-> proposals mapping for the given cycle.
+    Update the mapping between cycles and proposals for the specified cycle.
 
     :param cycle_name: The name of the cycle to process proposals for.
     :type cycle_name: str
+    :param facility_name: The facility name (FacilityName) to use for synchronization.
+    :type facility_name: FacilityName
+    :return: None
     """
 
     proposal_list = await proposal_service.fetch_proposals_for_cycle(
@@ -350,7 +365,6 @@ async def update_proposals_with_cycle(
 
     for proposal_id in proposal_list:
         # Add the cycle to the Proposal object
-
         try:
             proposal = await proposal_service.proposal_by_id(proposal_id)
             if proposal is not None:
