@@ -42,7 +42,7 @@ async def get_username_by_id(lifenumber: str) -> Optional[str]:
         message = f"BNL People API query failed for lifenumber {lifenumber}"
         logger.exception(message)
         return None
-    logger.debug(person)
+    # logger.debug(person)
     if len(person) == 0 or len(person) > 1:
         logger.warning(
             f"BNL People could not find a person with an employee/life number of '{lifenumber}'"
