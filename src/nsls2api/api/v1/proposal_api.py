@@ -7,17 +7,17 @@ from fastapi import Depends, HTTPException, Query, Response
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
+    LockedProposalsList,
+    ProposalChangeResultsList,
     ProposalDirectoriesList,
     ProposalFullDetailsList,
+    ProposalsToChangeList,
     ProposalUser,
     ProposalUserList,
     RecentProposal,
     RecentProposalsList,
     SingleProposal,
     UsernamesList,
-    LockedProposalsList,
-    ProposalChangeResultsList,
-    ProposalsToChangeList,
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.infrastructure.security import get_current_user, validate_admin_role
@@ -27,13 +27,12 @@ from nsls2api.models.slack_models import (
     SlackConversation,
 )
 from nsls2api.services import (
-    proposal_service,
-    slack_service,
     beamline_service,
     facility_service,
+    proposal_service,
+    slack_service,
 )
 from nsls2api.services.slack_service import get_conversation_details
-
 
 router = fastapi.APIRouter(dependencies=[Depends(get_current_user)])
 
