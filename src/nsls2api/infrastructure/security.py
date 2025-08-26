@@ -62,7 +62,6 @@ async def generate_api_key(username: str, usertype=ApiUserType.user):
             user=user,
             username=username,
             first_eight=secret_key[prefix_length : prefix_length + 8],
-            secret_key=secret_key,  # TODO: After development - we will not be storing this one in the database
             hashed_key=to_hash,
             expires_after=None,
         )
