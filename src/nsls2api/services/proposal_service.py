@@ -11,10 +11,10 @@ from faker.providers import date_time, python
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
-    ProposalDiagnostics,
-    ProposalFullDetails,
     LockedProposalsList,
     ProposalChangeResultsList,
+    ProposalDiagnostics,
+    ProposalFullDetails,
     ProposalsToChangeList,
 )
 from nsls2api.infrastructure.logging import logger
@@ -117,8 +117,6 @@ async def unlock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsL
 async def exists(proposal_id: str) -> bool:
     proposal = await Proposal.find_one(Proposal.proposal_id == str(proposal_id))
     return False if proposal is None else True
-
-
 
 
 async def proposal_count() -> int:
