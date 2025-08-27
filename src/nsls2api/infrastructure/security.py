@@ -73,7 +73,7 @@ async def generate_api_key(username: str, usertype=ApiUserType.user):
         # Now that we have saved a new key for this user, we should invalidate any other keys
         for old_key in old_keys:
             if old_key.valid:
-                logger.info(f"Invalidating old key: {old_key.secret_key}")
+                logger.info(f"Invalidating old key: {old_key}")
                 old_key.valid = False
                 await old_key.save(link_rule=WriteRules.WRITE)
 
