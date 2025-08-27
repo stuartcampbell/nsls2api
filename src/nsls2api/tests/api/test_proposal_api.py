@@ -1,4 +1,3 @@
-
 import pytest
 from httpx import ASGITransport, AsyncClient
 
@@ -7,7 +6,6 @@ from nsls2api.api.models.proposal_model import (
     ProposalChangeResultsList,
 )
 from nsls2api.main import app
-from nsls2api.models.apikeys import ApiKey
 from nsls2api.services import proposal_service
 
 test_proposal_id = "314159"
@@ -20,9 +18,9 @@ facility = "nsls2"
 
 
 @pytest.mark.anyio
-async def test_lock_and_unlock_proposals():
+async def test_lock_and_unlock_proposals(api_key):
+    token = api_key["key:"]
     # resetting to ensure locked is false
-    key = await ApiKey.find_one(ApiKey.username == "test_user")
     data_start = {"proposals_to_change": [test_proposal_id]}
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
@@ -30,7 +28,7 @@ async def test_lock_and_unlock_proposals():
         response_start = await ac.put(
             "/v1/proposals/unlock",
             json=data_start,
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": token},
         )
 
     response_start_json = response_start.json()
@@ -50,7 +48,7 @@ async def test_lock_and_unlock_proposals():
         response_lock = await ac.put(
             "/v1/proposals/lock",
             json=data_lock,
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": token},
         )
 
     response_lock_json = response_lock.json()
@@ -70,7 +68,7 @@ async def test_lock_and_unlock_proposals():
     ) as ac:
         response_get_list = await ac.get(
             f"/v1/proposals/locked?beamline={beamline}&facility={facility_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": token},
         )
     response_get_list_json = response_get_list.json()
     assert response_get_list.status_code == 200
@@ -85,7 +83,7 @@ async def test_lock_and_unlock_proposals():
         response_unlock = await ac.put(
             "/v1/proposals/unlock",
             json=data_unlock,
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": token},
         )
 
     response_unlock_json = response_unlock.json()
@@ -99,15 +97,15 @@ async def test_lock_and_unlock_proposals():
 
 
 @pytest.mark.anyio
-async def test_lock_and_unlock_beamlines():
-    key = await ApiKey.find_one(ApiKey.username == "test_user")
+async def test_lock_and_unlock_beamlines(api_key):
+    token = api_key["key:"]
     # start with unlocking to ensure its unlocked
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
             f"/v1/proposals/beamline/unlock/{test_beamline_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": token},
         )
 
     response_start_json = response_start.json()
@@ -125,7 +123,7 @@ async def test_lock_and_unlock_beamlines():
     ) as ac:
         response_lock = await ac.put(
             f"/v1/proposals/beamline/lock/{test_beamline_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": token},
         )
 
     response_lock_json = response_lock.json()
@@ -143,7 +141,7 @@ async def test_lock_and_unlock_beamlines():
     ) as ac:
         response_unlock = await ac.put(
             f"/v1/proposals/beamline/unlock/{test_beamline_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": token},
         )
 
     response_unlock_json = response_unlock.json()
@@ -157,15 +155,15 @@ async def test_lock_and_unlock_beamlines():
 
 
 @pytest.mark.anyio
-async def test_lock_and_unlock_cycles():
-    key = await ApiKey.find_one(ApiKey.username == "test_user")
+async def test_lock_and_unlock_cycles(api_key):
+    token = api_key["key:"]
     # start with unlocking to ensure its unlocked
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
             f"/v1/proposals/cycle/unlock/{test_cycle_name}/{facility}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": token},
         )
 
     response_start_json = response_start.json()
@@ -183,7 +181,7 @@ async def test_lock_and_unlock_cycles():
     ) as ac:
         response_lock = await ac.put(
             f"/v1/proposals/cycle/lock/{test_cycle_name}/{facility}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": token},
         )
 
     response_lock_json = response_lock.json()
@@ -201,7 +199,7 @@ async def test_lock_and_unlock_cycles():
     ) as ac:
         response_unlock = await ac.put(
             f"/v1/proposals/cycle/unlock/{test_cycle_name}/{facility}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": token},
         )
 
     response_unlock_json = response_unlock.json()

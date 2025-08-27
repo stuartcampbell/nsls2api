@@ -100,3 +100,9 @@ async def db():
         print(f"dropping {model}")
         await model.get_motor_collection().drop()
         await model.get_motor_collection().drop_indexes()
+
+
+@pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
+async def api_key(db):
+    """Generate and return an API key for test authentication."""
+    return await generate_api_key(username="test_user", usertype="user")
