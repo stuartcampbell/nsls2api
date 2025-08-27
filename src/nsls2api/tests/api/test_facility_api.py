@@ -84,7 +84,6 @@ async def test_get_cycle_details_success():
     assert response_json["cycle"] == cycle_name
     assert "start_date" in response_json
     assert "end_date" in response_json
-    assert "active" in response_json
     assert "is_current_operating_cycle" in response_json
     assert "accepting_proposals" in response_json
 

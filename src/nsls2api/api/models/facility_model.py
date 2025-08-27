@@ -23,6 +23,5 @@ class FacilityCycleDetailsResponseModel(pydantic.BaseModel):
     cycle: str
     start_date: datetime | None = None
     end_date: datetime | None = None
-    active: bool | None = None
     is_current_operating_cycle: bool
     accepting_proposals: bool | None = None

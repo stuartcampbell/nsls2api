@@ -159,7 +159,6 @@ async def get_cycle_details(facility: FacilityName, cycle: str):
         cycle=cycle_obj.name,
         start_date=cycle_obj.start_date,
         end_date=cycle_obj.end_date,
-        active=cycle_obj.active,
         accepting_proposals=cycle_obj.accepting_proposals,
         is_current_operating_cycle=cycle_obj.is_current_operating_cycle,
     )
