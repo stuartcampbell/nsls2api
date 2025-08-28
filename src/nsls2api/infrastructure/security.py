@@ -77,7 +77,7 @@ async def generate_api_key(username: str, usertype=ApiUserType.user):
                 old_key.valid = False
                 await old_key.save(link_rule=WriteRules.WRITE)
 
-        return {"key:": secret_key}
+        return {"key": secret_key}
 
     except Exception as e:
         logger.exception(e)
