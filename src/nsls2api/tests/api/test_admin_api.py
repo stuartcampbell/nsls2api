@@ -20,17 +20,17 @@ facility_name = "nsls2"
 
 
 @pytest.mark.anyio
-async def test_lock_and_unlock_proposals(api_key):
-    token = api_key["key:"]
+async def test_lock_and_unlock_proposals(admin_api_key):
+    key = admin_api_key["key"]
     # resetting to ensure locked is false
     data_start = {"proposals_to_change": [test_proposal_id]}
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
-            "/v1/proposals/unlock",
+            "/v1/admin/proposals/unlock",
             json=data_start,
-            headers={"Authorization": token},
+            headers={"Authorization": key},
         )
 
     response_start_json = response_start.json()
@@ -48,9 +48,9 @@ async def test_lock_and_unlock_proposals(api_key):
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_lock = await ac.put(
-            "/v1/proposals/lock",
+            "/v1/admin/proposals/lock",
             json=data_lock,
-            headers={"Authorization": token},
+            headers={"Authorization": key},
         )
 
     response_lock_json = response_lock.json()
@@ -63,14 +63,12 @@ async def test_lock_and_unlock_proposals(api_key):
     assert proposal_objects[0].locked == True
 
     # gathering locked proposals
-    facility_name = ("nsls2",)
-    beamline = ["ZZZ"]
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_get_list = await ac.get(
-            f"/v1/proposals/locked?beamline={beamline}&facility={facility_name}",
-            headers={"Authorization": token},
+            f"/v1/admin/proposals/locked?beamline={test_beamline_name}&facility={facility_name}",
+            headers={"Authorization": key},
         )
     response_get_list_json = response_get_list.json()
     assert response_get_list.status_code == 200
@@ -83,9 +81,9 @@ async def test_lock_and_unlock_proposals(api_key):
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_unlock = await ac.put(
-            "/v1/proposals/unlock",
+            "/v1/admin/proposals/unlock",
             json=data_unlock,
-            headers={"Authorization": token},
+            headers={"Authorization": key},
         )
 
     response_unlock_json = response_unlock.json()
@@ -99,15 +97,15 @@ async def test_lock_and_unlock_proposals(api_key):
 
 
 @pytest.mark.anyio
-async def test_lock_and_unlock_beamlines(api_key):
-    token = api_key["key:"]
+async def test_lock_and_unlock_beamlines(admin_api_key):
+    key = admin_api_key["key"]
     # start with unlocking to ensure its unlocked
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
-            f"/v1/proposals/beamline/unlock/{test_beamline_name}",
-            headers={"Authorization": token},
+            f"/v1/admin/proposals/beamline/unlock/{test_beamline_name}",
+            headers={"Authorization": key},
         )
 
     response_start_json = response_start.json()
@@ -124,8 +122,8 @@ async def test_lock_and_unlock_beamlines(api_key):
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_lock = await ac.put(
-            f"/v1/proposals/beamline/lock/{test_beamline_name}",
-            headers={"Authorization": token},
+            f"/v1/admin/proposals/beamline/lock/{test_beamline_name}",
+            headers={"Authorization": key},
         )
 
     response_lock_json = response_lock.json()
@@ -142,8 +140,8 @@ async def test_lock_and_unlock_beamlines(api_key):
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_unlock = await ac.put(
-            f"/v1/proposals/beamline/unlock/{test_beamline_name}",
-            headers={"Authorization": token},
+            f"/v1/admin/proposals/beamline/unlock/{test_beamline_name}",
+            headers={"Authorization": key},
         )
 
     response_unlock_json = response_unlock.json()
@@ -157,15 +155,16 @@ async def test_lock_and_unlock_beamlines(api_key):
 
 
 @pytest.mark.anyio
-async def test_lock_and_unlock_cycles(api_key):
-    token = api_key["key:"]
+async def test_lock_and_unlock_cycles(admin_api_key):
+    key = admin_api_key["key"]
+
     # start with unlocking to ensure its unlocked
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
-            f"/v1/proposals/cycle/unlock/{test_cycle_name}/{facility}",
-            headers={"Authorization": token},
+            f"/v1/admin/proposals/cycle/unlock/{test_cycle_name}/{facility_name}",
+            headers={"Authorization": key},
         )
 
     response_start_json = response_start.json()
@@ -182,8 +181,8 @@ async def test_lock_and_unlock_cycles(api_key):
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_lock = await ac.put(
-            f"/v1/proposals/cycle/lock/{test_cycle_name}/{facility}",
-            headers={"Authorization": token},
+            f"/v1/admin/proposals/cycle/lock/{test_cycle_name}/{facility_name}",
+            headers={"Authorization": key},
         )
 
     response_lock_json = response_lock.json()
@@ -200,8 +199,8 @@ async def test_lock_and_unlock_cycles(api_key):
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_unlock = await ac.put(
-            f"/v1/proposals/cycle/unlock/{test_cycle_name}/{facility}",
-            headers={"Authorization": token},
+            f"/v1/admin/proposals/cycle/unlock/{test_cycle_name}/{facility_name}",
+            headers={"Authorization": key},
         )
 
     response_unlock_json = response_unlock.json()
