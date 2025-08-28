@@ -170,15 +170,24 @@ async def validate_admin_role(
         try:
             valid_key = await verify_api_key(api_key)
             if valid_key is None:
-                return None
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="You are not authorized to access this resource.",
+                )
             key = await lookup_api_key(api_key)
             # await key.fetch_all_links()
             if key.user.role == ApiUserRole.admin:
                 return key.user
             else:
-                return None
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="You are not authorized to access this resource.",
+                )
         except LookupError:
-            return None
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="You are not authorized to access this resource.",
+            )
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

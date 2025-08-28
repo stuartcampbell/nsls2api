@@ -341,7 +341,8 @@ async def fetch_proposals(
     query = []
 
     if beamline:
-        query.append(In(Proposal.instruments, beamline))
+        beamline_upper = [beamline_name.upper() for beamline_name in beamline]
+        query.append(In(Proposal.instruments, beamline_upper))
 
     if cycle:
         query.append(In(Proposal.cycles, cycle))

@@ -1,4 +1,5 @@
 import pytest
+from beanie.operators import And
 from httpx import ASGITransport, AsyncClient
 
 from nsls2api.api.models.proposal_model import (
@@ -6,6 +7,7 @@ from nsls2api.api.models.proposal_model import (
     ProposalChangeResultsList,
 )
 from nsls2api.main import app
+from nsls2api.models.apikeys import ApiKey
 from nsls2api.services import proposal_service
 
 test_proposal_id = "314159"
@@ -14,7 +16,7 @@ test_beamline_name = "ZZZ"
 
 test_cycle_name = "1999-1"
 
-facility = "nsls2"
+facility_name = "nsls2"
 
 
 @pytest.mark.anyio
