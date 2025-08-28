@@ -11,10 +11,10 @@ from faker.providers import date_time, python
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
-    ProposalDiagnostics,
-    ProposalFullDetails,
     LockedProposalsList,
     ProposalChangeResultsList,
+    ProposalDiagnostics,
+    ProposalFullDetails,
     ProposalsToChangeList,
 )
 from nsls2api.infrastructure.logging import logger

@@ -1,5 +1,4 @@
 import pytest
-from beanie.operators import And
 from httpx import ASGITransport, AsyncClient
 
 from nsls2api.api.models.proposal_model import (
@@ -7,7 +6,6 @@ from nsls2api.api.models.proposal_model import (
     ProposalChangeResultsList,
 )
 from nsls2api.main import app
-from nsls2api.models.apikeys import ApiKey
 from nsls2api.services import proposal_service
 
 test_proposal_id = "314159"
@@ -20,11 +18,9 @@ facility_name = "nsls2"
 
 
 @pytest.mark.anyio
-async def test_lock_and_unlock_proposals():
+async def test_lock_and_unlock_proposals(admin_api_key):
+    key = admin_api_key["key"]
     # resetting to ensure locked is false
-    key = await ApiKey.find_one(
-        And(ApiKey.username == "test_admin", ApiKey.valid == True)
-    )
     data_start = {"proposals_to_change": [test_proposal_id]}
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
@@ -32,7 +28,7 @@ async def test_lock_and_unlock_proposals():
         response_start = await ac.put(
             "/v1/admin/proposals/unlock",
             json=data_start,
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": key},
         )
 
     response_start_json = response_start.json()
@@ -42,7 +38,7 @@ async def test_lock_and_unlock_proposals():
     proposal_objects_start = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects_start[0].locked == False
+    assert not proposal_objects_start[0].locked
 
     # locking
     data_lock = {"proposals_to_change": [test_proposal_id]}
@@ -52,7 +48,7 @@ async def test_lock_and_unlock_proposals():
         response_lock = await ac.put(
             "/v1/admin/proposals/lock",
             json=data_lock,
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": key},
         )
 
     response_lock_json = response_lock.json()
@@ -62,7 +58,7 @@ async def test_lock_and_unlock_proposals():
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == True
+    assert proposal_objects[0].locked
 
     # gathering locked proposals
     async with AsyncClient(
@@ -70,7 +66,7 @@ async def test_lock_and_unlock_proposals():
     ) as ac:
         response_get_list = await ac.get(
             f"/v1/admin/proposals/locked?beamline={test_beamline_name}&facility={facility_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": key},
         )
     response_get_list_json = response_get_list.json()
     assert response_get_list.status_code == 200
@@ -85,7 +81,7 @@ async def test_lock_and_unlock_proposals():
         response_unlock = await ac.put(
             "/v1/admin/proposals/unlock",
             json=data_unlock,
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": key},
         )
 
     response_unlock_json = response_unlock.json()
@@ -95,21 +91,19 @@ async def test_lock_and_unlock_proposals():
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == False
+    assert not proposal_objects[0].locked
 
 
 @pytest.mark.anyio
-async def test_lock_and_unlock_beamlines():
-    key = await ApiKey.find_one(
-        And(ApiKey.username == "test_admin", ApiKey.valid == True)
-    )
+async def test_lock_and_unlock_beamlines(admin_api_key):
+    key = admin_api_key["key"]
     # start with unlocking to ensure its unlocked
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
             f"/v1/admin/proposals/beamline/unlock/{test_beamline_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": key},
         )
 
     response_start_json = response_start.json()
@@ -119,7 +113,7 @@ async def test_lock_and_unlock_beamlines():
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == False
+    assert not proposal_objects[0].locked
 
     # lock beamline
     async with AsyncClient(
@@ -127,7 +121,7 @@ async def test_lock_and_unlock_beamlines():
     ) as ac:
         response_lock = await ac.put(
             f"/v1/admin/proposals/beamline/lock/{test_beamline_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": key},
         )
 
     response_lock_json = response_lock.json()
@@ -137,7 +131,7 @@ async def test_lock_and_unlock_beamlines():
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == True
+    assert proposal_objects[0].locked
 
     # unlock beamline
     async with AsyncClient(
@@ -145,7 +139,7 @@ async def test_lock_and_unlock_beamlines():
     ) as ac:
         response_unlock = await ac.put(
             f"/v1/admin/proposals/beamline/unlock/{test_beamline_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": key},
         )
 
     response_unlock_json = response_unlock.json()
@@ -155,21 +149,20 @@ async def test_lock_and_unlock_beamlines():
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == False
+    assert not proposal_objects[0].locked
 
 
 @pytest.mark.anyio
-async def test_lock_and_unlock_cycles():
-    key = await ApiKey.find_one(
-        And(ApiKey.username == "test_admin", ApiKey.valid == True)
-    )
+async def test_lock_and_unlock_cycles(admin_api_key):
+    key = admin_api_key["key"]
+
     # start with unlocking to ensure its unlocked
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response_start = await ac.put(
             f"/v1/admin/proposals/cycle/unlock/{test_cycle_name}/{facility_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": key},
         )
 
     response_start_json = response_start.json()
@@ -179,7 +172,7 @@ async def test_lock_and_unlock_cycles():
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == False
+    assert not proposal_objects[0].locked
 
     # lock beamline
     async with AsyncClient(
@@ -187,7 +180,7 @@ async def test_lock_and_unlock_cycles():
     ) as ac:
         response_lock = await ac.put(
             f"/v1/admin/proposals/cycle/lock/{test_cycle_name}/{facility_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": key},
         )
 
     response_lock_json = response_lock.json()
@@ -197,7 +190,7 @@ async def test_lock_and_unlock_cycles():
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == True
+    assert proposal_objects[0].locked
 
     # unlock beamline
     async with AsyncClient(
@@ -205,7 +198,7 @@ async def test_lock_and_unlock_cycles():
     ) as ac:
         response_unlock = await ac.put(
             f"/v1/admin/proposals/cycle/unlock/{test_cycle_name}/{facility_name}",
-            headers={"Authorization": key.secret_key},
+            headers={"Authorization": key},
         )
 
     response_unlock_json = response_unlock.json()
@@ -215,4 +208,4 @@ async def test_lock_and_unlock_cycles():
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == False
+    assert not proposal_objects[0].locked

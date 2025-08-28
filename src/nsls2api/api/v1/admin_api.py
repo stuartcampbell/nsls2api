@@ -11,7 +11,6 @@ from nsls2api.api.models.proposal_model import (
     ProposalsToChangeList,
     SingleProposal,
 )
-from nsls2api.api.v1.proposal_api import router
 from nsls2api.infrastructure import config
 from nsls2api.infrastructure.security import (
     generate_api_key,
@@ -25,7 +24,6 @@ from nsls2api.models.apikeys import (
 )
 from nsls2api.services import beamline_service, facility_service, proposal_service
 
-# router = fastapi.APIRouter()
 router = fastapi.APIRouter(
     dependencies=[Depends(validate_admin_role)], include_in_schema=True, tags=["admin"]
 )

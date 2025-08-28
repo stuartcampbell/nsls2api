@@ -29,7 +29,6 @@ from nsls2api.services import (
 )
 from nsls2api.services.slack_service import get_conversation_details
 
-
 router = fastapi.APIRouter(dependencies=[Depends(get_current_user)])
 
 

@@ -5,30 +5,19 @@ import pytest_asyncio
 from nsls2api import models
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.mongodb_setup import init_connection
+from nsls2api.infrastructure.security import generate_api_key, set_user_role
+from nsls2api.models.apikeys import ApiUserRole, ApiUserType
 from nsls2api.models.beamlines import Beamline, ServiceAccounts
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal
-from nsls2api.models.apikeys import ApiUserType, ApiUserRole
-from nsls2api.infrastructure.security import generate_api_key, set_user_role
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
 async def db():
     settings = get_settings()
     await init_connection(settings.mongodb_dsn)
-
-    # create user and key for a yet-to-be admin
-    test_admin_key = await generate_api_key(
-        username="test_admin", usertype=ApiUserType.user
-    )
-    # promote user to admin
-    test_admin_user = await set_user_role(username="test_admin", role=ApiUserRole.admin)
-    # promote user's key to admin
-    test_admin_key = await generate_api_key(
-        username="test_admin", usertype=ApiUserType.user
-    )
 
     # Insert a beamline into the database
     beamline = Beamline(
@@ -110,3 +99,21 @@ async def db():
         print(f"dropping {model}")
         await model.get_motor_collection().drop()
         await model.get_motor_collection().drop_indexes()
+
+
+@pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
+async def api_key(db):
+    """Generate and return an API key for test authentication."""
+    return await generate_api_key(username="test_user", usertype=ApiUserType.user)
+
+
+@pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
+async def admin_api_key(db):
+    """Generate and return an admin API key for test authentication."""
+    # Create API key for the admin test user
+    key = await generate_api_key(username="test_admin", usertype=ApiUserType.user)
+
+    # Promote this user to admin
+    await set_user_role("test_admin", ApiUserRole.admin)
+
+    return key
