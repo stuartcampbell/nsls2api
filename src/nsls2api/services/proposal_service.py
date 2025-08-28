@@ -40,24 +40,24 @@ async def get_locked_proposals(
 
     if cycles and beamlines:
         query = And(
-            Proposal.locked,
+            Proposal.locked == True,
             In(Proposal.instruments, uppercase_beamline),
             In(Proposal.cycles, cycles),
         )
 
     elif cycles:
         query = And(
-            Proposal.locked,
+            Proposal.locked == True,
             In(Proposal.cycles, cycles),
         )
 
     elif beamlines:
         query = And(
-            Proposal.locked,
+            Proposal.locked == True,
             In(Proposal.instruments, uppercase_beamline),
         )
     else:
-        query = Proposal.locked
+        query = Proposal.locked == True
 
     locked_proposals = await Proposal.find_many(query).to_list()
     locked_model = LockedProposalsList(
