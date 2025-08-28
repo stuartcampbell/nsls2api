@@ -20,17 +20,6 @@ async def db():
     settings = get_settings()
     await init_connection(settings.mongodb_dsn)
 
-    # create user and key for a yet-to-be admin
-    test_admin_key = await generate_api_key(
-        username="test_admin", usertype=ApiUserType.user
-    )
-    # promote user to admin
-    test_admin_user = await set_user_role(username="test_admin", role=ApiUserRole.admin)
-    # promote user's key to admin
-    test_admin_key = await generate_api_key(
-        username="test_admin", usertype=ApiUserType.user
-    )
-
     # Insert a beamline into the database
     beamline = Beamline(
         name="ZZZ",
@@ -117,3 +106,15 @@ async def db():
 async def api_key(db):
     """Generate and return an API key for test authentication."""
     return await generate_api_key(username="test_user", usertype="user")
+
+
+@pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
+async def admin_api_key(db):
+    """Generate and return an admin API key for test authentication."""
+    # Create API key for the admin test user
+    key = await generate_api_key(username="test_admin", usertype="user")
+
+    # Promote this user to admin
+    await set_user_role("test_admin", ApiUserRole.admin)
+
+    return key
