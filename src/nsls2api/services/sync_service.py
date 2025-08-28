@@ -81,6 +81,7 @@ async def worker_synchronize_dataadmins(skip_beamlines=False) -> None:
             f"Beamline Data Admin permissions synchronized in {time_taken.total_seconds():,.2f} seconds"
         )
 
+
 async def worker_synchronize_cycles_from_pass(
     facility_name: FacilityName = FacilityName.nsls2,
 ) -> None:
@@ -148,15 +149,15 @@ async def worker_synchronize_cycles_from_pass(
     today = datetime.datetime.now()
     found_cycle = await facility_service.facility_cycle_by_date(facility_name, today)
     if not found_cycle:
-        logger.warning(
-            f"No cycle found for today's date in facility {facility_name}"
-        )
+        logger.warning(f"No cycle found for today's date in facility {facility_name}")
     else:
         logger.info(
             f"Found cycle {found_cycle.name} for today's date in facility {facility_name}"
         )
         # Set the current operating cycle for the facility
-        await facility_service.set_current_operating_cycle(facility_name, found_cycle.name)
+        await facility_service.set_current_operating_cycle(
+            facility_name, found_cycle.name
+        )
         logger.info(
             f"Set current operating cycle for {facility_name} to {found_cycle.name}"
         )
