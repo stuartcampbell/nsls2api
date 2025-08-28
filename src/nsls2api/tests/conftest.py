@@ -105,14 +105,14 @@ async def db():
 @pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
 async def api_key(db):
     """Generate and return an API key for test authentication."""
-    return await generate_api_key(username="test_user", usertype="user")
+    return await generate_api_key(username="test_user", usertype=ApiUserType.user)
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
 async def admin_api_key(db):
     """Generate and return an admin API key for test authentication."""
     # Create API key for the admin test user
-    key = await generate_api_key(username="test_admin", usertype="user")
+    key = await generate_api_key(username="test_admin", usertype=ApiUserType.user)
 
     # Promote this user to admin
     await set_user_role("test_admin", ApiUserRole.admin)
