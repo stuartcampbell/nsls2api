@@ -1,5 +1,4 @@
 import pytest
-from beanie.operators import And
 from httpx import ASGITransport, AsyncClient
 
 from nsls2api.api.models.proposal_model import (
@@ -7,7 +6,6 @@ from nsls2api.api.models.proposal_model import (
     ProposalChangeResultsList,
 )
 from nsls2api.main import app
-from nsls2api.models.apikeys import ApiKey
 from nsls2api.services import proposal_service
 
 test_proposal_id = "314159"
@@ -40,7 +38,7 @@ async def test_lock_and_unlock_proposals(admin_api_key):
     proposal_objects_start = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects_start[0].locked == False
+    assert not proposal_objects_start[0].locked
 
     # locking
     data_lock = {"proposals_to_change": [test_proposal_id]}
@@ -60,7 +58,7 @@ async def test_lock_and_unlock_proposals(admin_api_key):
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == True
+    assert proposal_objects[0].locked
 
     # gathering locked proposals
     async with AsyncClient(
@@ -93,7 +91,7 @@ async def test_lock_and_unlock_proposals(admin_api_key):
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == False
+    assert not proposal_objects[0].locked
 
 
 @pytest.mark.anyio
@@ -115,7 +113,7 @@ async def test_lock_and_unlock_beamlines(admin_api_key):
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == False
+    assert not proposal_objects[0].locked
 
     # lock beamline
     async with AsyncClient(
@@ -133,7 +131,7 @@ async def test_lock_and_unlock_beamlines(admin_api_key):
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == True
+    assert proposal_objects[0].locked
 
     # unlock beamline
     async with AsyncClient(
@@ -151,7 +149,7 @@ async def test_lock_and_unlock_beamlines(admin_api_key):
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == False
+    assert not proposal_objects[0].locked
 
 
 @pytest.mark.anyio
@@ -174,7 +172,7 @@ async def test_lock_and_unlock_cycles(admin_api_key):
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == False
+    assert not proposal_objects[0].locked
 
     # lock beamline
     async with AsyncClient(
@@ -192,7 +190,7 @@ async def test_lock_and_unlock_cycles(admin_api_key):
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == True
+    assert proposal_objects[0].locked
 
     # unlock beamline
     async with AsyncClient(
@@ -210,4 +208,4 @@ async def test_lock_and_unlock_cycles(admin_api_key):
     proposal_objects = await proposal_service.fetch_proposals(
         proposal_id=[test_proposal_id]
     )
-    assert proposal_objects[0].locked == False
+    assert not proposal_objects[0].locked

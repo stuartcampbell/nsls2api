@@ -7,11 +7,8 @@ from fastapi import Depends, HTTPException, Query
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
-    LockedProposalsList,
-    ProposalChangeResultsList,
     ProposalDirectoriesList,
     ProposalFullDetailsList,
-    ProposalsToChangeList,
     ProposalUser,
     ProposalUserList,
     RecentProposal,
@@ -27,8 +24,6 @@ from nsls2api.models.slack_models import (
     SlackConversation,
 )
 from nsls2api.services import (
-    beamline_service,
-    facility_service,
     proposal_service,
     slack_service,
 )

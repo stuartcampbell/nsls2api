@@ -5,14 +5,13 @@ import pytest_asyncio
 from nsls2api import models
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.mongodb_setup import init_connection
-from nsls2api.infrastructure.security import generate_api_key
+from nsls2api.infrastructure.security import generate_api_key, set_user_role
+from nsls2api.models.apikeys import ApiUserRole, ApiUserType
 from nsls2api.models.beamlines import Beamline, ServiceAccounts
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
 from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal
-from nsls2api.models.apikeys import ApiUserType, ApiUserRole
-from nsls2api.infrastructure.security import generate_api_key, set_user_role
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
