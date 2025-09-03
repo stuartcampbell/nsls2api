@@ -259,8 +259,8 @@ async def gather_locked_proposals(
     facility: str,
     beamline: Annotated[list[str], Query()] = [],
     cycle: Annotated[list[str], Query()] = [],
-    page_size: int = 10,
-    page: int = 1,
+    page_size: int = Query(10, ge=1, le=200),
+    page: int = Query(1, ge=1),
 ):
     for beamline_name in beamline:
         beamline_info = await beamline_service.beamline_by_name(beamline_name)
