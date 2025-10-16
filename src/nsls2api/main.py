@@ -25,14 +25,6 @@ from nsls2api.views import diagnostics, home
 
 settings = get_settings()
 
-# Log the upstream service endpoints we are using
-logger.info(
-    f"PASS Upstream API URL: {click.style(settings.pass_api_url, fg='magenta')}"
-)
-logger.info(
-    f"UPS Upstream  API URL: {click.style(settings.universal_proposal_system_api_url, fg='magenta')}"
-)
-
 current_file = Path(__file__)
 current_file_dir = current_file.parent
 current_file_dir_absolute = current_file_dir.absolute()
