@@ -35,6 +35,13 @@ class CommissioningProposalsList(pydantic.BaseModel):
     facility: FacilityName | None = None
 
 
+class LockedProposalsList(pydantic.BaseModel):
+    count: int
+    locked_proposals: list[Proposal]
+    page_size: int | None = None
+    page: int | None = None
+
+
 class CycleProposalList(pydantic.BaseModel):
     cycle: str
     count: int
@@ -136,3 +143,13 @@ class ProposalDiagnostics(pydantic.BaseModel):
     cycles: Optional[list[str]]
     safs: Optional[list[str]]
     updated: datetime.datetime
+
+
+class ProposalChangeResultsList(pydantic.BaseModel):
+    successful_count: int
+    successful_proposals: Optional[list[str]]
+    failed_proposals: Optional[list[str]]
+
+
+class ProposalsToChangeList(pydantic.BaseModel):
+    proposals_to_change: list[str]

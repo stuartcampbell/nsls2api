@@ -69,9 +69,6 @@ class ApiKey(beanie.Document):
     user: Link[ApiUser]
     username: str
     first_eight: pydantic.constr(min_length=8, max_length=8)
-    secret_key: (
-        str  # TODO: After development - we will not be storing this one in the database
-    )
     hashed_key: str
     note: Optional[str] = ""
     # scopes: Optional[list[str]] = pydantic.Field(..., example=["inherit"])

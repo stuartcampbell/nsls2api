@@ -11,8 +11,11 @@ from faker.providers import date_time, python
 from nsls2api.api.models.facility_model import FacilityName
 from nsls2api.api.models.proposal_model import (
     CommissioningProposalsList,
+    LockedProposalsList,
+    ProposalChangeResultsList,
     ProposalDiagnostics,
     ProposalFullDetails,
+    ProposalsToChangeList,
 )
 from nsls2api.infrastructure.logging import logger
 from nsls2api.models.cycles import Cycle
@@ -25,6 +28,100 @@ from nsls2api.services import (
     facility_service,
     pass_service,
 )
+
+
+async def get_locked_proposals(
+    cycles: list[str],
+    beamlines: list[str],
+    page_size: int = 10,
+    page: int = 1,
+) -> LockedProposalsList:
+    locked_proposals = None
+    uppercase_beamline = []
+    if beamlines:
+        uppercase_beamline = [beamline.upper() for beamline in beamlines]
+
+    if cycles and beamlines:
+        query = And(
+            Proposal.locked == True,
+            In(Proposal.instruments, uppercase_beamline),
+            In(Proposal.cycles, cycles),
+        )
+
+    elif cycles:
+        query = And(
+            Proposal.locked == True,
+            In(Proposal.cycles, cycles),
+        )
+
+    elif beamlines:
+        query = And(
+            Proposal.locked == True,
+            In(Proposal.instruments, uppercase_beamline),
+        )
+    else:
+        query = Proposal.locked == True
+
+    locked_proposals = (
+        await Proposal.find_many(query)
+        .limit(page_size)
+        .skip(page_size * (page - 1))
+        .to_list()
+    )
+    locked_model = LockedProposalsList(
+        count=len(locked_proposals),
+        locked_proposals=locked_proposals,
+        page_size=page_size,
+        page=page,
+    )
+
+    return locked_model
+
+
+async def lock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsList:
+    successfully_locked_proposals = []
+    failed_to_lock_proposals = []
+    proposal_ids = proposal_list.proposals_to_change
+    for proposal_id in proposal_ids:
+        try:
+            proposal_object = await proposal_by_id(proposal_id)
+            proposal_object.locked = True
+            await proposal_object.save()
+            successfully_locked_proposals.append(proposal_id)
+        except Exception as e:
+            failed_to_lock_proposals.append(proposal_id)
+            logger.info(f"Unexpected error when locking {proposal_id} {e}")
+
+    locked_info = ProposalChangeResultsList(
+        successful_count=len(successfully_locked_proposals),
+        successful_proposals=successfully_locked_proposals,
+        failed_proposals=failed_to_lock_proposals,
+    )
+
+    return locked_info
+
+
+async def unlock(proposal_list: ProposalsToChangeList) -> ProposalChangeResultsList:
+    successfully_unlocked_proposals = []
+    failed_to_unlock_proposals = []
+    proposal_ids = proposal_list.proposals_to_change
+    for proposal_id in proposal_ids:
+        try:
+            proposal_object = await proposal_by_id(proposal_id)
+            proposal_object.locked = False
+            await proposal_object.save()
+            successfully_unlocked_proposals.append(proposal_id)
+        except Exception as e:
+            failed_to_unlock_proposals.append(proposal_id)
+            logger.info(f"Unexpected error when unlocking {proposal_id} {e}")
+
+    unlocked_info = ProposalChangeResultsList(
+        successful_count=len(successfully_unlocked_proposals),
+        successful_proposals=successfully_unlocked_proposals,
+        failed_proposals=failed_to_unlock_proposals,
+    )
+
+    return unlocked_info
 
 
 async def exists(proposal_id: str) -> bool:
@@ -254,7 +351,8 @@ async def fetch_proposals(
     query = []
 
     if beamline:
-        query.append(In(Proposal.instruments, beamline))
+        beamline_upper = [beamline_name.upper() for beamline_name in beamline]
+        query.append(In(Proposal.instruments, beamline_upper))
 
     if cycle:
         query.append(In(Proposal.cycles, cycle))

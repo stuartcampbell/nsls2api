@@ -86,9 +86,7 @@ async def worker_synchronize_cycles_from_pass(
     facility_name: FacilityName = FacilityName.nsls2,
 ) -> None:
     """
-    This method synchronizes the cycles for a facility from PASS.
-
-    :param facility_name: The facility name (FacilityName).
+    Synchronize cycles for a facility from PASS and set the current cycle.
     """
     start_time = datetime.datetime.now()
 
@@ -136,7 +134,7 @@ async def worker_synchronize_cycles_from_pass(
             response_type=UpdateResponse.NEW_DOCUMENT,
         )
 
-        # Now let's update the list of proposals for this cycle
+        # Update proposals for this cycle
         proposals_list = await pass_service.get_proposals_allocated_by_cycle(
             cycle.name, facility=facility_name
         )
@@ -147,9 +145,26 @@ async def worker_synchronize_cycles_from_pass(
             updated_cycle.last_updated = datetime.datetime.now()
             await updated_cycle.save()
 
+    # --- Set current operating cycle from today's date ---
+    today = datetime.datetime.now()
+    found_cycle = await facility_service.facility_cycle_by_date(facility_name, today)
+    if not found_cycle:
+        logger.warning(f"No cycle found for today's date in facility {facility_name}")
+    else:
+        logger.info(
+            f"Found cycle {found_cycle.name} for today's date in facility {facility_name}"
+        )
+        # Set the current operating cycle for the facility
+        await facility_service.set_current_operating_cycle(
+            facility_name, found_cycle.name
+        )
+        logger.info(
+            f"Set current operating cycle for {facility_name} to {found_cycle.name}"
+        )
+
     time_taken = datetime.datetime.now() - start_time
     logger.info(
-        f"Cycle information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
+        f"Cycle information (for {facility_name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )
 
 
@@ -182,7 +197,7 @@ async def worker_synchronize_proposal_types_from_pass(
             pass_description=pass_proposal_type.Description,
         )
 
-        response = await ProposalType.find_one(
+        await ProposalType.find_one(
             ProposalType.pass_id == str(pass_proposal_type.ID)
         ).upsert(
             Set(
@@ -199,15 +214,26 @@ async def worker_synchronize_proposal_types_from_pass(
         )
 
     time_taken = datetime.datetime.now() - start_time
-    logger.debug(f"Response: {response}")
     logger.info(
-        f"Proposal type information (for {facility.name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
+        f"Proposal type information (for {facility_name}) synchronized in {time_taken.total_seconds():,.2f} seconds"
     )
 
 
 async def synchronize_proposal_from_pass(
     proposal_id: str, facility_name: FacilityName = FacilityName.nsls2
 ) -> None:
+    """
+    Synchronize a proposal from PASS into the local database.
+
+    This function fetches proposal details, associated SAFs, beamlines, and users from PASS,
+    and updates or inserts the corresponding Proposal document in the database.
+
+    :param proposal_id: The PASS proposal ID to synchronize.
+    :type proposal_id: str
+    :param facility_name: The facility name (FacilityName) to use for synchronization.
+    :type facility_name: FacilityName
+    :return: None
+    """
     beamline_list = []
     user_list = []
     saf_list = []
@@ -236,7 +262,7 @@ async def synchronize_proposal_from_pass(
             SafetyForm(
                 saf_id=str(saf.SAF_ID),
                 status=saf.Status,
-                instruments=set(saf_beamline_list),
+                instruments=list(set(saf_beamline_list)),
             )
         )
 
@@ -278,6 +304,7 @@ async def synchronize_proposal_from_pass(
             bnl_id=user.BNL_ID,
             username=bnl_username,
             is_pi=user_is_pi,
+            orcid=user.ORCID_ID,
         )
         user_list.append(userinfo)
 
@@ -305,7 +332,7 @@ async def synchronize_proposal_from_pass(
         data_session=data_session,
         pass_type_id=str(pass_proposal.Proposal_Type_ID),
         type=pass_proposal.Proposal_Type_Description,
-        instruments=set(beamline_list),
+        instruments=list(set(beamline_list)),
         safs=saf_list,
         users=user_list,
         last_updated=datetime.datetime.now(),
@@ -334,10 +361,13 @@ async def update_proposals_with_cycle(
     cycle_name: str, facility_name: FacilityName = FacilityName.nsls2
 ) -> None:
     """
-    Update the cycle <-> proposals mapping for the given cycle.
+    Update the mapping between cycles and proposals for the specified cycle.
 
     :param cycle_name: The name of the cycle to process proposals for.
     :type cycle_name: str
+    :param facility_name: The facility name (FacilityName) to use for synchronization.
+    :type facility_name: FacilityName
+    :return: None
     """
 
     proposal_list = await proposal_service.fetch_proposals_for_cycle(
@@ -350,12 +380,14 @@ async def update_proposals_with_cycle(
 
     for proposal_id in proposal_list:
         # Add the cycle to the Proposal object
-
         try:
             proposal = await proposal_service.proposal_by_id(proposal_id)
-            await proposal.update(AddToSet({Proposal.cycles: cycle_name}))
-            proposal.last_updated = datetime.datetime.now()
-            await proposal.save()
+            if proposal is not None:
+                await proposal.update(AddToSet({Proposal.cycles: cycle_name}))
+                proposal.last_updated = datetime.datetime.now()
+                await proposal.save()  # type: ignore[union-attr]
+            else:
+                logger.warning(f"Proposal with ID {proposal_id} not found.")
         except LookupError as error:
             logger.warning(error)
 

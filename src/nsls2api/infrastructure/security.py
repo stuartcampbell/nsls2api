@@ -62,7 +62,6 @@ async def generate_api_key(username: str, usertype=ApiUserType.user):
             user=user,
             username=username,
             first_eight=secret_key[prefix_length : prefix_length + 8],
-            secret_key=secret_key,  # TODO: After development - we will not be storing this one in the database
             hashed_key=to_hash,
             expires_after=None,
         )
@@ -74,11 +73,11 @@ async def generate_api_key(username: str, usertype=ApiUserType.user):
         # Now that we have saved a new key for this user, we should invalidate any other keys
         for old_key in old_keys:
             if old_key.valid:
-                logger.info(f"Invalidating old key: {old_key.secret_key}")
+                logger.info(f"Invalidating old key: {old_key}")
                 old_key.valid = False
                 await old_key.save(link_rule=WriteRules.WRITE)
 
-        return {"key:": secret_key}
+        return {"key": secret_key}
 
     except Exception as e:
         logger.exception(e)
@@ -171,15 +170,24 @@ async def validate_admin_role(
         try:
             valid_key = await verify_api_key(api_key)
             if valid_key is None:
-                return None
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="You are not authorized to access this resource.",
+                )
             key = await lookup_api_key(api_key)
             # await key.fetch_all_links()
             if key.user.role == ApiUserRole.admin:
                 return key.user
             else:
-                return None
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="You are not authorized to access this resource.",
+                )
         except LookupError:
-            return None
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="You are not authorized to access this resource.",
+            )
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

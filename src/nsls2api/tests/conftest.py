@@ -5,6 +5,8 @@ import pytest_asyncio
 from nsls2api import models
 from nsls2api.infrastructure.config import get_settings
 from nsls2api.infrastructure.mongodb_setup import init_connection
+from nsls2api.infrastructure.security import generate_api_key, set_user_role
+from nsls2api.models.apikeys import ApiUserRole, ApiUserType
 from nsls2api.models.beamlines import Beamline, ServiceAccounts
 from nsls2api.models.cycles import Cycle
 from nsls2api.models.facilities import Facility
@@ -86,6 +88,7 @@ async def db():
         slack_channels=[],
         created_on=datetime.datetime.fromisoformat("1999-01-01"),
         last_updated=datetime.datetime.now(),
+        locked=False,
     )
     await proposal.insert()
 
@@ -96,3 +99,21 @@ async def db():
         print(f"dropping {model}")
         await model.get_motor_collection().drop()
         await model.get_motor_collection().drop_indexes()
+
+
+@pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
+async def api_key(db):
+    """Generate and return an API key for test authentication."""
+    return await generate_api_key(username="test_user", usertype=ApiUserType.user)
+
+
+@pytest_asyncio.fixture(scope="session", loop_scope="session", autouse=True)
+async def admin_api_key(db):
+    """Generate and return an admin API key for test authentication."""
+    # Create API key for the admin test user
+    key = await generate_api_key(username="test_admin", usertype=ApiUserType.user)
+
+    # Promote this user to admin
+    await set_user_role("test_admin", ApiUserRole.admin)
+
+    return key
