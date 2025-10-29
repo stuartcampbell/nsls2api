@@ -132,7 +132,7 @@ async def get_proposals(
 @router.get(
     "/proposals/data-sessions",
     response_model=ProposalIdDataSessionList,
-    # dependencies=[Depends(validate_admin_role)],
+    dependencies=[Depends(validate_admin_role)],
     description="Return proposal_ids and their data_sessions for matching proposals.",
 )
 async def get_proposals_data_sessions(
