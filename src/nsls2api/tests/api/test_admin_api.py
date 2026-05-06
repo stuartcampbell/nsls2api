@@ -17,7 +17,7 @@ test_cycle_name = "1999-1"
 facility_name = "nsls2"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_lock_and_unlock_proposals(admin_api_key):
     key = admin_api_key["key"]
     # resetting to ensure locked is false
@@ -94,7 +94,7 @@ async def test_lock_and_unlock_proposals(admin_api_key):
     assert not proposal_objects[0].locked
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_lock_and_unlock_beamlines(admin_api_key):
     key = admin_api_key["key"]
     # start with unlocking to ensure its unlocked
@@ -152,7 +152,7 @@ async def test_lock_and_unlock_beamlines(admin_api_key):
     assert not proposal_objects[0].locked
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_lock_and_unlock_cycles(admin_api_key):
     key = admin_api_key["key"]
 
