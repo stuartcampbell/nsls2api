@@ -13,7 +13,7 @@ BEAMLINE_NAME = "TLA"
 
 async def main():
     # Initialize Beanie
-    await mongodb_setup.init_connection(settings.mongodb_dsn)
+    client = await mongodb_setup.init_connection(settings.mongodb_dsn)
 
     pass_resources = await pass_service.get_pass_resources()
     pass_ids = [r["ID"] for r in pass_resources if r["Code"] == BEAMLINE_NAME]
@@ -47,6 +47,8 @@ async def main():
 
     # Uncomment this line to actually insert the new beamline into the database
     # await new_beamline.insert()
+
+    client.close()
 
 
 if __name__ == "__main__":
