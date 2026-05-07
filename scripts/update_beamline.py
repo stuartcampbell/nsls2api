@@ -56,7 +56,7 @@ async def main():
     # Uncomment the line below to actually save the changes to the database
     # await beamline.save()
 
-    client.close()
+    await client.close()
 
 
 if __name__ == "__main__":

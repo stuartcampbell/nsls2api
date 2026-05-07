@@ -48,7 +48,7 @@ async def main():
     # Uncomment this line to actually insert the new beamline into the database
     # await new_beamline.insert()
 
-    client.close()
+    await client.close()
 
 
 if __name__ == "__main__":

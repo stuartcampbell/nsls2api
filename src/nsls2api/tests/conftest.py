@@ -101,7 +101,7 @@ async def db():
             print(f"dropping {model}")
             await model.get_pymongo_collection().drop()
             await model.get_pymongo_collection().drop_indexes()
-        client.close()
+        await client.close()
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)

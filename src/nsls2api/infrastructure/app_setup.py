@@ -37,4 +37,4 @@ async def app_lifespan(app: FastAPI):
     await httpx_client_wrapper.stop()
 
     # Close MongoDB client
-    mongodb_client.close()
+    await mongodb_client.close()
