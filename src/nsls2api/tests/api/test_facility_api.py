@@ -9,7 +9,7 @@ from nsls2api.api.models.proposal_model import CycleProposalList
 from nsls2api.main import app
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_current_operating_cycle():
     facility_name = "nsls2"
     async with AsyncClient(
@@ -26,7 +26,7 @@ async def test_get_current_operating_cycle():
     assert current_cycle.cycle == "1999-1"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_facility_cycles():
     facility_name = "nsls2"
     async with AsyncClient(
@@ -44,7 +44,7 @@ async def test_get_facility_cycles():
     assert facility_cycles.cycles[0] == "1999-1"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_proposals_for_cycle():
     facility_name = "nsls2"
     cycle_name = "1999-1"
@@ -67,7 +67,8 @@ async def test_get_proposals_for_cycle():
     assert len(cycle_proposals.proposals) == 0
     assert cycle_proposals.count == 0
 
-@pytest.mark.asyncio
+
+@pytest.mark.anyio
 async def test_get_cycle_details_success():
     facility_name = "nsls2"
     cycle_name = "1999-1"
@@ -87,7 +88,8 @@ async def test_get_cycle_details_success():
     assert "is_current_operating_cycle" in response_json
     assert "accepting_proposals" in response_json
 
-@pytest.mark.asyncio
+
+@pytest.mark.anyio
 async def test_get_cycle_details_not_found():
     facility_name = "nsls2"
     cycle_name = "nonexistent-cycle"
@@ -100,4 +102,7 @@ async def test_get_cycle_details_not_found():
     response_json = response.json()
     assert response.status_code == 404
     assert "error" in response_json
-    assert f"Requested Cycle '{cycle_name}' does not exist for facility '{facility_name}'." in response_json["error"]
+    assert (
+        f"Requested Cycle '{cycle_name}' does not exist for facility '{facility_name}'."
+        in response_json["error"]
+    )

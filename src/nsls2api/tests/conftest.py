@@ -1,6 +1,6 @@
 import datetime
 
-import pytest_asyncio
+import pytest
 
 from nsls2api import models
 from nsls2api.infrastructure.config import get_settings
@@ -14,7 +14,7 @@ from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal
 
 
-@pytest_asyncio.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 async def db():
     settings = get_settings()
     client = await init_connection(settings.mongodb_dsn)
@@ -104,13 +104,13 @@ async def db():
         await client.close()
 
 
-@pytest_asyncio.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 async def api_key(db):
     """Generate and return an API key for test authentication."""
     return await generate_api_key(username="test_user", usertype=ApiUserType.user)
 
 
-@pytest_asyncio.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 async def admin_api_key(db):
     """Generate and return an admin API key for test authentication."""
     # Create API key for the admin test user

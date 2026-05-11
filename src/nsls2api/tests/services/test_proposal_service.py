@@ -14,7 +14,8 @@ test_cycle_name = "1999-1"
 PAGE = 1
 PAGE_SIZE = 10
 
-@pytest.mark.asyncio
+
+@pytest.mark.anyio
 async def test_get_beamline_specific_slack_channel_for_proposal():
     slack_channels = (
         await proposal_service.get_beamline_specific_slack_channel_for_proposal(
@@ -26,14 +27,14 @@ async def test_get_beamline_specific_slack_channel_for_proposal():
     assert slack_channels[0] == f"pass-{test_proposal_id}-zzz"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_proposal_by_id():
     proposal: Proposal = await proposal_service.proposal_by_id(test_proposal_id)
     assert proposal is not None
     assert proposal.proposal_id == test_proposal_id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_proposal_type_description_from_pass_type_id():
     test_proposal_type_id = 999999
     description = await proposal_service.proposal_type_description_from_pass_type_id(
@@ -43,7 +44,7 @@ async def test_proposal_type_description_from_pass_type_id():
     assert description == "Proposal Type X"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_proposal_type_description_from_nonexistent_pass_type_id():
     test_proposal_type_id = 999991  # non-existent proposal type_id
     try:
@@ -58,7 +59,7 @@ async def test_proposal_type_description_from_nonexistent_pass_type_id():
         assert True
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_data_session_for_proposal():
     data_session = await proposal_service.data_session_for_proposal(
         proposal_id=test_proposal_id
@@ -67,7 +68,7 @@ async def test_data_session_for_proposal():
     assert data_session == f"pass-{test_proposal_id}"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_beamlines_for_proposal():
     beamlines = await proposal_service.beamlines_for_proposal(
         proposal_id=test_proposal_id
@@ -77,7 +78,7 @@ async def test_beamlines_for_proposal():
     assert beamlines[0] == "ZZZ"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_cycles_for_proposal():
     cycles = await proposal_service.cycles_for_proposal(proposal_id=test_proposal_id)
     assert cycles is not None
@@ -85,13 +86,13 @@ async def test_cycles_for_proposal():
     assert cycles[0] == "1999-1"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_is_commissioning():
     proposal = await proposal_service.proposal_by_id(test_proposal_id)
     assert await proposal_service.is_commissioning(proposal) is False
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_case_sensitivity_fetch_proposals():
     proposal_objects_upper = await proposal_service.fetch_proposals(
         beamline=[test_beamline_name]
@@ -104,23 +105,24 @@ async def test_case_sensitivity_fetch_proposals():
     assert proposal_objects_lower[0].proposal_id == test_proposal_id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_data_sessions_endpoint(admin_api_key):
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test",
-        headers={"Authorization": admin_api_key['key']}  # Use the api_key fixture here
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+        headers={"Authorization": admin_api_key["key"]},  # Use the api_key fixture here
     ) as ac:
         resp = await ac.get(
             "/v1/proposals/data-sessions",
             params={
                 "beamline": test_beamline_name,
                 "cycle": test_cycle_name,
-            "facility": "nsls2",
-            "page": PAGE,
-            "page_size": PAGE_SIZE,
-        },
-    )
-    
+                "facility": "nsls2",
+                "page": PAGE,
+                "page_size": PAGE_SIZE,
+            },
+        )
+
     assert resp.status_code == 200
     body = resp.json()
     print(resp.json())
@@ -137,12 +139,14 @@ async def test_data_sessions_endpoint(admin_api_key):
     assert first["proposal_id"] == test_proposal_id
     assert first["data_session"] == f"pass-{test_proposal_id}"
 
-@pytest.mark.asyncio
+
+@pytest.mark.anyio
 async def test_data_sessions_pagination(admin_api_key):
     small_page_size = 2
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test",
-        headers={"Authorization": admin_api_key['key']}  # Use the api_key fixture here
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+        headers={"Authorization": admin_api_key["key"]},  # Use the api_key fixture here
     ) as ac:
         resp = await ac.get(
             "/v1/proposals/data-sessions",
@@ -164,11 +168,13 @@ async def test_data_sessions_pagination(admin_api_key):
         assert "proposal_id" in p
         assert "data_session" in p
 
-@pytest.mark.asyncio
+
+@pytest.mark.anyio
 async def test_data_sessions_invalid_beamline(admin_api_key):
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test",
-        headers={"Authorization": admin_api_key['key']}  # Use the api_key fixture here
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+        headers={"Authorization": admin_api_key["key"]},  # Use the api_key fixture here
     ) as ac:
         resp = await ac.get(
             "/v1/proposals/data-sessions",

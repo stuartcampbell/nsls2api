@@ -4,7 +4,7 @@ from httpx import ASGITransport, AsyncClient
 from nsls2api.main import app
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_healthy_endpoint():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
