@@ -14,8 +14,13 @@ from nsls2api.models.proposal_types import ProposalType
 from nsls2api.models.proposals import Proposal
 
 
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"
+
+
 @pytest.fixture(scope="function", autouse=True)
-async def db():
+async def db(anyio_backend):
     settings = get_settings()
     client = await init_connection(settings.mongodb_dsn)
 
@@ -105,18 +110,17 @@ async def db():
 
 
 @pytest.fixture(scope="function", autouse=True)
-async def api_key(db):
+async def api_key(anyio_backend, db):
     """Generate and return an API key for test authentication."""
     return await generate_api_key(username="test_user", usertype=ApiUserType.user)
 
 
 @pytest.fixture(scope="function", autouse=True)
-async def admin_api_key(db):
+async def admin_api_key(anyio_backend, db):
     """Generate and return an admin API key for test authentication."""
     # Create API key for the admin test user
     key = await generate_api_key(username="test_admin", usertype=ApiUserType.user)
 
     # Promote this user to admin
     await set_user_role("test_admin", ApiUserRole.admin)
-
     return key
