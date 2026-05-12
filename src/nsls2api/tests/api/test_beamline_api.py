@@ -2,7 +2,12 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from nsls2api.main import app
-from nsls2api.models.beamlines import Beamline, DetectorList, DirectoryList, ServiceAccounts
+from nsls2api.models.beamlines import (
+    Beamline,
+    DetectorList,
+    DirectoryList,
+    ServiceAccounts,
+)
 
 
 @pytest.mark.anyio
@@ -110,10 +115,10 @@ async def test_get_beamline_detectors_with_empty_list():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get("/v1/beamline/zzz/detectors")
-    
+
     assert response.status_code == 200
     response_json = response.json()
-    
+
     # Verify the response structure
     detector_list = DetectorList(**response_json)
     assert detector_list.detectors == []
@@ -127,10 +132,8 @@ async def test_get_beamline_detectors_for_nonexistent_beamline():
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         response = await ac.get("/v1/beamline/does-not-exist/detectors")
-    
+
     assert response.status_code == 404
     response_json = response.json()
     assert "detail" in response_json
     assert "does not exist" in response_json["detail"].lower()
-
-
